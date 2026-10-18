@@ -148,11 +148,14 @@
 
                 <!-- Navigation Tabs -->
                 <div class="mt-5 inline-flex bg-black/50 p-1 rounded-xl border border-white/10 w-full sm:w-auto">
-                    <button id="tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow">
-                        👥 Team Roster
+                    <button id="tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow">
+                        👥 Roster
                     </button>
-                    <button id="tab-tracker" onclick="switchTab('tracker')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
+                    <button id="tab-tracker" onclick="switchTab('tracker')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
                         ⏱️ Live Tracker
+                    </button>
+                    <button id="tab-leaderboard" onclick="switchTab('leaderboard')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
+                        🏆 Leaderboard
                     </button>
                 </div>
             </div>
@@ -267,6 +270,11 @@
                 </div>
             </div>
 
+            <!-- Man of the Match Locker Room Card -->
+            <div id="card-motm-container" class="bg-gradient-to-r from-amber-950/30 via-zinc-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
+                <!-- Injected dynamically via renderMatchTracker() -->
+            </div>
+
             <!-- Play-by-Play Log -->
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl">
                 <div class="flex items-center justify-between mb-3">
@@ -298,6 +306,14 @@
                 <div id="match-history-list" class="space-y-2.5">
                     <!-- Archived games injected via JS -->
                 </div>
+            </div>
+        </section>
+
+        <!-- VIEW 3: SEASON LEADERBOARDS & ACCOLADES -->
+        <section id="view-leaderboard" class="hidden space-y-4">
+            <!-- Dynamic Leaderboard Content rendered by renderLeaderboard() -->
+            <div id="leaderboard-content" class="space-y-4">
+                <!-- Injected via JavaScript -->
             </div>
         </section>
 
@@ -465,6 +481,11 @@
                     <label class="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">Duration</label>
                     <input id="edit-match-duration" type="text" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white" />
                 </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-amber-400 mb-0.5">🎖️ Man of the Match</label>
+                    <select id="edit-match-motm" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-amber-500">
+                    </select>
+                </div>
             </div>
             <div class="mt-4 flex justify-end space-x-2">
                 <button onclick="closeEditMatchModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 text-xs font-semibold">Cancel</button>
@@ -494,7 +515,6 @@
         let isCloudActive = false;
 
         // TEAM FAMILY PASSCODE GATE
-        // Accepts: 'albion14', '1414', or 'rockies14' (case-insensitive)
         const VALID_FAMILY_PASSCODES = ['albion14', '1414', 'rockies14'];
         const FAMILY_AUTH_KEY = 'rockies_albion14_family_authenticated_v1';
 
@@ -538,10 +558,6 @@
             if (appContent) appContent.classList.add('hidden');
         }
 
-        window.checkFamilyPass = checkFamilyPass;
-        window.lockFamilyPortal = lockFamilyPortal;
-
-        // COACH ACCESS CONTROL (Default PIN: 1414)
         const COACH_PIN = "1414";
         let isCoachMode = localStorage.getItem('rockies_coach_mode_unlocked') === 'true';
 
@@ -584,13 +600,13 @@
             isRunning: false,
             isFinished: false,
             events: [],
-            history: []
+            history: [],
+            motmJersey: null
         };
 
         let activeModalJersey = null;
         let cloudSaveTimer = null;
 
-        // Smart image error handler to try case variations
         function handleHeaderBgError(img) {
             const tries = [
                 'videos/albion%2014%20team%20pic.jpeg',
@@ -610,9 +626,7 @@
                 img.style.display = 'none';
             }
         }
-        window.handleHeaderBgError = handleHeaderBgError;
 
-        // Parse CSV string into player objects
         function parseCSV(csvString) {
             const lines = csvString.trim().split('\n');
             const roster = [];
@@ -872,7 +886,8 @@
                     usScore: matchState.usScore,
                     themScore: matchState.themScore,
                     duration: formatTime(matchState.baseSeconds),
-                    events: JSON.parse(JSON.stringify(matchState.events))
+                    events: JSON.parse(JSON.stringify(matchState.events)),
+                    motmJersey: matchState.motmJersey || null
                 };
 
                 if (!matchState.history) matchState.history = [];
@@ -904,13 +919,15 @@
                 matchState.isRunning = false;
                 matchState.isFinished = false;
                 matchState.events = [];
+                matchState.motmJersey = null;
                 
                 const oppInput = document.getElementById('opponent-input');
                 if (oppInput) oppInput.value = 'Opponent';
                 
                 updateClockUI();
                 renderMatchTracker();
-                saveMatchToCloud(true);
+                saveMatchToCloud();
+                saveStatsToCloud();
             });
         }
 
@@ -919,21 +936,22 @@
 
             const scorerSelect = document.getElementById('select-scorer');
             const assistSelect = document.getElementById('select-assist');
-            const playTypeSelect = document.getElementById('select-play-type');
-            const shotTypeSelect = document.getElementById('select-shot-type');
             const specialInput = document.getElementById('input-special-style');
 
-            const optionsHTML = rosterPlayers.map(
-                p => `<option value="${p.jersey}">#${p.jersey} - ${p.name} (${p.position || 'Player'})</option>`
-            ).join('');
+            if (scorerSelect) {
+                scorerSelect.innerHTML = rosterPlayers.map(p => `
+                    <option value="${p.jersey}">#${p.jersey} - ${p.name} (${p.position})</option>
+                `).join('');
+            }
 
-            scorerSelect.innerHTML = optionsHTML;
-            assistSelect.innerHTML = `<option value="">-- No Assist / Unassisted --</option>` + optionsHTML;
-            
-            if (playTypeSelect) playTypeSelect.value = 'Open Play';
-            if (shotTypeSelect) shotTypeSelect.value = 'Right Foot';
+            if (assistSelect) {
+                assistSelect.innerHTML = `<option value="">-- None (Unassisted) --</option>` + 
+                    rosterPlayers.map(p => `
+                        <option value="${p.jersey}">#${p.jersey} - ${p.name} (${p.position})</option>
+                    `).join('');
+            }
+
             if (specialInput) specialInput.value = '';
-
             document.getElementById('goal-modal').classList.remove('hidden');
         }
 
@@ -943,9 +961,7 @@
 
         function setSpecialTag(tag) {
             const input = document.getElementById('input-special-style');
-            if (!input) return;
-            const current = input.value.trim();
-            input.value = current ? `${current}, ${tag}` : tag;
+            if (input) input.value = tag;
         }
 
         function confirmRockiesGoal() {
@@ -954,71 +970,74 @@
             const scorerJersey = parseInt(document.getElementById('select-scorer').value, 10);
             const assistVal = document.getElementById('select-assist').value;
             const assistJersey = assistVal ? parseInt(assistVal, 10) : null;
-            const playType = document.getElementById('select-play-type')?.value || 'Open Play';
-            const shotType = document.getElementById('select-shot-type')?.value || 'Right Foot';
-            const specialNote = document.getElementById('input-special-style')?.value.trim() || '';
+            const playType = document.getElementById('select-play-type').value;
+            const shotType = document.getElementById('select-shot-type').value;
+            const specialNote = (document.getElementById('input-special-style')?.value || '').trim();
 
             const scorer = rosterPlayers.find(p => p.jersey === scorerJersey);
-            const assister = assistJersey ? rosterPlayers.find(p => p.jersey === assistJersey) : null;
-            if (!scorer) return;
+            const assist = assistJersey ? rosterPlayers.find(p => p.jersey === assistJersey) : null;
 
-            matchState.usScore++;
-            if (!playerStats[scorerJersey]) playerStats[scorerJersey] = { goals: 0, assists: 0 };
-            playerStats[scorerJersey].goals = (playerStats[scorerJersey].goals || 0) + 1;
+            matchState.usScore += 1;
 
-            let eventDescription = `⚽ GOAL! #${scorer.jersey} ${scorer.name}`;
-            if (assister && assister.jersey !== scorer.jersey) {
-                if (!playerStats[assister.jersey]) playerStats[assister.jersey] = { goals: 0, assists: 0 };
-                playerStats[assister.jersey].assists = (playerStats[assister.jersey].assists || 0) + 1;
-                eventDescription += ` (Assist: #${assister.jersey} ${assister.name})`;
-            }
+            let eventText = `⚽ Goal! #${scorerJersey} ${scorer ? scorer.name : ''}`;
+            if (assist) eventText += ` (Assist: #${assistJersey} ${assist.name})`;
 
             matchState.events.unshift({
                 id: Date.now(),
+                type: 'us',
+                scorerJersey,
+                assistJersey,
+                text: eventText,
                 timeStr: formatTime(getElapsedSeconds()),
                 period: matchState.period,
-                type: 'us',
-                scorerJersey: scorer.jersey,
-                assistJersey: assister && assister.jersey !== scorer.jersey ? assister.jersey : null,
-                playType: playType,
-                shotType: shotType,
-                specialNote: specialNote,
-                text: eventDescription
+                playType,
+                shotType,
+                specialNote
             });
+
+            if (!playerStats[scorerJersey]) playerStats[scorerJersey] = { goals: 0, assists: 0 };
+            playerStats[scorerJersey].goals = (playerStats[scorerJersey].goals || 0) + 1;
+
+            if (assistJersey) {
+                if (!playerStats[assistJersey]) playerStats[assistJersey] = { goals: 0, assists: 0 };
+                playerStats[assistJersey].assists = (playerStats[assistJersey].assists || 0) + 1;
+            }
 
             closeGoalModal();
             renderMatchTracker();
             displayRoster();
-            saveMatchToCloud(true);
+            saveMatchToCloud();
             saveStatsToCloud();
         }
 
         function recordOpponentGoal(delta) {
             if (!isCoachMode) { openCoachAuthModal(); return; }
-            if (delta < 0 && matchState.themScore <= 0) return;
-            matchState.themScore = Math.max(0, matchState.themScore + delta);
 
             if (delta > 0) {
+                matchState.themScore += 1;
                 matchState.events.unshift({
                     id: Date.now(),
-                    timeStr: formatTime(getElapsedSeconds()),
-                    period: matchState.period,
                     type: 'them',
-                    scorerJersey: null,
-                    assistJersey: null,
-                    text: `🥅 Goal by ${matchState.opponentName}`
+                    text: `⚽ Goal by ${matchState.opponentName}`,
+                    timeStr: formatTime(getElapsedSeconds()),
+                    period: matchState.period
                 });
+            } else {
+                matchState.themScore = Math.max(0, matchState.themScore - 1);
             }
+
             renderMatchTracker();
-            saveMatchToCloud(true);
+            saveMatchToCloud();
         }
 
         function deleteMatchEvent(eventId) {
             if (!isCoachMode) { openCoachAuthModal(); return; }
+
             const idx = matchState.events.findIndex(e => e.id === eventId);
             if (idx === -1) return;
 
             const ev = matchState.events[idx];
+
             if (ev.type === 'us') {
                 matchState.usScore = Math.max(0, matchState.usScore - 1);
                 if (ev.scorerJersey && playerStats[ev.scorerJersey]) {
@@ -1038,10 +1057,94 @@
             saveStatsToCloud();
         }
 
+        function setMatchMOTM(val) {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+            matchState.motmJersey = val ? parseInt(val, 10) : null;
+            renderMatchTracker();
+            saveMatchToCloud(true);
+        }
+
+        function getPlayerMOTMCount(jersey) {
+            let count = 0;
+            (matchState.history || []).forEach(m => {
+                if (m.motmJersey === jersey) count++;
+            });
+            if (matchState.motmJersey === jersey) count++;
+            return count;
+        }
+
         function renderMatchTracker() {
             document.getElementById('score-us').textContent = matchState.usScore;
             document.getElementById('score-them').textContent = matchState.themScore;
             document.getElementById('score-them-label').textContent = matchState.opponentName;
+
+            // Render MOTM Locker Room Card
+            const motmContainer = document.getElementById('card-motm-container');
+            if (motmContainer) {
+                const motmPlayer = rosterPlayers.find(p => p.jersey === matchState.motmJersey);
+                
+                if (isCoachMode) {
+                    const motmOptions = `<option value="">-- Choose in Locker Room --</option>` + 
+                        rosterPlayers.map(p => `
+                            <option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>
+                                #${p.jersey} - ${p.name} (${p.position || 'Player'})
+                            </option>
+                        `).join('');
+
+                    motmContainer.innerHTML = `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-xl flex-shrink-0">
+                                    🎖️
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h3 class="text-sm font-extrabold text-white">Man of the Match</h3>
+                                        <span class="text-[10px] bg-amber-950 border border-amber-600/50 text-amber-300 px-1.5 py-0.2 rounded font-bold uppercase">Locker Room</span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-400">Awarded post-game by Kevin & coaches</p>
+                                </div>
+                            </div>
+                            <div class="w-full sm:w-60">
+                                <select onchange="setMatchMOTM(this.value)" class="w-full bg-zinc-800 border border-amber-500/50 text-amber-200 text-xs font-bold rounded-lg px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400">
+                                    ${motmOptions}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    // Spectator View
+                    motmContainer.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-10 h-10 rounded-xl ${motmPlayer ? 'bg-amber-500/25 border-amber-500/60' : 'bg-zinc-800/80 border-zinc-700'} border flex items-center justify-center text-xl flex-shrink-0">
+                                    🎖️
+                                </div>
+                                <div>
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Man of the Match</h3>
+                                    ${motmPlayer ? `
+                                        <div class="flex items-center space-x-1.5 mt-0.5">
+                                            <span class="text-sm font-black text-amber-300">#${motmPlayer.jersey} ${motmPlayer.name}</span>
+                                            <span class="text-[10px] text-gray-400 uppercase">(${motmPlayer.position})</span>
+                                        </div>
+                                    ` : `
+                                        <p class="text-xs text-gray-400 italic mt-0.5">Decided in the locker room post-game ⚽</p>
+                                    `}
+                                </div>
+                            </div>
+                            ${motmPlayer ? `
+                                <span class="text-xs bg-amber-950/80 border border-amber-600/50 text-amber-300 px-2.5 py-1 rounded-full font-extrabold shadow">
+                                    MVP 🌟
+                                </span>
+                            ` : `
+                                <button onclick="openCoachAuthModal()" class="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline">
+                                    Coach? Pick
+                                </button>
+                            `}
+                        </div>
+                    `;
+                }
+            }
 
             const listEl = document.getElementById('match-events-list');
             if (matchState.events.length === 0) {
@@ -1096,6 +1199,15 @@
                         <div class="text-sm font-extrabold text-white mt-0.5">
                             Rockies Albion <span class="text-blue-400">${item.usScore}</span> - <span class="text-rose-400">${item.themScore}</span> ${item.opponent}
                         </div>
+                        ${item.motmJersey ? (() => {
+                            const p = rosterPlayers.find(pl => pl.jersey === item.motmJersey);
+                            return p ? `
+                                <div class="inline-flex items-center space-x-1 bg-amber-950/60 border border-amber-500/40 text-amber-300 px-2 py-0.5 rounded-md text-[10px] font-bold mt-1.5">
+                                    <span>🎖️ MOTM:</span>
+                                    <span>#${p.jersey} ${p.name}</span>
+                                </div>
+                            ` : '';
+                        })() : ''}
                     </div>
                     ${isCoachMode ? `
                     <div class="flex items-center space-x-1.5 self-end sm:self-center">
@@ -1124,6 +1236,16 @@
             document.getElementById('edit-match-them-score').value = match.themScore ?? 0;
             document.getElementById('edit-match-duration').value = match.duration || '00:00';
 
+            const motmSelect = document.getElementById('edit-match-motm');
+            if (motmSelect) {
+                motmSelect.innerHTML = `<option value="">-- No MOTM Selected --</option>` +
+                    rosterPlayers.map(p => `
+                        <option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>
+                            #${p.jersey} - ${p.name}
+                        </option>
+                    `).join('');
+            }
+
             document.getElementById('edit-match-modal').classList.remove('hidden');
         }
 
@@ -1142,6 +1264,8 @@
             match.usScore = parseInt(document.getElementById('edit-match-us-score').value, 10) || 0;
             match.themScore = parseInt(document.getElementById('edit-match-them-score').value, 10) || 0;
             match.duration = document.getElementById('edit-match-duration').value.trim() || match.duration;
+            const motmVal = document.getElementById('edit-match-motm')?.value;
+            match.motmJersey = motmVal ? parseInt(motmVal, 10) : null;
 
             closeEditMatchModal();
             renderMatchHistory();
@@ -1280,7 +1404,8 @@
                 isRunning: matchState.isRunning,
                 isFinished: matchState.isFinished,
                 events: matchState.events,
-                history: matchState.history || []
+                history: matchState.history || [],
+                motmJersey: matchState.motmJersey || null
             };
 
             try {
@@ -1356,6 +1481,7 @@
             activeModalJersey = jersey;
             const stats = playerStats[jersey] || { goals: 0, assists: 0, highlightUrl: '' };
             const totalPoints = (stats.goals || 0) + (stats.assists || 0);
+            const motmAwards = getPlayerMOTMCount(jersey);
             const playerEvents = matchState.events.filter(
                 e => e.type === 'us' && (e.scorerJersey === jersey || e.assistJersey === jersey)
             );
@@ -1402,21 +1528,25 @@
                             <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Season Totals</h3>
                             <span class="text-[10px] text-gray-500">Official Season Record</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2">
-                            <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2.5 text-center">
-                                <span class="text-[10px] font-bold uppercase text-gray-400">⚽ Goals</span>
-                                <div class="text-2xl font-black text-white my-0.5">${stats.goals || 0}</div>
+                        <div class="grid grid-cols-4 gap-1.5 sm:gap-2">
+                            <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2 text-center">
+                                <span class="text-[9px] font-bold uppercase text-gray-400">⚽ Goals</span>
+                                <div class="text-xl sm:text-2xl font-black text-white my-0.5">${stats.goals || 0}</div>
                             </div>
 
-                            <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2.5 text-center">
-                                <span class="text-[10px] font-bold uppercase text-gray-400">👟 Assists</span>
-                                <div class="text-2xl font-black text-white my-0.5">${stats.assists || 0}</div>
+                            <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2 text-center">
+                                <span class="text-[9px] font-bold uppercase text-gray-400">👟 Assists</span>
+                                <div class="text-xl sm:text-2xl font-black text-white my-0.5">${stats.assists || 0}</div>
                             </div>
 
-                            <div class="bg-[#003C71]/30 border border-blue-500/40 rounded-xl p-2.5 text-center flex flex-col justify-center">
-                                <span class="text-[10px] font-bold uppercase text-blue-200">⭐ Points</span>
-                                <div class="text-2xl font-black text-white my-0.5">${totalPoints}</div>
-                                <span class="text-[9px] text-blue-300">G + A</span>
+                            <div class="bg-[#003C71]/30 border border-blue-500/40 rounded-xl p-2 text-center flex flex-col justify-center">
+                                <span class="text-[9px] font-bold uppercase text-blue-200">⭐ Points</span>
+                                <div class="text-xl sm:text-2xl font-black text-white my-0.5">${totalPoints}</div>
+                            </div>
+
+                            <div class="bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 text-center flex flex-col justify-center">
+                                <span class="text-[9px] font-bold uppercase text-amber-300">🎖️ MOTM</span>
+                                <div class="text-xl sm:text-2xl font-black text-amber-400 my-0.5">${motmAwards}</div>
                             </div>
                         </div>
                     </div>
@@ -1490,7 +1620,6 @@
             openPlayerCard(jersey);
         }
 
-        // Custom Confirm Modal
         let confirmActionCallback = null;
         function openConfirmModal(title, msg, onConfirm) {
             document.getElementById('confirm-title').textContent = title;
@@ -1509,26 +1638,248 @@
             closeConfirmModal();
         });
 
-        // Tab Switching
         function switchTab(tab) {
             const rosterView = document.getElementById('view-roster');
             const trackerView = document.getElementById('view-tracker');
+            const leaderboardView = document.getElementById('view-leaderboard');
             const tabRoster = document.getElementById('tab-roster');
             const tabTracker = document.getElementById('tab-tracker');
+            const tabLeaderboard = document.getElementById('tab-leaderboard');
+
+            [rosterView, trackerView, leaderboardView].forEach(v => v?.classList.add('hidden'));
+            [tabRoster, tabTracker, tabLeaderboard].forEach(t => {
+                if (t) t.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white';
+            });
 
             if (tab === 'roster') {
-                rosterView.classList.remove('hidden');
-                trackerView.classList.add('hidden');
-                tabRoster.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
-                tabTracker.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white';
-            } else {
-                rosterView.classList.add('hidden');
-                trackerView.classList.remove('hidden');
-                tabTracker.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
-                tabRoster.className = 'flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white';
+                rosterView?.classList.remove('hidden');
+                if (tabRoster) tabRoster.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
+            } else if (tab === 'tracker') {
+                trackerView?.classList.remove('hidden');
+                if (tabTracker) tabTracker.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
+            } else if (tab === 'leaderboard') {
+                leaderboardView?.classList.remove('hidden');
+                if (tabLeaderboard) tabLeaderboard.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
+                renderLeaderboard();
             }
         }
 
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard-content');
+            if (!container) return;
+
+            const enriched = rosterPlayers.map(p => {
+                const s = playerStats[p.jersey] || { goals: 0, assists: 0 };
+                return {
+                    jersey: p.jersey,
+                    name: p.name,
+                    position: p.position || 'Player',
+                    goals: s.goals || 0,
+                    assists: s.assists || 0,
+                    points: (s.goals || 0) + (s.assists || 0)
+                };
+            });
+
+            const topScorers = [...enriched].sort((a, b) => b.goals - a.goals || a.jersey - b.jersey);
+            const topAssists = [...enriched].sort((a, b) => b.assists - a.assists || a.jersey - b.jersey);
+            const topPoints = [...enriched].sort((a, b) => b.points - a.points || b.goals - a.goals);
+
+            const motmRankings = rosterPlayers.map(p => ({
+                ...p,
+                awards: getPlayerMOTMCount(p.jersey)
+            })).sort((a, b) => b.awards - a.awards || a.jersey - b.jersey);
+
+            const cleanSheets = (matchState.history || []).filter(m => (m.themScore ?? 1) === 0).length;
+            const goalkeepers = rosterPlayers.filter(p => (p.position || '').toUpperCase().includes('GK'));
+            const defenders = rosterPlayers.filter(p => (p.position || '').toUpperCase().includes('DEFENSE'));
+
+            const highlightEvents = [];
+            (matchState.events || []).forEach(e => {
+                if (e.specialNote && e.scorerJersey) {
+                    const pl = rosterPlayers.find(p => p.jersey === e.scorerJersey);
+                    if (pl) highlightEvents.push({ player: pl.name, jersey: pl.jersey, note: e.specialNote, playType: e.playType });
+                }
+            });
+            (matchState.history || []).forEach(m => {
+                (m.events || []).forEach(e => {
+                    if (e.specialNote && e.scorerJersey) {
+                        const pl = rosterPlayers.find(p => p.jersey === e.scorerJersey);
+                        if (pl) highlightEvents.push({ player: pl.name, jersey: pl.jersey, note: e.specialNote, playType: e.playType });
+                    }
+                });
+            });
+
+            const renderPodiumRow = (player, index, statVal, statLabel, accentClass) => {
+                const medals = ['🥇', '🥈', '🥉'];
+                const badge = medals[index] || `#${index + 1}`;
+                return `
+                    <div onclick="openPlayerCard(${player.jersey})" 
+                         class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 transition cursor-pointer border border-zinc-700/60">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <span class="text-sm font-black w-6 text-center text-gray-300">${badge}</span>
+                            <div class="w-7 h-7 rounded-full bg-[#003C71] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                                #${player.jersey}
+                            </div>
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-white truncate">${player.name}</h4>
+                                <span class="text-[10px] text-gray-400 uppercase">${player.position}</span>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0 pl-2">
+                            <span class="text-base font-black ${accentClass}">${statVal}</span>
+                            <span class="text-[10px] text-gray-400 block font-semibold">${statLabel}</span>
+                        </div>
+                    </div>
+                `;
+            };
+
+            container.innerHTML = `
+                <!-- Golden Boot & Playmaker Side-by-Side -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Golden Boot -->
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
+                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl">⚽</span>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-white">Golden Boot</h3>
+                                    <p class="text-[10px] text-blue-300 font-semibold uppercase tracking-wider">Top Goal Scorers</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-blue-950 border border-blue-600/40 text-blue-300 px-2 py-0.5 rounded-full font-bold">Goals</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${topScorers.slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.goals, 'Goals', 'text-blue-400')).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Playmaker Award -->
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
+                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl">👟</span>
+                                <div>
+                                    <h3 class="text-sm font-extrabold text-white">The Playmaker Award</h3>
+                                    <p class="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">Top Assist Providers</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-emerald-950 border border-emerald-600/40 text-emerald-300 px-2 py-0.5 rounded-full font-bold">Assists</span>
+                        </div>
+                        <div class="space-y-2">
+                            ${topAssists.slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.assists, 'Assists', 'text-emerald-400')).join('')}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Combined MVP Points (Goals + Assists) -->
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
+                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">⭐</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-white">Total Impact (G + A)</h3>
+                                <p class="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">Combined Points Leaders</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-amber-950 border border-amber-600/40 text-amber-300 px-2 py-0.5 rounded-full font-bold">Pts</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${topPoints.slice(0, 6).map((p, i) => renderPodiumRow(p, i, p.points, 'Points', 'text-amber-400')).join('')}
+                    </div>
+                </div>
+
+                <!-- Man of the Match Honors -->
+                <div class="bg-gradient-to-r from-zinc-900 via-amber-950/30 to-zinc-900 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
+                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">🎖️</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-white">Man of the Match Honors</h3>
+                                <p class="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">Locker Room Post-Game Awards</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] bg-amber-950 border border-amber-600/40 text-amber-300 px-2 py-0.5 rounded-full font-bold">Awards</span>
+                    </div>
+                    <div class="space-y-2">
+                        ${motmRankings.filter(p => p.awards > 0).length === 0 
+                            ? `<p class="text-xs text-gray-500 italic py-2 text-center">No Man of the Match awards handed out yet. Pick one in the locker room!</p>`
+                            : motmRankings.filter(p => p.awards > 0).slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.awards, 'Awards', 'text-amber-400')).join('')
+                        }
+                    </div>
+                </div>
+
+                <!-- Defensive Wall & Clean Sheets -->
+                <div class="bg-gradient-to-r from-zinc-900 via-blue-950/40 to-zinc-900 border border-blue-600/30 rounded-2xl p-4 shadow-xl">
+                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">🧤</span>
+                            <div>
+                                <h3 class="text-sm font-extrabold text-white">The Defensive Wall</h3>
+                                <p class="text-[10px] text-blue-200 font-semibold uppercase tracking-wider">Goalkeepers & Backline Shutouts</p>
+                            </div>
+                        </div>
+                        <div class="inline-flex items-center space-x-1.5 bg-blue-900/60 border border-blue-500/50 px-2.5 py-1 rounded-full text-xs font-bold text-white">
+                            <span>🛡️ ${cleanSheets}</span>
+                            <span class="text-[10px] text-blue-200 uppercase font-medium">Clean Sheets</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
+                            <span class="text-[10px] font-bold text-blue-300 uppercase block mb-1.5">🧤 Goalkeepers</span>
+                            <div class="space-y-1.5">
+                                ${goalkeepers.map(g => `
+                                    <div onclick="openPlayerCard(${g.jersey})" class="flex items-center justify-between p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer">
+                                        <span class="font-bold text-white">#${g.jersey} ${g.name}</span>
+                                        <span class="text-[10px] font-semibold text-blue-400">GK</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1.5">🛡️ Backline Stalwarts</span>
+                            <div class="flex flex-wrap gap-1.5">
+                                ${defenders.map(d => `
+                                    <button onclick="openPlayerCard(${d.jersey})" class="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-[11px] font-semibold text-gray-200">
+                                        #${d.jersey} ${d.name.split(' ')[0]}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Highlight Reel -->
+                ${highlightEvents.length > 0 ? `
+                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
+                    <div class="flex items-center space-x-2 pb-2 mb-3 border-b border-zinc-800">
+                        <span class="text-xl">✨</span>
+                        <div>
+                            <h3 class="text-sm font-extrabold text-white">Highlight Reel</h3>
+                            <p class="text-[10px] text-rose-300 font-semibold uppercase tracking-wider">Iconic Plays & Special Finishes</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        ${highlightEvents.slice(0, 6).map(h => `
+                            <div onclick="openPlayerCard(${h.jersey})" class="p-2.5 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 cursor-pointer border border-rose-900/40 flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-white">#${h.jersey} ${h.player}</span>
+                                    <span class="text-[10px] text-gray-400 block">${h.playType || 'Goal'}</span>
+                                </div>
+                                <span class="text-xs font-bold text-rose-300 bg-rose-950/80 border border-rose-700/60 px-2 py-0.5 rounded-lg italic">
+                                    "${h.note}"
+                                </span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+            `;
+        }
+
+        window.checkFamilyPass = checkFamilyPass;
+        window.lockFamilyPortal = lockFamilyPortal;
+        window.renderLeaderboard = renderLeaderboard;
         window.switchTab = switchTab;
         window.openPlayerCard = openPlayerCard;
         window.closePlayerModal = closePlayerModal;
@@ -1553,16 +1904,17 @@
         window.confirmRockiesGoal = confirmRockiesGoal;
         window.recordOpponentGoal = recordOpponentGoal;
         window.deleteMatchEvent = deleteMatchEvent;
+        window.setMatchMOTM = setMatchMOTM;
         window.openEditMatchModal = openEditMatchModal;
         window.closeEditMatchModal = closeEditMatchModal;
         window.saveEditedMatch = saveEditedMatch;
         window.deleteArchivedMatchConfirm = deleteArchivedMatchConfirm;
         window.resetAllSeasonStatsConfirm = resetAllSeasonStatsConfirm;
         window.closeConfirmModal = closeConfirmModal;
+        window.handleHeaderBgError = handleHeaderBgError;
 
         // Startup lifecycle
         document.addEventListener('DOMContentLoaded', () => {
-            // Check if family is already authenticated
             if (localStorage.getItem(FAMILY_AUTH_KEY) === 'true') {
                 unlockFamilyPortal();
             } else {
