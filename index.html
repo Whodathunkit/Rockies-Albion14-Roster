@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Block search engines for team privacy -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Rockies Albion 14 | Team Roster & Live Match Tracker</title>
+    <title>Rockies Albion 14 | Team Portal & Live Match Tracker</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -64,7 +64,6 @@
     <!-- FAMILY ACCESS LOCK SCREEN (Shown until unlocked) -->
     <div id="family-gatekeeper-overlay" class="fixed inset-0 z-[100] bg-[#0c0d12] flex items-center justify-center p-4">
         <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-blue-600/40 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl relative overflow-hidden">
-            <!-- Subtle blue glow backdrop -->
             <div class="absolute -top-16 -left-16 w-32 h-32 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
             <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -124,7 +123,6 @@
 
             <!-- Header Content -->
             <div class="relative z-10">
-                <!-- Team Logo -->
                 <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" 
                      alt="Calgary Rockies FC Logo" 
                      class="team-logo mx-auto mb-2 drop-shadow-xl"
@@ -161,14 +159,70 @@
             </div>
         </header>
 
-        <!-- VIEW 1: TEAM ROSTER (Single-Column Mobile Optimized) -->
+        <!-- VIEW 1: TEAM ROSTER -->
         <main id="view-roster" class="space-y-3">
+            <!-- TEAM OFFICIALS & CONTACTS -->
+            <div class="bg-gradient-to-r from-zinc-900 via-blue-950/25 to-zinc-900 border border-blue-600/30 rounded-2xl p-3.5 sm:p-4 shadow-xl">
+                <div class="flex items-center justify-between pb-2 mb-3 border-b border-zinc-800">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-base">📋</span>
+                        <div>
+                            <h3 class="text-xs sm:text-sm font-extrabold text-white">Team Officials & Staff</h3>
+                            <p class="text-[10px] text-blue-300 font-semibold">Contacts for coaching & team operations</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] bg-blue-950 border border-blue-600/40 text-blue-300 px-2 py-0.5 rounded-full font-bold">Rockies Albion 14</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <!-- Head Coach Kevin -->
+                    <div class="bg-zinc-800/80 border border-zinc-700/80 rounded-xl p-3 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/40 px-2 py-0.5 rounded-md">Head Coach</span>
+                                <span class="text-xs">⚽</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white">Kevin</h4>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-zinc-700/60 flex flex-wrap gap-1.5">
+                            <a href="tel:5874320709" 
+                               class="inline-flex items-center space-x-1.5 bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/50 px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-200 transition active:scale-95 shadow-sm">
+                                <span>📞</span>
+                                <span>587-432-0709</span>
+                            </a>
+                            <a href="mailto:kevin.diazlizama@gmail.com" 
+                               class="inline-flex items-center space-x-1.5 bg-zinc-900/90 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-200 transition active:scale-95">
+                                <span>✉️</span>
+                                <span class="truncate max-w-[145px] sm:max-w-none">kevin.diazlizama@gmail.com</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Team Manager Tyler Martens -->
+                    <div class="bg-zinc-800/80 border border-zinc-700/80 rounded-xl p-3 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400 bg-amber-950/70 border border-amber-500/40 px-2 py-0.5 rounded-md">Team Manager</span>
+                                <span class="text-xs">📋</span>
+                            </div>
+                            <h4 class="text-sm font-bold text-white">Tyler Martens</h4>
+                        </div>
+                        <div class="mt-2.5 pt-2 border-t border-zinc-700/60 flex flex-wrap gap-1.5">
+                            <a href="mailto:tyler.martens@gmail.com" 
+                               class="inline-flex items-center space-x-1.5 bg-zinc-900/90 hover:bg-zinc-700 border border-zinc-700 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-gray-200 transition active:scale-95">
+                                <span>✉️</span>
+                                <span class="truncate max-w-[170px] sm:max-w-none">tyler.martens@gmail.com</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="flex items-center justify-between px-1 mb-1">
                 <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400">Team Players (Tap card for video & family)</h2>
                 <span id="player-count-badge" class="text-[11px] bg-zinc-800 text-gray-300 px-2 py-0.5 rounded-md font-semibold">12 Players</span>
             </div>
             
-            <!-- Cards list container -->
             <div id="roster-list" class="space-y-2.5">
                 <!-- Dynamic Player cards injected via JS -->
             </div>
@@ -176,7 +230,6 @@
 
         <!-- VIEW 2: LIVE MATCH TRACKER -->
         <section id="view-tracker" class="hidden space-y-4 sm:space-y-5">
-            
             <!-- Scoreboard Card -->
             <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-2xl">
                 <!-- Period & Opponent Row -->
@@ -273,7 +326,7 @@
                 </div>
             </div>
 
-            <!-- Man of the Match Locker Room Card -->
+            <!-- Man of the Match Card -->
             <div id="card-motm-container" class="bg-gradient-to-r from-amber-950/30 via-zinc-900 to-amber-950/30 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
                 <!-- Injected dynamically via renderMatchTracker() -->
             </div>
@@ -314,7 +367,6 @@
 
         <!-- VIEW 3: SEASON LEADERBOARDS & ACCOLADES -->
         <section id="view-leaderboard" class="hidden space-y-4">
-            <!-- Dynamic Leaderboard Content rendered by renderLeaderboard() -->
             <div id="leaderboard-content" class="space-y-4">
                 <!-- Injected via JavaScript -->
             </div>
@@ -329,8 +381,9 @@
         </footer>
     </div>
 
-    <!-- Hidden file input for Family Photo mobile camera roll upload -->
+    <!-- Hidden file inputs for Camera Roll uploads -->
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
+    <input type="file" id="video-upload-file-input" accept="video/*" class="hidden" onchange="processVideoUploadFile(event)" />
 
     <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
@@ -405,14 +458,20 @@
                     </div>
                 </div>
 
-                <!-- 6. Video Clip (Optional or Added Later) -->
+                <!-- 6. Video Clip (Direct Upload or Link) -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">6. Video Clip Path / URL</label>
-                        <span class="text-[10px] text-gray-500">Optional (Can add later)</span>
+                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">6. Video Clip</label>
+                        <span class="text-[10px] text-gray-500">Optional</span>
                     </div>
-                    <input id="input-goal-video-url" type="text" placeholder="e.g. videos/goals/05-elijah-strike.mp4 or link" 
-                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    <div class="space-y-1.5">
+                        <button type="button" onclick="triggerVideoUpload('goal-modal')" 
+                                class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/50 rounded-lg text-xs font-bold text-sky-200 flex items-center justify-center space-x-1.5 transition">
+                            <span>📹 Pick / Record Video from Phone</span>
+                        </button>
+                        <input id="input-goal-video-url" type="text" placeholder="Or paste link / videos/05-elijah-strike.mp4" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    </div>
                 </div>
             </div>
 
@@ -440,13 +499,11 @@
             </div>
 
             <div class="mt-3 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
-                <!-- 1. Player -->
                 <div>
                     <label class="block text-[11px] font-bold text-emerald-300 uppercase tracking-wider mb-1">1. Defender / Keeper *</label>
                     <select id="select-defensive-player" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs sm:text-sm font-medium focus:border-emerald-500"></select>
                 </div>
 
-                <!-- 2. Action Type -->
                 <div>
                     <label class="block text-[11px] font-bold text-blue-300 uppercase tracking-wider mb-1">2. Defensive Action *</label>
                     <select id="select-defensive-action" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs sm:text-sm font-medium focus:border-blue-500">
@@ -459,24 +516,28 @@
                     </select>
                 </div>
 
-                <!-- 3. Note / Description -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="text-[11px] font-bold text-amber-300 uppercase tracking-wider">3. Description / Highlight Note</label>
                         <span class="text-[10px] text-gray-500">Optional</span>
                     </div>
-                    <input id="input-defensive-note" type="text" placeholder="e.g. Cleared right off the goal line with open net!" 
+                    <input id="input-defensive-note" type="text" placeholder="e.g. Cleared right off the line with open net!" 
                            class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 placeholder-zinc-500" />
                 </div>
 
-                <!-- 4. Video Clip URL/Path -->
                 <div>
                     <div class="flex items-center justify-between mb-1">
-                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">4. Video Clip Path / URL</label>
-                        <span class="text-[10px] text-gray-500">Optional (Can add later)</span>
+                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">4. Video Clip</label>
+                        <span class="text-[10px] text-gray-500">Optional</span>
                     </div>
-                    <input id="input-defensive-video-url" type="text" placeholder="e.g. videos/defense/04-logan-clearance.mp4 or link" 
-                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    <div class="space-y-1.5">
+                        <button type="button" onclick="triggerVideoUpload('defensive-modal')" 
+                                class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/50 rounded-lg text-xs font-bold text-sky-200 flex items-center justify-center space-x-1.5 transition">
+                            <span>📹 Pick / Record Video from Phone</span>
+                        </button>
+                        <input id="input-defensive-video-url" type="text" placeholder="Or paste link / videos/04-logan-clearance.mp4" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    </div>
                 </div>
             </div>
 
@@ -506,25 +567,25 @@
             <input type="hidden" id="edit-event-id" />
 
             <div class="mt-3 space-y-3">
-                <!-- Event Summary Display -->
                 <div class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-2.5">
                     <span class="text-[10px] text-gray-400 uppercase font-bold block mb-0.5">Event</span>
                     <p id="edit-event-summary" class="text-xs font-semibold text-white"></p>
                 </div>
 
-                <!-- Video Link Input -->
                 <div>
                     <label class="block text-[11px] font-bold text-sky-300 uppercase tracking-wider mb-1">
-                        🎬 Video Clip Path or Web Link (.mp4 / link)
+                        🎬 Video Clip (Upload from Phone or Link)
                     </label>
-                    <input id="edit-event-video-url" type="text" placeholder="e.g. videos/05-elijah-goal.mp4 or web link" 
-                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
-                    <p class="text-[10px] text-gray-400 mt-1">
-                        Upload to <code class="text-sky-300">videos/</code> folder in GitHub or paste a link.
-                    </p>
+                    <div class="space-y-1.5">
+                        <button type="button" onclick="triggerVideoUpload('edit-event')" 
+                                class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/50 rounded-lg text-xs font-bold text-sky-200 flex items-center justify-center space-x-1.5 transition">
+                            <span>📹 Pick / Record Video from Phone</span>
+                        </button>
+                        <input id="edit-event-video-url" type="text" placeholder="Or paste link / videos/05-elijah-goal.mp4" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    </div>
                 </div>
 
-                <!-- Highlight / Special Note -->
                 <div>
                     <label class="block text-[11px] font-bold text-rose-300 uppercase tracking-wider mb-1">
                         Highlight Tag / Description
@@ -561,6 +622,29 @@
         </div>
     </div>
 
+    <!-- MODAL 1E: VIDEO UPLOAD PROGRESS MODAL -->
+    <div id="video-upload-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-sky-500/50 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-sky-950 border border-sky-500/50 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3">
+                ☁️
+            </div>
+            <h3 class="text-sm font-extrabold text-white">Uploading Video to Cloud</h3>
+            <p id="video-upload-filename" class="text-[11px] text-gray-400 mt-1 truncate">Processing file...</p>
+
+            <div class="w-full bg-zinc-800 rounded-full h-3 mt-4 overflow-hidden border border-zinc-700">
+                <div id="video-upload-bar" class="bg-sky-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-bold text-gray-300 mt-2 px-1">
+                <span id="video-upload-status">Uploading...</span>
+                <span id="video-upload-percent" class="text-sky-400">0%</span>
+            </div>
+
+            <button id="video-upload-cancel-btn" onclick="cancelVideoUpload()" class="mt-4 px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-400 hover:text-white text-xs font-semibold">
+                Cancel Upload
+            </button>
+        </div>
+    </div>
+
     <!-- MODAL 2: COACH & MANAGER PIN UNLOCK -->
     <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-xs w-full p-5 shadow-2xl text-center">
@@ -583,7 +667,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: PLAYER CARD WITH VIDEO HIGHLIGHT & FAMILY SECTION -->
+    <!-- MODAL 3: PLAYER CARD WITH VIDEO & FAMILY -->
     <div id="player-modal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div id="player-modal-card" class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] overflow-y-auto">
             <!-- Dynamic player contents injected via openPlayerCard() -->
@@ -732,6 +816,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         // Firebase configuration keys
         const firebaseConfig = {
@@ -746,7 +831,9 @@
 
         let db = null;
         let auth = null;
+        let storage = null;
         let isCloudActive = false;
+        let currentUploadTask = null;
 
         // TEAM FAMILY PASSCODE GATE
         const VALID_FAMILY_PASSCODES = ['albion14', '1414', 'rockies14'];
@@ -1175,6 +1262,7 @@
             const scorerSelect = document.getElementById('select-scorer');
             const assistSelect = document.getElementById('select-assist');
             const specialInput = document.getElementById('input-special-style');
+            const videoInput = document.getElementById('input-goal-video-url');
 
             if (scorerSelect) {
                 scorerSelect.innerHTML = rosterPlayers.map(p => `
@@ -1190,6 +1278,7 @@
             }
 
             if (specialInput) specialInput.value = '';
+            if (videoInput) videoInput.value = '';
             document.getElementById('goal-modal').classList.remove('hidden');
         }
 
@@ -1258,7 +1347,6 @@
             const videoInput = document.getElementById('input-defensive-video-url');
 
             if (playerSelect) {
-                // Prioritize defenders and goalkeepers at top of list
                 const sorted = [...rosterPlayers].sort((a, b) => {
                     const aDef = (a.position || '').toUpperCase().includes('DEF') || (a.position || '').toUpperCase().includes('GK');
                     const bDef = (b.position || '').toUpperCase().includes('DEF') || (b.position || '').toUpperCase().includes('GK');
@@ -1356,7 +1444,7 @@
             if (subtitleEl) subtitleEl.textContent = subtitle || '';
 
             if (container) {
-                const isDirectVideo = videoUrl.match(/\.(mp4|webm|ogg|mov)$/i) || videoUrl.includes('videos/');
+                const isDirectVideo = videoUrl.match(/\.(mp4|webm|ogg|mov)$/i) || videoUrl.includes('videos/') || videoUrl.includes('firebasestorage');
                 if (isDirectVideo) {
                     container.innerHTML = `
                         <video src="${videoUrl}" controls autoplay playsinline class="max-w-full max-h-[60vh] object-contain">
@@ -1679,7 +1767,6 @@
                     if (idx === -1) return;
                     const match = matchState.history[idx];
 
-                    // Rollback player stats
                     (match.events || []).forEach(ev => {
                         if (ev.type === 'us') {
                             if (ev.scorerJersey && playerStats[ev.scorerJersey]) {
@@ -1731,6 +1818,7 @@
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
+                storage = getStorage(app);
 
                 await signInAnonymously(auth);
                 isCloudActive = true;
@@ -1827,6 +1915,106 @@
             }
         }
 
+        let activeVideoUploadTarget = null; // 'player', 'goal-modal', 'defensive-modal', 'edit-event'
+        let activeVideoUploadContextId = null;
+
+        function triggerVideoUpload(targetType, contextId = null) {
+            if (!isCloudActive || !storage) {
+                openConfirmModal("Cloud Offline", "Firebase Cloud Storage is not connected. Check internet connection.", () => {});
+                return;
+            }
+            activeVideoUploadTarget = targetType;
+            activeVideoUploadContextId = contextId;
+
+            const fileInput = document.getElementById('video-upload-file-input');
+            if (fileInput) {
+                fileInput.value = '';
+                fileInput.click();
+            }
+        }
+
+        function cancelVideoUpload() {
+            if (currentUploadTask) {
+                currentUploadTask.cancel();
+                currentUploadTask = null;
+            }
+            document.getElementById('video-upload-modal')?.classList.add('hidden');
+        }
+
+        function processVideoUploadFile(event) {
+            const file = event.target.files?.[0];
+            if (!file || !storage) return;
+
+            const uploadModal = document.getElementById('video-upload-modal');
+            const uploadBar = document.getElementById('video-upload-bar');
+            const uploadPercent = document.getElementById('video-upload-percent');
+            const uploadFilename = document.getElementById('video-upload-filename');
+            const uploadStatus = document.getElementById('video-upload-status');
+
+            if (uploadFilename) uploadFilename.textContent = file.name;
+            if (uploadBar) uploadBar.style.width = '0%';
+            if (uploadPercent) uploadPercent.textContent = '0%';
+            if (uploadStatus) uploadStatus.textContent = 'Uploading...';
+            if (uploadModal) uploadModal.classList.remove('hidden');
+
+            const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const storagePath = `team_videos/${Date.now()}_${cleanName}`;
+            const videoRef = ref(storage, storagePath);
+
+            currentUploadTask = uploadBytesResumable(videoRef, file);
+
+            currentUploadTask.on('state_changed',
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    const pct = Math.round(progress);
+                    if (uploadBar) uploadBar.style.width = `${pct}%`;
+                    if (uploadPercent) uploadPercent.textContent = `${pct}%`;
+                },
+                (error) => {
+                    console.error("Firebase Storage Upload Error:", error);
+                    if (uploadStatus) uploadStatus.textContent = 'Upload failed.';
+                    openConfirmModal("Upload Error", "Video upload failed. Check your Firebase Storage test rules or connection.", () => {});
+                    setTimeout(() => { if (uploadModal) uploadModal.classList.add('hidden'); }, 1500);
+                },
+                async () => {
+                    try {
+                        const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
+                        if (uploadStatus) uploadStatus.textContent = 'Complete! ✨';
+                        if (uploadBar) uploadBar.style.width = '100%';
+                        if (uploadPercent) uploadPercent.textContent = '100%';
+
+                        // Route to appropriate input or state
+                        if (activeVideoUploadTarget === 'player') {
+                            const jersey = activeVideoUploadContextId || activeModalJersey;
+                            if (jersey && playerStats[jersey]) {
+                                playerStats[jersey].highlightUrl = downloadUrl;
+                                saveStatsToCloud();
+                                openPlayerCard(jersey);
+                                displayRoster();
+                            }
+                        } else if (activeVideoUploadTarget === 'goal-modal') {
+                            const input = document.getElementById('input-goal-video-url');
+                            if (input) input.value = downloadUrl;
+                        } else if (activeVideoUploadTarget === 'defensive-modal') {
+                            const input = document.getElementById('input-defensive-video-url');
+                            if (input) input.value = downloadUrl;
+                        } else if (activeVideoUploadTarget === 'edit-event') {
+                            const input = document.getElementById('edit-event-video-url');
+                            if (input) input.value = downloadUrl;
+                        }
+
+                        setTimeout(() => {
+                            if (uploadModal) uploadModal.classList.add('hidden');
+                        }, 800);
+
+                    } catch (urlErr) {
+                        console.error("Error retrieving download URL:", urlErr);
+                        if (uploadModal) uploadModal.classList.add('hidden');
+                    }
+                }
+            );
+        }
+
         function displayRoster() {
             const listEl = document.getElementById('roster-list');
             if (!listEl) return;
@@ -1858,7 +2046,6 @@
                             </div>
                         </div>
 
-                        <!-- Stats summary chip -->
                         <div class="flex items-center space-x-1.5 flex-shrink-0 bg-black/50 border border-zinc-800 px-2.5 py-1.5 rounded-lg text-center">
                             <div>
                                 <span class="text-[9px] text-gray-400 block font-bold">G</span>
@@ -1898,7 +2085,7 @@
 
             let mediaBannerHTML = '';
             if (stats.highlightUrl) {
-                const isVideo = stats.highlightUrl.match(/\.(mp4|webm|ogg|mov)$/i) || stats.highlightUrl.includes('videos/');
+                const isVideo = stats.highlightUrl.match(/\.(mp4|webm|ogg|mov)$/i) || stats.highlightUrl.includes('videos/') || stats.highlightUrl.includes('firebasestorage');
                 if (isVideo) {
                     mediaBannerHTML = `<video src="${stats.highlightUrl}" autoplay loop muted playsinline class="w-full h-44 sm:h-52 object-cover bg-black"></video>`;
                 } else {
@@ -1909,7 +2096,7 @@
                     <div class="w-full h-36 sm:h-40 bg-gradient-to-br from-[#003C71] to-[#001830] flex flex-col items-center justify-center p-4 text-center">
                         <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies Logo" class="h-10 w-auto mb-1 drop-shadow" style="max-height: 40px;" />
                         <span class="text-[10px] font-bold uppercase tracking-widest text-blue-200">🎥 Player Intro</span>
-                        <p class="text-[10px] text-gray-300 mt-0.5">Upload a video to videos/ folder in GitHub</p>
+                        <p class="text-[10px] text-gray-300 mt-0.5">Record or upload a 5-10s clip!</p>
                     </div>
                 `;
             }
@@ -1983,7 +2170,6 @@
                         </div>
 
                         <div class="flex items-center gap-3">
-                            <!-- Photo Thumbnail -->
                             <div class="flex-shrink-0">
                                 ${hasFamilyPhoto ? `
                                     <div onclick="openFamilyPhotoLightbox('${stats.familyPhoto}', '${player.name}\\'s Family', '${displayParents}', '${displaySiblings}')"
@@ -2002,7 +2188,6 @@
                                 `}
                             </div>
 
-                            <!-- Family Details -->
                             <div class="min-w-0 flex-1 space-y-1">
                                 <div>
                                     <span class="text-[9px] font-bold uppercase text-emerald-400 block tracking-wider">Parents / Guardians</span>
@@ -2052,17 +2237,23 @@
                     </div>
 
                     ${isCoachMode ? `
-                    <div class="pt-2 border-t border-zinc-800">
-                        <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">
-                            🎬 Video Path or URL (.mp4)
+                    <div class="pt-2 border-t border-zinc-800 space-y-2">
+                        <label class="block text-[10px] font-bold uppercase text-gray-400">
+                            🎬 Video Intro (Upload from Phone or Set Link)
                         </label>
-                        <div class="flex space-x-1.5">
-                            <input id="highlight-url-input" type="text" value="${stats.highlightUrl || ''}" 
-                                placeholder="videos/04-logan.mp4"
-                                class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
-                            <button onclick="savePlayerHighlight(${player.jersey})" class="px-3 py-1.5 bg-[#003C71] hover:bg-blue-600 text-white font-bold rounded-lg text-xs">
-                                Set
+                        <div class="space-y-1.5">
+                            <button type="button" onclick="triggerVideoUpload('player', ${player.jersey})" 
+                                    class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/50 rounded-xl text-xs font-bold text-sky-200 flex items-center justify-center space-x-1.5 transition">
+                                <span>📹 Pick / Record Video from Phone</span>
                             </button>
+                            <div class="flex space-x-1.5">
+                                <input id="highlight-url-input" type="text" value="${stats.highlightUrl || ''}" 
+                                    placeholder="Or paste link / videos/04-logan.mp4"
+                                    class="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" />
+                                <button onclick="savePlayerHighlight(${player.jersey})" class="px-3 py-1.5 bg-[#003C71] hover:bg-blue-600 text-white font-bold rounded-lg text-xs">
+                                    Set
+                                </button>
+                            </div>
                         </div>
                     </div>` : ''}
                 </div>
@@ -2536,6 +2727,10 @@
         window.saveEditedEvent = saveEditedEvent;
         window.openVideoClipModal = openVideoClipModal;
         window.closeVideoClipModal = closeVideoClipModal;
+
+        window.triggerVideoUpload = triggerVideoUpload;
+        window.cancelVideoUpload = cancelVideoUpload;
+        window.processVideoUploadFile = processVideoUploadFile;
 
         window.checkFamilyPass = checkFamilyPass;
         window.lockFamilyPortal = lockFamilyPortal;
