@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rockies FC14 Team Roster</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom colors from the logo */
+        .bg-rockies-blue { background-color: #003C71; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="bg-rockies-blue text-white text-center mb-8 md:mb-12 rounded-xl shadow-lg p-6">
+            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Calgary Rockies FC Logo" class="mx-auto h-24 w-auto mb-4">
+            <h1 class="text-4xl md:text-5xl font-bold">Rockies FC14</h1>
+            <p class="text-lg md:text-xl text-gray-200 mt-2">Team Roster</p>
+        </header>
+
+        <!-- Roster cards will be injected here -->
+        <main id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+        </main>
+    </div>
+
+    <script>
+        // --- ROSTER DATA ---
+        // Data provided directly by you for 100% accuracy.
+        const csvData = `Jersey Number,Player Name,Parent 1,Parent 2,Position
+3,Nael Salazar Simon,Paulina,Armando,GK/Winger
+5,Elijah Amoako,Franklin,Linda,Striker
+8,Wesley Asare,Collins,Mayelin,Midfield/Winger
+9,Owen Saunders,Leigh,Graeme,Winger/Striker
+11,Tristan D'Mello,Melvin,Charlotte,Winger/Striker
+16,Cole Robblee,Alaina,Ian,Winger
+24,Logan Martens,Tyler,Rosie,Defense
+28,Andrew Tang,Norm,Jessica,Defense/Midfield
+46,Chukwukadibia Odumodu,Bukas,Ijeoma,Midfield/Defense
+39,Kaleb Habtom,Habtom,,Midfield/Winger
+62,Elnathan Udoh,Emmanuel,Dépéjú,Defense/Midfield
+4,Henry Thomas,Steve,Shauna,Winger
+10,Danylo Loiko,Yuliia,Dmytro,Striker
+14,Haaris Nathoo,Rizwan,Rabea,GK
+`;
+
+        /**
+         * Parses the raw CSV string data into an array of player objects.
+         * @param {string} csvString - The string of data pasted from the CSV file.
+         * @returns {Array<Object>} An array of player objects.
+         */
+        function parseCSV(csvString) {
+            const lines = csvString.trim().split('\n');
+            if (lines.length < 2) {
+                return []; // Not enough data to parse
+            }
+
+            const headers = lines[0].split(',').map(h => h.trim());
+            const roster = [];
+
+            const jerseyIndex = headers.indexOf('Jersey Number');
+            const nameIndex = headers.indexOf('Player Name');
+            const parent1Index = headers.indexOf('Parent 1');
+            const parent2Index = headers.indexOf('Parent 2');
+            const positionIndex = headers.indexOf('Position');
+            
+            // Exit if essential headers are missing
+            if (jerseyIndex === -1 || nameIndex === -1 || parent1Index === -1) {
+                console.error("CSV headers are missing or incorrect. Required: 'Jersey Number', 'Player Name', 'Parent 1'");
+                document.getElementById('roster-grid').innerHTML = '<p class="text-center text-red-500 col-span-full">Error: Could not parse roster data due to missing columns.</p>';
+                return [];
+            }
+
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                if (values.length < headers.length - 2) continue; // Basic check for malformed lines
+
+                const jersey = parseInt(values[jerseyIndex], 10);
+                const name = (values[nameIndex] || '').trim();
+                const parent1 = (values[parent1Index] || '').trim();
+                const parent2 = (values[parent2Index] || '').trim();
+                const position = (values[positionIndex] || '').trim();
+
+                let parents = parent1;
+                if (parent1 && parent2) {
+                    parents = `${parent1} & ${parent2}`;
+                } else if (parent2) {
+                    parents = parent2;
+                }
+
+                if (name && !isNaN(jersey)) { // Ensure it's a valid player line
+                    roster.push({ jersey, name, position, parents });
+                }
+            }
+            return roster;
+        }
+
+        // Function to generate and display roster cards
+        function displayRoster() {
+            const rosterGrid = document.getElementById('roster-grid');
+            if (!rosterGrid) return;
+            
+            const rosterData = parseCSV(csvData);
+
+            // Sort players by jersey number
+            const sortedRoster = rosterData.sort((a, b) => a.jersey - b.jersey);
+
+            let rosterHTML = '';
+            sortedRoster.forEach(player => {
+                const position = player.position || 'N/A';
+                rosterHTML += `
+                    <div class="bg-white rounded-xl shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out">
+                        <div class="p-6">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-grow pr-4">
+                                    <h2 class="text-2xl font-bold text-gray-800">${player.name}</h2>
+                                    <p class="text-sm font-medium text-gray-500 uppercase tracking-wide mt-1">${position}</p>
+                                </div>
+                                <div class="flex-shrink-0 w-14 h-14 flex items-center justify-center bg-rockies-blue rounded-full">
+                                    <span class="text-2xl font-bold text-white">${player.jersey}</span>
+                                </div>
+                            </div>
+                            <div class="mt-4 pt-4 border-t border-gray-200">
+                                <div class="flex items-center text-gray-600">
+                                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                    <span class="text-md">${player.parents || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            rosterGrid.innerHTML = rosterHTML;
+        }
+
+        // Display the roster when the page loads
+        document.addEventListener('DOMContentLoaded', displayRoster);
+    </script>
+</body>
+</html>
+
+
+
+
