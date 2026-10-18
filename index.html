@@ -66,36 +66,49 @@
     <div class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
 
         <header class="bg-gradient-to-b from-[#003C71] to-[#002244] text-white text-center mb-6 rounded-2xl shadow-2xl p-5 sm:p-6 border border-blue-600/40 relative overflow-hidden">
-            <!-- Team Logo with strict maximum sizing -->
-            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" 
-                 alt="Calgary Rockies FC Logo" 
-                 class="team-logo mx-auto mb-2 drop-shadow-lg"
-                 style="max-height: 80px;" />
-            
-            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">Rockies Albion 14</h1>
-            <p class="text-xs sm:text-sm text-blue-200 mt-0.5 font-medium">Team Roster & Live Match Tracker</p>
-
-            <!-- Status Pill + Coach Access Gate -->
-            <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
-                <div id="cloud-status-badge" class="inline-flex items-center space-x-1.5 bg-black/60 border border-white/15 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-sm">
-                    <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span id="cloud-status-text" class="text-gray-200">Connecting...</span>
-                </div>
-
-                <button id="coach-mode-toggle" onclick="handleCoachToggle()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1 rounded-full text-[11px] font-bold text-gray-300 hover:text-white transition shadow backdrop-blur-sm">
-                    <span id="coach-toggle-icon">🔒</span>
-                    <span id="coach-toggle-label">Spectator Mode</span>
-                </button>
+            <!-- Background Team Photo with Gradient Overlay -->
+            <div class="absolute inset-0 z-0 pointer-events-none">
+                <img id="team-header-bg" 
+                     src="videos/albion%2014%20team%20pic.jpg" 
+                     alt="Rockies Albion 14 Team Photo"
+                     onerror="if (!this.dataset.tried) { this.dataset.tried='1'; this.src='videos/albion%2014%20team%20pic.png'; } else if (this.dataset.tried==='1') { this.dataset.tried='2'; this.src='videos/albion%2014%20team%20pic.jpeg'; } else if (this.dataset.tried==='2') { this.dataset.tried='3'; this.src='videos/albion%2014%20team%20pic'; }"
+                     class="w-full h-full object-cover opacity-30 filter blur-[0.4px] scale-105" />
+                <div class="absolute inset-0 bg-gradient-to-b from-[#003C71]/80 via-[#002244]/85 to-[#001830]/95"></div>
             </div>
 
-            <!-- Navigation Tabs -->
-            <div class="mt-5 inline-flex bg-black/50 p-1 rounded-xl border border-white/10 w-full sm:w-auto">
-                <button id="tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow">
-                    👥 Team Roster
-                </button>
-                <button id="tab-tracker" onclick="switchTab('tracker')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
-                    ⏱️ Live Tracker
-                </button>
+            <!-- Header Content (Elevated with relative z-10 for sharp contrast & clickability) -->
+            <div class="relative z-10">
+                <!-- Team Logo with strict maximum sizing -->
+                <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" 
+                     alt="Calgary Rockies FC Logo" 
+                     class="team-logo mx-auto mb-2 drop-shadow-xl"
+                     style="max-height: 80px;" />
+                
+                <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight drop-shadow-md">Rockies Albion 14</h1>
+                <p class="text-xs sm:text-sm text-blue-200 mt-0.5 font-medium drop-shadow">Team Roster & Live Match Tracker</p>
+
+                <!-- Status Pill + Coach Access Gate -->
+                <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
+                    <div id="cloud-status-badge" class="inline-flex items-center space-x-1.5 bg-black/60 border border-white/15 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-sm">
+                        <span id="cloud-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                        <span id="cloud-status-text" class="text-gray-200">Connecting...</span>
+                    </div>
+
+                    <button id="coach-mode-toggle" onclick="handleCoachToggle()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1 rounded-full text-[11px] font-bold text-gray-300 hover:text-white transition shadow backdrop-blur-sm">
+                        <span id="coach-toggle-icon">🔒</span>
+                        <span id="coach-toggle-label">Spectator Mode</span>
+                    </button>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="mt-5 inline-flex bg-black/50 p-1 rounded-xl border border-white/10 w-full sm:w-auto">
+                    <button id="tab-roster" onclick="switchTab('roster')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow">
+                        👥 Team Roster
+                    </button>
+                    <button id="tab-tracker" onclick="switchTab('tracker')" class="flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
+                        ⏱️ Live Tracker
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -336,7 +349,7 @@
             <p class="text-[11px] text-gray-400 mt-0.5 mb-4">Enter PIN to unlock match tracking controls.</p>
 
             <input id="coach-pin-input" type="password" inputmode="numeric" maxlength="6"
-                   placeholder="PIN" 
+                   placeholder="PIN (Default: 1414)" 
                    onkeydown="if(event.key === 'Enter') checkCoachPin()"
                    class="w-full bg-zinc-800 border border-zinc-700 text-center tracking-widest text-lg font-bold rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-zinc-500" />
             <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-semibold mt-1">Incorrect PIN</p>
