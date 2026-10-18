@@ -237,9 +237,12 @@
                             <h3 class="text-xs sm:text-sm font-bold text-blue-200 uppercase truncate">Rockies Albion</h3>
                             <div id="score-us" class="text-4xl sm:text-5xl font-black text-white my-1 sm:my-2">0</div>
                         </div>
-                        <div id="box-us-coach-action" class="hidden">
+                        <div id="box-us-coach-action" class="hidden space-y-1.5">
                             <button onclick="openGoalModal()" class="w-full py-2.5 px-2 bg-[#003C71] hover:bg-blue-700 text-white font-bold rounded-lg shadow text-xs sm:text-sm transition active:scale-95">
                                 ⚽ + Record Goal
+                            </button>
+                            <button onclick="openDefensiveModal()" class="w-full py-2 px-2 bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/50 text-emerald-200 font-bold rounded-lg shadow text-xs transition active:scale-95 flex items-center justify-center space-x-1.5">
+                                <span>🛡️ + Defensive Stop / Clearance</span>
                             </button>
                         </div>
                         <div id="box-us-viewer-action" class="block">
@@ -398,6 +401,16 @@
                         <button type="button" onclick="setSpecialTag('Rocket 🚀')" class="px-2 py-0.5 bg-zinc-800 hover:bg-zinc-700 rounded text-[10px] text-gray-300 border border-zinc-700">🚀 Rocket</button>
                     </div>
                 </div>
+
+                <!-- 6. Video Clip (Optional or Added Later) -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">6. Video Clip Path / URL</label>
+                        <span class="text-[10px] text-gray-500">Optional (Can add later)</span>
+                    </div>
+                    <input id="input-goal-video-url" type="text" placeholder="e.g. videos/goals/05-elijah-strike.mp4 or link" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                </div>
             </div>
 
             <div class="mt-4 flex justify-end space-x-2 pt-3 border-t border-zinc-800">
@@ -405,6 +418,142 @@
                 <button onclick="confirmRockiesGoal()" class="px-4 py-2 rounded-lg bg-[#003C71] hover:bg-blue-600 text-white text-xs font-bold shadow">
                     ⚽ Save Goal
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1B: RECORD DEFENSIVE BIG PLAY / CLEARANCE -->
+    <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-zinc-900 border border-emerald-600/40 rounded-2xl max-w-md w-full p-5 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🛡️</span>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Record Defensive Big Play</h3>
+                        <p class="text-[11px] text-emerald-300">Goal-line clearances, blocks & key stops</p>
+                    </div>
+                </div>
+                <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+
+            <div class="mt-3 space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+                <!-- 1. Player -->
+                <div>
+                    <label class="block text-[11px] font-bold text-emerald-300 uppercase tracking-wider mb-1">1. Defender / Keeper *</label>
+                    <select id="select-defensive-player" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs sm:text-sm font-medium focus:border-emerald-500"></select>
+                </div>
+
+                <!-- 2. Action Type -->
+                <div>
+                    <label class="block text-[11px] font-bold text-blue-300 uppercase tracking-wider mb-1">2. Defensive Action *</label>
+                    <select id="select-defensive-action" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs sm:text-sm font-medium focus:border-blue-500">
+                        <option value="Goal-Line Clearance 🧤">🧤 Goal-Line Clearance (Off the Line)</option>
+                        <option value="Crucial Last-Man Block 🛑">🛑 Crucial Last-Man Shot Block</option>
+                        <option value="1-on-1 Breakaway Save 🦅">🦅 1-on-1 Breakaway Save (GK)</option>
+                        <option value="Flying Header Clearance 🛡️">🛡️ Flying Header Clearance</option>
+                        <option value="Box Slide Tackle 🧱">🧱 Crucial Box Tackle / Dispossession</option>
+                        <option value="Game-Saving Interception 🔒">🔒 Breakaway Interception / Cutoff</option>
+                    </select>
+                </div>
+
+                <!-- 3. Note / Description -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-[11px] font-bold text-amber-300 uppercase tracking-wider">3. Description / Highlight Note</label>
+                        <span class="text-[10px] text-gray-500">Optional</span>
+                    </div>
+                    <input id="input-defensive-note" type="text" placeholder="e.g. Cleared right off the goal line with open net!" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-amber-500 placeholder-zinc-500" />
+                </div>
+
+                <!-- 4. Video Clip URL/Path -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-[11px] font-bold text-sky-300 uppercase tracking-wider">4. Video Clip Path / URL</label>
+                        <span class="text-[10px] text-gray-500">Optional (Can add later)</span>
+                    </div>
+                    <input id="input-defensive-video-url" type="text" placeholder="e.g. videos/defense/04-logan-clearance.mp4 or link" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-end space-x-2 pt-3 border-t border-zinc-800">
+                <button onclick="closeDefensiveModal()" class="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">Cancel</button>
+                <button onclick="confirmDefensivePlay()" class="px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold shadow">
+                    🛡️ Log Defensive Play
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1C: EDIT MATCH EVENT & ADD/UPDATE VIDEO CLIP -->
+    <div id="edit-event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-zinc-900 border border-sky-600/40 rounded-2xl max-w-md w-full p-5 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">✏️</span>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Edit Event & Video Clip</h3>
+                        <p class="text-[11px] text-sky-300">Attach parent videos or edit details</p>
+                    </div>
+                </div>
+                <button onclick="closeEditEventModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+
+            <input type="hidden" id="edit-event-id" />
+
+            <div class="mt-3 space-y-3">
+                <!-- Event Summary Display -->
+                <div class="bg-zinc-950/80 border border-zinc-800 rounded-xl p-2.5">
+                    <span class="text-[10px] text-gray-400 uppercase font-bold block mb-0.5">Event</span>
+                    <p id="edit-event-summary" class="text-xs font-semibold text-white"></p>
+                </div>
+
+                <!-- Video Link Input -->
+                <div>
+                    <label class="block text-[11px] font-bold text-sky-300 uppercase tracking-wider mb-1">
+                        🎬 Video Clip Path or Web Link (.mp4 / link)
+                    </label>
+                    <input id="edit-event-video-url" type="text" placeholder="e.g. videos/05-elijah-goal.mp4 or web link" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-sky-500 placeholder-zinc-500" />
+                    <p class="text-[10px] text-gray-400 mt-1">
+                        Upload to <code class="text-sky-300">videos/</code> folder in GitHub or paste a link.
+                    </p>
+                </div>
+
+                <!-- Highlight / Special Note -->
+                <div>
+                    <label class="block text-[11px] font-bold text-rose-300 uppercase tracking-wider mb-1">
+                        Highlight Tag / Description
+                    </label>
+                    <input id="edit-event-note" type="text" placeholder="e.g. Upper 90, Goal-line heroics..." 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-1.5 text-white text-xs focus:border-rose-500 placeholder-zinc-500" />
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-end space-x-2 pt-3 border-t border-zinc-800">
+                <button onclick="closeEditEventModal()" class="px-3 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">Cancel</button>
+                <button onclick="saveEditedEvent()" class="px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow">
+                    💾 Save Video & Details
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1D: VIDEO CLIP LIGHTBOX PLAYER -->
+    <div id="video-clip-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[60] hidden flex items-center justify-center p-3">
+        <div class="bg-zinc-950 border border-white/20 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl relative my-auto">
+            <div class="flex items-center justify-between p-3.5 bg-zinc-900 border-b border-zinc-800">
+                <div>
+                    <h3 id="video-clip-title" class="text-xs sm:text-sm font-bold text-white truncate">Match Highlight Clip</h3>
+                    <p id="video-clip-subtitle" class="text-[10px] text-blue-300 font-semibold"></p>
+                </div>
+                <button onclick="closeVideoClipModal()" class="w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-lg flex items-center justify-center font-bold">
+                    &times;
+                </button>
+            </div>
+            <div id="video-clip-media-container" class="bg-black flex items-center justify-center min-h-[220px] max-h-[65vh]">
+                <!-- Injected dynamically via openVideoClipModal() -->
             </div>
         </div>
     </div>
@@ -649,6 +798,7 @@
                             playerStats[jersey] = {
                                 goals: base.goals,
                                 assists: base.assists,
+                                defensivePlays: 0,
                                 highlightUrl: playerMediaDefaults[jersey] || ''
                             };
                         }
@@ -973,6 +1123,7 @@
             const playType = document.getElementById('select-play-type').value;
             const shotType = document.getElementById('select-shot-type').value;
             const specialNote = (document.getElementById('input-special-style')?.value || '').trim();
+            const videoUrl = (document.getElementById('input-goal-video-url')?.value || '').trim();
 
             const scorer = rosterPlayers.find(p => p.jersey === scorerJersey);
             const assist = assistJersey ? rosterPlayers.find(p => p.jersey === assistJersey) : null;
@@ -992,14 +1143,15 @@
                 period: matchState.period,
                 playType,
                 shotType,
-                specialNote
+                specialNote,
+                videoUrl
             });
 
-            if (!playerStats[scorerJersey]) playerStats[scorerJersey] = { goals: 0, assists: 0 };
+            if (!playerStats[scorerJersey]) playerStats[scorerJersey] = { goals: 0, assists: 0, defensivePlays: 0 };
             playerStats[scorerJersey].goals = (playerStats[scorerJersey].goals || 0) + 1;
 
             if (assistJersey) {
-                if (!playerStats[assistJersey]) playerStats[assistJersey] = { goals: 0, assists: 0 };
+                if (!playerStats[assistJersey]) playerStats[assistJersey] = { goals: 0, assists: 0, defensivePlays: 0 };
                 playerStats[assistJersey].assists = (playerStats[assistJersey].assists || 0) + 1;
             }
 
@@ -1008,6 +1160,144 @@
             displayRoster();
             saveMatchToCloud();
             saveStatsToCloud();
+        }
+
+        function openDefensiveModal() {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const playerSelect = document.getElementById('select-defensive-player');
+            const noteInput = document.getElementById('input-defensive-note');
+            const videoInput = document.getElementById('input-defensive-video-url');
+
+            if (playerSelect) {
+                // Prioritize defenders and goalkeepers at top of list
+                const sorted = [...rosterPlayers].sort((a, b) => {
+                    const aDef = (a.position || '').toUpperCase().includes('DEF') || (a.position || '').toUpperCase().includes('GK');
+                    const bDef = (b.position || '').toUpperCase().includes('DEF') || (b.position || '').toUpperCase().includes('GK');
+                    if (aDef && !bDef) return -1;
+                    if (!aDef && bDef) return 1;
+                    return a.jersey - b.jersey;
+                });
+
+                playerSelect.innerHTML = sorted.map(p => `
+                    <option value="${p.jersey}">#${p.jersey} - ${p.name} (${p.position})</option>
+                `).join('');
+            }
+
+            if (noteInput) noteInput.value = '';
+            if (videoInput) videoInput.value = '';
+            document.getElementById('defensive-modal').classList.remove('hidden');
+        }
+
+        function closeDefensiveModal() {
+            document.getElementById('defensive-modal').classList.add('hidden');
+        }
+
+        function confirmDefensivePlay() {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const playerJersey = parseInt(document.getElementById('select-defensive-player').value, 10);
+            const actionType = document.getElementById('select-defensive-action').value;
+            const specialNote = (document.getElementById('input-defensive-note')?.value || '').trim();
+            const videoUrl = (document.getElementById('input-defensive-video-url')?.value || '').trim();
+
+            const player = rosterPlayers.find(p => p.jersey === playerJersey);
+
+            const eventText = `🛡️ Big Defensive Play! #${playerJersey} ${player ? player.name : ''} - ${actionType}`;
+
+            matchState.events.unshift({
+                id: Date.now(),
+                type: 'defense',
+                defenderJersey: playerJersey,
+                text: eventText,
+                actionType,
+                timeStr: formatTime(getElapsedSeconds()),
+                period: matchState.period,
+                specialNote,
+                videoUrl
+            });
+
+            if (!playerStats[playerJersey]) playerStats[playerJersey] = { goals: 0, assists: 0, defensivePlays: 0 };
+            playerStats[playerJersey].defensivePlays = (playerStats[playerJersey].defensivePlays || 0) + 1;
+
+            closeDefensiveModal();
+            renderMatchTracker();
+            displayRoster();
+            saveMatchToCloud();
+            saveStatsToCloud();
+        }
+
+        function openEditEventModal(eventId) {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const ev = matchState.events.find(e => e.id === eventId);
+            if (!ev) return;
+
+            document.getElementById('edit-event-id').value = ev.id;
+            document.getElementById('edit-event-summary').textContent = `${ev.timeStr} (${ev.period}) - ${ev.text}`;
+            document.getElementById('edit-event-video-url').value = ev.videoUrl || '';
+            document.getElementById('edit-event-note').value = ev.specialNote || '';
+
+            document.getElementById('edit-event-modal').classList.remove('hidden');
+        }
+
+        function closeEditEventModal() {
+            document.getElementById('edit-event-modal').classList.add('hidden');
+        }
+
+        function saveEditedEvent() {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const eventId = parseInt(document.getElementById('edit-event-id').value, 10);
+            const ev = matchState.events.find(e => e.id === eventId);
+            if (!ev) return;
+
+            ev.videoUrl = document.getElementById('edit-event-video-url').value.trim();
+            ev.specialNote = document.getElementById('edit-event-note').value.trim();
+
+            closeEditEventModal();
+            renderMatchTracker();
+            saveMatchToCloud();
+        }
+
+        function openVideoClipModal(videoUrl, title, subtitle) {
+            const container = document.getElementById('video-clip-media-container');
+            const titleEl = document.getElementById('video-clip-title');
+            const subtitleEl = document.getElementById('video-clip-subtitle');
+
+            if (titleEl) titleEl.textContent = title || 'Match Video Clip';
+            if (subtitleEl) subtitleEl.textContent = subtitle || '';
+
+            if (container) {
+                const isDirectVideo = videoUrl.match(/\.(mp4|webm|ogg|mov)$/i) || videoUrl.includes('videos/');
+                if (isDirectVideo) {
+                    container.innerHTML = `
+                        <video src="${videoUrl}" controls autoplay playsinline class="max-w-full max-h-[60vh] object-contain">
+                            Your browser does not support video playback.
+                        </video>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="p-6 text-center space-y-3">
+                            <p class="text-xs text-gray-300">Click below to open the external video clip:</p>
+                            <a href="${videoUrl}" target="_blank" rel="noopener noreferrer" 
+                               class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs shadow-lg">
+                                <span>▶ Watch Video Clip</span>
+                                <span>↗</span>
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('video-clip-modal').classList.remove('hidden');
+        }
+
+        function closeVideoClipModal() {
+            const modal = document.getElementById('video-clip-modal');
+            const container = document.getElementById('video-clip-media-container');
+            if (container) container.innerHTML = '';
+            if (modal) modal.classList.add('hidden');
         }
 
         function recordOpponentGoal(delta) {
@@ -1045,6 +1335,10 @@
                 }
                 if (ev.assistJersey && playerStats[ev.assistJersey]) {
                     playerStats[ev.assistJersey].assists = Math.max(0, (playerStats[ev.assistJersey].assists || 0) - 1);
+                }
+            } else if (ev.type === 'defense') {
+                if (ev.defenderJersey && playerStats[ev.defenderJersey]) {
+                    playerStats[ev.defenderJersey].defensivePlays = Math.max(0, (playerStats[ev.defenderJersey].defensivePlays || 0) - 1);
                 }
             } else if (ev.type === 'them') {
                 matchState.themScore = Math.max(0, matchState.themScore - 1);
@@ -1129,51 +1423,51 @@
                                         </div>
                                     ` : `
                                         <p class="text-xs text-gray-400 italic mt-0.5">Decided in the locker room post-game ⚽</p>
-                                    `}
-                                </div>
-                            </div>
-                            ${motmPlayer ? `
-                                <span class="text-xs bg-amber-950/80 border border-amber-600/50 text-amber-300 px-2.5 py-1 rounded-full font-extrabold shadow">
-                                    MVP 🌟
-                                </span>
-                            ` : `
-                                <button onclick="openCoachAuthModal()" class="text-[11px] text-blue-400 hover:text-blue-300 font-semibold underline">
-                                    Coach? Pick
-                                </button>
-                            `}
-                        </div>
-                    `;
-                }
-            }
+            listEl.innerHTML = matchState.events.map(ev => {
+                const isDefense = ev.type === 'defense';
+                const isUsGoal = ev.type === 'us';
+                const hasVideo = !!ev.videoUrl;
 
-            const listEl = document.getElementById('match-events-list');
-            if (matchState.events.length === 0) {
-                listEl.innerHTML = `<p class="text-xs text-gray-500 italic py-3 text-center">No goals recorded yet.</p>`;
-                return;
-            }
+                let cardBg = 'bg-zinc-800/70 border-zinc-700';
+                if (isUsGoal) cardBg = 'bg-[#003C71]/25 border-blue-500/50';
+                if (isDefense) cardBg = 'bg-emerald-950/25 border-emerald-500/50';
 
-            listEl.innerHTML = matchState.events.map(ev => `
-                <div class="px-3 py-2 rounded-xl border ${ev.type === 'us' ? 'bg-[#003C71]/25 border-blue-500/50' : 'bg-zinc-800/70 border-zinc-700'}">
+                return `
+                <div class="px-3 py-2.5 rounded-xl border ${cardBg}">
                     <div class="flex items-center justify-between">
-                        <div class="flex items-center space-x-2">
-                            <span class="px-1.5 py-0.5 rounded bg-black/60 font-mono text-[10px] font-bold text-blue-300">
+                        <div class="flex items-center space-x-2 min-w-0 pr-2">
+                            <span class="px-1.5 py-0.5 rounded bg-black/60 font-mono text-[10px] font-bold ${isDefense ? 'text-emerald-300' : 'text-blue-300'} flex-shrink-0">
                                 ${ev.timeStr} • ${ev.period}
                             </span>
-                            <span class="text-xs font-semibold text-white">${ev.text}</span>
+                            <span class="text-xs font-semibold text-white truncate">${ev.text}</span>
                         </div>
-                        ${isCoachMode ? `
-                        <button onclick="deleteMatchEvent(${ev.id})" class="text-[11px] text-gray-400 hover:text-rose-400 font-semibold ml-2">Undo</button>
-                        ` : ''}
+                        <div class="flex items-center space-x-1.5 flex-shrink-0">
+                            ${hasVideo ? `
+                            <button onclick="openVideoClipModal('${ev.videoUrl}', '${ev.text.replace(/'/g, "\\'")}', '${ev.timeStr} - ${ev.period}')" 
+                                    class="px-2 py-0.5 rounded bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px] flex items-center space-x-1 shadow transition">
+                                <span>▶</span>
+                                <span>Clip</span>
+                            </button>
+                            ` : ''}
+                            ${isCoachMode ? `
+                            <button onclick="openEditEventModal(${ev.id})" class="text-[11px] text-sky-400 hover:text-sky-300 font-semibold" title="Attach Video Clip or Edit Note">
+                                ✏️ ${hasVideo ? 'Edit' : '+Clip'}
+                            </button>
+                            <button onclick="deleteMatchEvent(${ev.id})" class="text-[11px] text-gray-400 hover:text-rose-400 font-semibold ml-1">Undo</button>
+                            ` : ''}
+                        </div>
                     </div>
 
-                    ${(ev.playType || ev.shotType || ev.specialNote) && ev.type === 'us' ? `
+                    ${(ev.playType || ev.shotType || ev.actionType || ev.specialNote) ? `
                     <div class="flex flex-wrap items-center gap-1 mt-1.5 pt-1.5 border-t border-white/10 text-[10px]">
+                        ${ev.actionType ? `<span class="bg-emerald-950/70 border border-emerald-600/50 text-emerald-300 px-1.5 py-0.2 rounded font-bold">${ev.actionType}</span>` : ''}
                         ${ev.playType ? `<span class="bg-amber-950/70 border border-amber-600/50 text-amber-300 px-1.5 py-0.2 rounded font-medium">${ev.playType}</span>` : ''}
                         ${ev.shotType ? `<span class="bg-purple-950/70 border border-purple-600/50 text-purple-300 px-1.5 py-0.2 rounded font-medium">${ev.shotType}</span>` : ''}
                         ${ev.specialNote ? `<span class="bg-rose-950/70 border border-rose-600/50 text-rose-200 px-2 py-0.2 rounded font-bold italic">"${ev.specialNote}"</span>` : ''}
                     </div>` : ''}
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function renderMatchHistory() {
@@ -1290,6 +1584,10 @@
                             }
                             if (ev.assistJersey && playerStats[ev.assistJersey]) {
                                 playerStats[ev.assistJersey].assists = Math.max(0, (playerStats[ev.assistJersey].assists || 0) - 1);
+                            }
+                        } else if (ev.type === 'defense') {
+                            if (ev.defenderJersey && playerStats[ev.defenderJersey]) {
+                                playerStats[ev.defenderJersey].defensivePlays = Math.max(0, (playerStats[ev.defenderJersey].defensivePlays || 0) - 1);
                             }
                         }
                     });
@@ -1479,11 +1777,12 @@
             if (!player) return;
 
             activeModalJersey = jersey;
-            const stats = playerStats[jersey] || { goals: 0, assists: 0, highlightUrl: '' };
+            const stats = playerStats[jersey] || { goals: 0, assists: 0, defensivePlays: 0, highlightUrl: '' };
             const totalPoints = (stats.goals || 0) + (stats.assists || 0);
             const motmAwards = getPlayerMOTMCount(jersey);
             const playerEvents = matchState.events.filter(
-                e => e.type === 'us' && (e.scorerJersey === jersey || e.assistJersey === jersey)
+                e => (e.type === 'us' && (e.scorerJersey === jersey || e.assistJersey === jersey)) ||
+                     (e.type === 'defense' && e.defenderJersey === jersey)
             );
 
             let mediaBannerHTML = '';
@@ -1539,9 +1838,9 @@
                                 <div class="text-xl sm:text-2xl font-black text-white my-0.5">${stats.assists || 0}</div>
                             </div>
 
-                            <div class="bg-[#003C71]/30 border border-blue-500/40 rounded-xl p-2 text-center flex flex-col justify-center">
-                                <span class="text-[9px] font-bold uppercase text-blue-200">⭐ Points</span>
-                                <div class="text-xl sm:text-2xl font-black text-white my-0.5">${totalPoints}</div>
+                            <div class="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-2 text-center flex flex-col justify-center">
+                                <span class="text-[9px] font-bold uppercase text-emerald-300">🛡️ Stops</span>
+                                <div class="text-xl sm:text-2xl font-black text-emerald-400 my-0.5">${stats.defensivePlays || 0}</div>
                             </div>
 
                             <div class="bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 text-center flex flex-col justify-center">
@@ -1555,15 +1854,24 @@
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Current Match Actions</h4>
                         ${playerEvents.length === 0 
                             ? `<p class="text-[11px] text-gray-500 italic">No events logged for this match.</p>`
-                            : `<ul class="space-y-1.5 text-xs text-gray-200">
+                            : `<ul class="space-y-2 text-xs text-gray-200">
                                 ${playerEvents.map(ev => `
                                     <li class="py-1 border-b border-zinc-800 last:border-none">
                                         <div class="flex items-center justify-between">
                                             <span class="font-medium text-white text-xs">${ev.text}</span>
-                                            <span class="text-blue-400 font-mono font-bold text-[11px]">${ev.timeStr}</span>
+                                            <div class="flex items-center space-x-1.5">
+                                                <span class="text-blue-400 font-mono font-bold text-[11px]">${ev.timeStr}</span>
+                                                ${ev.videoUrl ? `
+                                                <button onclick="openVideoClipModal('${ev.videoUrl}', '${ev.text.replace(/'/g, "\\'")}', '${ev.timeStr}')" 
+                                                        class="px-1.5 py-0.5 rounded bg-sky-600 text-white font-bold text-[9px]">
+                                                    ▶ Clip
+                                                </button>
+                                                ` : ''}
+                                            </div>
                                         </div>
-                                        ${(ev.playType || ev.shotType || ev.specialNote) ? `
+                                        ${(ev.playType || ev.shotType || ev.actionType || ev.specialNote) ? `
                                         <div class="flex flex-wrap gap-1 mt-0.5 text-[9px]">
+                                            ${ev.actionType ? `<span class="bg-emerald-950/60 text-emerald-300 px-1 rounded">${ev.actionType}</span>` : ''}
                                             ${ev.playType ? `<span class="bg-amber-950/60 text-amber-300 px-1 rounded">${ev.playType}</span>` : ''}
                                             ${ev.shotType ? `<span class="bg-purple-950/60 text-purple-300 px-1 rounded">${ev.shotType}</span>` : ''}
                                             ${ev.specialNote ? `<span class="bg-rose-950/60 text-rose-300 px-1 rounded italic font-semibold">"${ev.specialNote}"</span>` : ''}
@@ -1669,19 +1977,21 @@
             if (!container) return;
 
             const enriched = rosterPlayers.map(p => {
-                const s = playerStats[p.jersey] || { goals: 0, assists: 0 };
+                const s = playerStats[p.jersey] || { goals: 0, assists: 0, defensivePlays: 0 };
                 return {
                     jersey: p.jersey,
                     name: p.name,
                     position: p.position || 'Player',
                     goals: s.goals || 0,
                     assists: s.assists || 0,
+                    defensivePlays: s.defensivePlays || 0,
                     points: (s.goals || 0) + (s.assists || 0)
                 };
             });
 
             const topScorers = [...enriched].sort((a, b) => b.goals - a.goals || a.jersey - b.jersey);
             const topAssists = [...enriched].sort((a, b) => b.assists - a.assists || a.jersey - b.jersey);
+            const topDefenders = [...enriched].sort((a, b) => b.defensivePlays - a.defensivePlays || a.jersey - b.jersey);
             const topPoints = [...enriched].sort((a, b) => b.points - a.points || b.goals - a.goals);
 
             const motmRankings = rosterPlayers.map(p => ({
@@ -1695,9 +2005,13 @@
 
             const highlightEvents = [];
             (matchState.events || []).forEach(e => {
-                if (e.specialNote && e.scorerJersey) {
-                    const pl = rosterPlayers.find(p => p.jersey === e.scorerJersey);
-                    if (pl) highlightEvents.push({ player: pl.name, jersey: pl.jersey, note: e.specialNote, playType: e.playType });
+                if (e.specialNote || e.videoUrl) {
+                    highlightEvents.push({ 
+                        title: e.text, 
+                        note: e.specialNote, 
+                        actionType: e.actionType || e.playType || 'Highlight',
+                        videoUrl: e.videoUrl 
+                    });
                 }
             });
             (matchState.history || []).forEach(m => {
@@ -1808,30 +2122,37 @@
                     </div>
                 </div>
 
-                <!-- Defensive Wall & Clean Sheets -->
-                <div class="bg-gradient-to-r from-zinc-900 via-blue-950/40 to-zinc-900 border border-blue-600/30 rounded-2xl p-4 shadow-xl">
+                <!-- Defensive Wall & Heroics (Clearances, Blocks & Clean Sheets) -->
+                <div class="bg-gradient-to-r from-zinc-900 via-emerald-950/30 to-zinc-900 border border-emerald-600/40 rounded-2xl p-4 shadow-xl">
                     <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
                         <div class="flex items-center space-x-2">
-                            <span class="text-xl">🧤</span>
+                            <span class="text-xl">🛡️</span>
                             <div>
-                                <h3 class="text-sm font-extrabold text-white">The Defensive Wall</h3>
-                                <p class="text-[10px] text-blue-200 font-semibold uppercase tracking-wider">Goalkeepers & Backline Shutouts</p>
+                                <h3 class="text-sm font-extrabold text-white">Defensive Heroics & Clearances</h3>
+                                <p class="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">Goal-line Clearances, Blocks & Big Stops</p>
                             </div>
                         </div>
-                        <div class="inline-flex items-center space-x-1.5 bg-blue-900/60 border border-blue-500/50 px-2.5 py-1 rounded-full text-xs font-bold text-white">
+                        <div class="inline-flex items-center space-x-1.5 bg-emerald-900/60 border border-emerald-500/50 px-2.5 py-1 rounded-full text-xs font-bold text-white">
                             <span>🛡️ ${cleanSheets}</span>
-                            <span class="text-[10px] text-blue-200 uppercase font-medium">Clean Sheets</span>
+                            <span class="text-[10px] text-emerald-200 uppercase font-medium">Shutouts</span>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="space-y-2 mb-4">
+                        ${topDefenders.filter(d => d.defensivePlays > 0).length === 0
+                            ? `<p class="text-xs text-gray-500 italic py-2 text-center">No defensive stops recorded yet. Log goal-line clearances or big blocks during the game!</p>`
+                            : topDefenders.filter(d => d.defensivePlays > 0).slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.defensivePlays, 'Stops / Clearances', 'text-emerald-400')).join('')
+                        }
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-3 border-t border-zinc-800">
                         <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
-                            <span class="text-[10px] font-bold text-blue-300 uppercase block mb-1.5">🧤 Goalkeepers</span>
+                            <span class="text-[10px] font-bold text-emerald-300 uppercase block mb-1.5">🧤 Goalkeepers</span>
                             <div class="space-y-1.5">
                                 ${goalkeepers.map(g => `
                                     <div onclick="openPlayerCard(${g.jersey})" class="flex items-center justify-between p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer">
                                         <span class="font-bold text-white">#${g.jersey} ${g.name}</span>
-                                        <span class="text-[10px] font-semibold text-blue-400">GK</span>
+                                        <span class="text-[10px] font-semibold text-emerald-400">GK</span>
                                     </div>
                                 `).join('')}
                             </div>
@@ -1857,25 +2178,40 @@
                         <span class="text-xl">✨</span>
                         <div>
                             <h3 class="text-sm font-extrabold text-white">Highlight Reel</h3>
-                            <p class="text-[10px] text-rose-300 font-semibold uppercase tracking-wider">Iconic Plays & Special Finishes</p>
+                            <p class="text-[10px] text-rose-300 font-semibold uppercase tracking-wider">Iconic Plays, Clearances & Video Clips</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         ${highlightEvents.slice(0, 6).map(h => `
-                            <div onclick="openPlayerCard(${h.jersey})" class="p-2.5 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 cursor-pointer border border-rose-900/40 flex items-center justify-between">
-                                <div>
-                                    <span class="text-xs font-bold text-white">#${h.jersey} ${h.player}</span>
-                                    <span class="text-[10px] text-gray-400 block">${h.playType || 'Goal'}</span>
+                            <div class="p-2.5 rounded-xl bg-zinc-800/60 border border-rose-900/40 flex items-center justify-between">
+                                <div class="min-w-0 pr-2">
+                                    <span class="text-xs font-bold text-white truncate block">${h.title}</span>
+                                    <span class="text-[10px] text-gray-400 block">${h.actionType}</span>
                                 </div>
-                                <span class="text-xs font-bold text-rose-300 bg-rose-950/80 border border-rose-700/60 px-2 py-0.5 rounded-lg italic">
-                                    "${h.note}"
-                                </span>
+                                <div class="flex items-center space-x-1.5 flex-shrink-0">
+                                    ${h.note ? `<span class="text-[11px] font-bold text-rose-300 bg-rose-950/80 border border-rose-700/60 px-2 py-0.5 rounded-lg italic truncate max-w-[110px]">"${h.note}"</span>` : ''}
+                                    ${h.videoUrl ? `
+                                    <button onclick="openVideoClipModal('${h.videoUrl}', '${h.title.replace(/'/g, "\\'")}', '${h.actionType}')" 
+                                            class="px-2 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px]">
+                                        ▶ Clip
+                                    </button>
+                                    ` : ''}
+                                </div>
                             </div>
                         `).join('')}
                     </div>
                 </div>` : ''}
             `;
         }
+
+        window.openDefensiveModal = openDefensiveModal;
+        window.closeDefensiveModal = closeDefensiveModal;
+        window.confirmDefensivePlay = confirmDefensivePlay;
+        window.openEditEventModal = openEditEventModal;
+        window.closeEditEventModal = closeEditEventModal;
+        window.saveEditedEvent = saveEditedEvent;
+        window.openVideoClipModal = openVideoClipModal;
+        window.closeVideoClipModal = closeVideoClipModal;
 
         window.checkFamilyPass = checkFamilyPass;
         window.lockFamilyPortal = lockFamilyPortal;
