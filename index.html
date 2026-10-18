@@ -78,6 +78,7 @@
                         <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Period:</span>
                         <button onclick="setPeriod('1st Half')" id="period-1" class="px-3 py-1 rounded-lg text-xs font-bold bg-rockies-blue text-white">1st Half</button>
                         <button onclick="setPeriod('2nd Half')" id="period-2" class="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-400 hover:text-white">2nd Half</button>
+                        <button onclick="setPeriod('Final')" id="period-final" class="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-400 hover:text-white">Final</button>
                     </div>
                     <div class="flex items-center space-x-2">
                         <label for="opponent-input" class="text-xs font-bold uppercase tracking-wider text-gray-400">Opponent:</label>
@@ -94,8 +95,15 @@
                     </div>
                     <p id="period-label" class="text-xs uppercase tracking-widest text-blue-400 font-bold mt-1">1st Half</p>
 
-                    <!-- Timer Controls -->
-                    <div class="flex items-center justify-center space-x-3 mt-4">
+                    <!-- Final Whistle Banner (Shown when match ends) -->
+                    <div id="final-banner" class="hidden mt-3 inline-flex items-center space-x-2 bg-rose-950/80 border border-rose-600/70 px-4 py-1.5 rounded-full text-xs font-bold text-rose-200">
+                        <span>🏁 MATCH COMPLETED (FINAL)</span>
+                        <span class="text-rose-400">|</span>
+                        <button onclick="resumeMatch()" class="text-rose-300 underline hover:text-white">Resume</button>
+                    </div>
+
+                    <!-- Timer & Match Action Controls -->
+                    <div class="flex flex-wrap items-center justify-center gap-2.5 mt-5">
                         <button id="btn-start-pause" onclick="toggleTimer()" class="px-6 py-2.5 rounded-xl font-bold text-sm sm:text-base bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition transform active:scale-95">
                             ▶ Start Clock
                         </button>
@@ -105,8 +113,12 @@
                         <button onclick="adjustClock(60)" class="px-3 py-2.5 rounded-xl font-semibold text-xs bg-zinc-800 hover:bg-zinc-700 text-gray-300 transition" title="Plus 1 minute">
                             +1m
                         </button>
-                        <button onclick="resetClockConfirm()" class="px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-zinc-800 hover:bg-zinc-700 text-gray-300 transition">
-                            ↺ Reset Clock
+                        <button onclick="resetClockConfirm()" class="px-3.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-zinc-800 hover:bg-zinc-700 text-gray-300 transition">
+                            ↺ Reset
+                        </button>
+                        <button onclick="endMatchConfirm()" class="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-rose-700 hover:bg-rose-600 text-white shadow-lg transition transform active:scale-95 flex items-center space-x-1.5">
+                            <span>🏁</span>
+                            <span>End Match</span>
                         </button>
                     </div>
                 </div>
@@ -154,6 +166,21 @@
                 </div>
                 <div id="match-events-list" class="space-y-2.5">
                     <!-- Dynamic events appear here -->
+                </div>
+            </div>
+
+            <!-- Past Match History Archive -->
+            <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800">
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <span>🏆 Past Match History</span>
+                    </h3>
+                    <span id="history-count" class="text-xs text-gray-400 font-semibold bg-zinc-800 px-2.5 py-1 rounded-lg">
+                        0 matches saved
+                    </span>
+                </div>
+                <div id="match-history-list" class="space-y-3">
+                    <!-- Archived completed matches are rendered here -->
                 </div>
             </div>
         </section>
@@ -881,10 +908,105 @@
                         <div class="text-base font-extrabold text-white mt-1">
                             Rockies Albion 14 <span class="text-blue-400">${item.usScore}</span> - <span class="text-rose-400">${item.themScore}</span> ${item.opponent}
                         </div>
-                        <p class="text-xs text-gray-400 mt-0.5">${item.events.filter(e => e.type === 'us').length} Rockies goals logged</p>
+                        <p class="text-xs text-gray-400 mt-0.5">${(item.events || []).filter(e => e.type === 'us').length} Rockies goals logged</p>
+                    </div>
+                    <div class="flex items-center space-x-2 self-end sm:self-center">
+                        <button onclick="openEditMatchModal(${item.id})" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-gray-300 hover:text-white transition">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deleteArchivedMatchConfirm(${item.id})" class="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900 border border-rose-800/60 text-xs font-semibold text-rose-300 hover:text-white transition">
+                            🗑️ Delete
+                        </button>
                     </div>
                 </div>
             `).join('');
+        }
+
+        function openEditMatchModal(matchId) {
+            const match = (matchState.history || []).find(m => m.id === matchId);
+            if (!match) return;
+
+            document.getElementById('edit-match-id').value = match.id;
+            document.getElementById('edit-match-date').value = match.date || '';
+            document.getElementById('edit-match-opponent').value = match.opponent || '';
+            document.getElementById('edit-match-us-score').value = match.usScore ?? 0;
+            document.getElementById('edit-match-them-score').value = match.themScore ?? 0;
+            document.getElementById('edit-match-duration').value = match.duration || '00:00';
+
+            document.getElementById('edit-match-modal').classList.remove('hidden');
+        }
+
+        function closeEditMatchModal() {
+            document.getElementById('edit-match-modal').classList.add('hidden');
+        }
+
+        function saveEditedMatch() {
+            const matchId = parseInt(document.getElementById('edit-match-id').value, 10);
+            const match = (matchState.history || []).find(m => m.id === matchId);
+            if (!match) return;
+
+            match.date = document.getElementById('edit-match-date').value.trim() || match.date;
+            match.opponent = document.getElementById('edit-match-opponent').value.trim() || match.opponent;
+            match.usScore = parseInt(document.getElementById('edit-match-us-score').value, 10) || 0;
+            match.themScore = parseInt(document.getElementById('edit-match-them-score').value, 10) || 0;
+            match.duration = document.getElementById('edit-match-duration').value.trim() || match.duration;
+
+            closeEditMatchModal();
+            renderMatchHistory();
+            saveMatchToCloud(true);
+        }
+
+        function deleteArchivedMatchConfirm(matchId) {
+            const match = (matchState.history || []).find(m => m.id === matchId);
+            if (!match) return;
+
+            openConfirmModal(
+                'Delete Archived Match?',
+                `Delete the match vs ${match.opponent}? This will also automatically deduct the goals & assists scored during this game from your player season stats.`,
+                () => deleteArchivedMatch(matchId)
+            );
+        }
+
+        function deleteArchivedMatch(matchId) {
+            const idx = (matchState.history || []).findIndex(m => m.id === matchId);
+            if (idx === -1) return;
+
+            const match = matchState.history[idx];
+
+            // Roll back season stats for all Rockies goals & assists recorded in that match
+            if (match.events && Array.isArray(match.events)) {
+                match.events.forEach(ev => {
+                    if (ev.type === 'us') {
+                        if (ev.scorerJersey && playerStats[ev.scorerJersey]) {
+                            playerStats[ev.scorerJersey].goals = Math.max(0, (playerStats[ev.scorerJersey].goals || 0) - 1);
+                        }
+                        if (ev.assistJersey && playerStats[ev.assistJersey]) {
+                            playerStats[ev.assistJersey].assists = Math.max(0, (playerStats[ev.assistJersey].assists || 0) - 1);
+                        }
+                    }
+                });
+            }
+
+            matchState.history.splice(idx, 1);
+            renderMatchHistory();
+            displayRoster();
+            saveMatchToCloud(true);
+            saveStatsToCloud();
+        }
+
+        function resetAllSeasonStatsConfirm() {
+            openConfirmModal(
+                'Reset All Season Stats?',
+                'Are you sure you want to reset all player goals & assists to 0? (Use this when you are done test-simulating matches).',
+                () => {
+                    Object.keys(playerStats).forEach(jersey => {
+                        playerStats[jersey].goals = 0;
+                        playerStats[jersey].assists = 0;
+                    });
+                    displayRoster();
+                    saveStatsToCloud();
+                }
+            );
         }
 
         function openConfirmModal(title, message, onConfirm) {
@@ -1036,6 +1158,12 @@
         window.endMatchConfirm = endMatchConfirm;
         window.endMatch = endMatch;
         window.resumeMatch = resumeMatch;
+        window.openEditMatchModal = openEditMatchModal;
+        window.closeEditMatchModal = closeEditMatchModal;
+        window.saveEditedMatch = saveEditedMatch;
+        window.deleteArchivedMatchConfirm = deleteArchivedMatchConfirm;
+        window.deleteArchivedMatch = deleteArchivedMatch;
+        window.resetAllSeasonStatsConfirm = resetAllSeasonStatsConfirm;
 
         document.addEventListener('DOMContentLoaded', () => {
             rosterPlayers = parseCSV(csvData);
