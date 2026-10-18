@@ -1239,10 +1239,6 @@
                                 <span class="text-[9px] text-blue-300 block font-bold">PTS</span>
                                 <span class="text-xs font-extrabold text-blue-400">${points}</span>
                             </div>
-                            ${isCoachMode ? `
-                            <div class="flex items-center space-x-1 pl-1 ml-1 border-l border-zinc-700" onclick="event.stopPropagation()">
-                                <button onclick="adjustPlayerStat(${player.jersey}, 'goals', 1)" title="Add Goal" class="px-1.5 py-0.5 bg-[#003C71] hover:bg-blue-600 text-white rounded text-[10px] font-bold shadow">+G</button>
-                            </div>` : ''}
                         </div>
                     </div>
                 `;
@@ -1300,27 +1296,17 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Season Totals</h3>
-                            ${isCoachMode ? `<span class="text-[10px] text-blue-400 font-semibold">Coach Mode Active (+/-)</span>` : `<span class="text-[10px] text-gray-500">🔒 Season Record</span>`}
+                            <span class="text-[10px] text-gray-500">Official Season Record</span>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
                             <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2.5 text-center">
                                 <span class="text-[10px] font-bold uppercase text-gray-400">⚽ Goals</span>
                                 <div class="text-2xl font-black text-white my-0.5">${stats.goals || 0}</div>
-                                ${isCoachMode ? `
-                                <div class="flex justify-center space-x-1 mt-1">
-                                    <button onclick="adjustPlayerStat(${player.jersey}, 'goals', -1)" class="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 text-white font-bold text-xs">-</button>
-                                    <button onclick="adjustPlayerStat(${player.jersey}, 'goals', 1)" class="w-6 h-6 rounded bg-[#003C71] hover:bg-blue-600 text-white font-bold text-xs">+</button>
-                                </div>` : ''}
                             </div>
 
                             <div class="bg-zinc-800 border border-zinc-700 rounded-xl p-2.5 text-center">
                                 <span class="text-[10px] font-bold uppercase text-gray-400">👟 Assists</span>
                                 <div class="text-2xl font-black text-white my-0.5">${stats.assists || 0}</div>
-                                ${isCoachMode ? `
-                                <div class="flex justify-center space-x-1 mt-1">
-                                    <button onclick="adjustPlayerStat(${player.jersey}, 'assists', -1)" class="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 text-white font-bold text-xs">-</button>
-                                    <button onclick="adjustPlayerStat(${player.jersey}, 'assists', 1)" class="w-6 h-6 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs">+</button>
-                                </div>` : ''}
                             </div>
 
                             <div class="bg-[#003C71]/30 border border-blue-500/40 rounded-xl p-2.5 text-center flex flex-col justify-center">
