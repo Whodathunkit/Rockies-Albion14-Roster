@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Block search engines for privacy -->
+    <!-- Block search engines for team privacy -->
     <meta name="robots" content="noindex, nofollow">
     <title>Rockies Albion 14 | Team Roster & Live Match Tracker</title>
     
@@ -164,7 +164,7 @@
         <!-- VIEW 1: TEAM ROSTER (Single-Column Mobile Optimized) -->
         <main id="view-roster" class="space-y-3">
             <div class="flex items-center justify-between px-1 mb-1">
-                <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400">Team Players (Tap card for video & stats)</h2>
+                <h2 class="text-xs font-bold uppercase tracking-wider text-gray-400">Team Players (Tap card for video & family)</h2>
                 <span id="player-count-badge" class="text-[11px] bg-zinc-800 text-gray-300 px-2 py-0.5 rounded-md font-semibold">12 Players</span>
             </div>
             
@@ -328,6 +328,9 @@
             </button>
         </footer>
     </div>
+
+    <!-- Hidden file input for Family Photo mobile camera roll upload -->
+    <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
 
     <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 overflow-y-auto">
@@ -580,10 +583,92 @@
         </div>
     </div>
 
-    <!-- MODAL 3: PLAYER CARD WITH VIDEO HIGHLIGHT -->
+    <!-- MODAL 3: PLAYER CARD WITH VIDEO HIGHLIGHT & FAMILY SECTION -->
     <div id="player-modal" onclick="handleBackdropClick(event)" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div id="player-modal-card" class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto">
+        <div id="player-modal-card" class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full shadow-2xl overflow-hidden my-auto max-h-[90vh] overflow-y-auto">
             <!-- Dynamic player contents injected via openPlayerCard() -->
+        </div>
+    </div>
+
+    <!-- MODAL 3B: EDIT FAMILY DETAILS MODAL -->
+    <div id="edit-family-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-[55] hidden flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-zinc-900 border border-emerald-600/40 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">👨‍👩‍👦</span>
+                    <div>
+                        <h3 class="text-sm font-extrabold text-white">Family Details</h3>
+                        <p id="edit-family-player-name" class="text-[10px] text-emerald-300 font-semibold"></p>
+                    </div>
+                </div>
+                <button onclick="closeEditFamilyModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+
+            <input type="hidden" id="edit-family-jersey" />
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Parents / Guardians</label>
+                    <input id="edit-family-parents" type="text" placeholder="e.g. Tyler & Rosie" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500 placeholder-zinc-500" />
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Siblings / Family Members</label>
+                    <input id="edit-family-siblings" type="text" placeholder="e.g. Liam, Maya (sister)" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500 placeholder-zinc-500" />
+                </div>
+
+                <div class="pt-2 border-t border-zinc-800">
+                    <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Family Photo</label>
+                    <div class="space-y-2">
+                        <button type="button" onclick="triggerFamilyPhotoUploadFromModal()" 
+                                class="w-full py-2 bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/50 rounded-xl text-xs font-bold text-emerald-200 flex items-center justify-center space-x-1.5 shadow transition">
+                            <span>📷 Pick from Camera Roll / Take Photo</span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-2 text-[10px] text-gray-500">
+                            <span class="flex-1 h-px bg-zinc-800"></span>
+                            <span>OR PASTE URL</span>
+                            <span class="flex-1 h-px bg-zinc-800"></span>
+                        </div>
+
+                        <input id="edit-family-photo-url" type="text" placeholder="e.g. videos/04-martens-family.jpg or web link" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-emerald-500 placeholder-zinc-500" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between pt-3 border-t border-zinc-800">
+                <button type="button" onclick="removeCurrentFamilyPhoto()" class="text-[11px] font-semibold text-rose-400 hover:text-rose-300">
+                    Remove Photo
+                </button>
+                <div class="flex space-x-2">
+                    <button type="button" onclick="closeEditFamilyModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 text-xs font-semibold">Cancel</button>
+                    <button type="button" onclick="saveFamilyModalData()" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow">Save Info</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3C: FAMILY PHOTO LIGHTBOX VIEWER -->
+    <div id="family-photo-lightbox-modal" onclick="handleFamilyLightboxBackdrop(event)" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3">
+        <div class="bg-zinc-950 border border-white/20 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl relative my-auto">
+            <div class="flex items-center justify-between p-3.5 bg-zinc-900 border-b border-zinc-800">
+                <div>
+                    <h3 id="family-lightbox-title" class="text-xs sm:text-sm font-bold text-white truncate">Family Photo</h3>
+                    <p id="family-lightbox-subtitle" class="text-[10px] text-emerald-300 font-semibold"></p>
+                </div>
+                <button onclick="closeFamilyPhotoLightbox()" class="w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-lg flex items-center justify-center font-bold">
+                    &times;
+                </button>
+            </div>
+            <div class="bg-black flex items-center justify-center min-h-[220px] max-h-[70vh] p-2">
+                <img id="family-lightbox-img" src="" alt="Family Photo" class="max-w-full max-h-[65vh] object-contain rounded-lg" />
+            </div>
+            <div id="family-lightbox-footer" class="p-3 bg-zinc-900/90 border-t border-zinc-800 text-xs text-gray-300 hidden">
+                <!-- Injected siblings info -->
+            </div>
         </div>
     </div>
 
@@ -799,7 +884,10 @@
                                 goals: base.goals,
                                 assists: base.assists,
                                 defensivePlays: 0,
-                                highlightUrl: playerMediaDefaults[jersey] || ''
+                                highlightUrl: playerMediaDefaults[jersey] || '',
+                                customParents: '',
+                                familySiblings: '',
+                                familyPhoto: ''
                             };
                         }
                     }
@@ -1202,7 +1290,6 @@
             const videoUrl = (document.getElementById('input-defensive-video-url')?.value || '').trim();
 
             const player = rosterPlayers.find(p => p.jersey === playerJersey);
-
             const eventText = `🛡️ Big Defensive Play! #${playerJersey} ${player ? player.name : ''} - ${actionType}`;
 
             matchState.events.unshift({
@@ -1548,7 +1635,7 @@
 
             const motmSelect = document.getElementById('edit-match-motm');
             if (motmSelect) {
-                motmSelect.innerHTML = `<option value="">-- No MOTM Selected --</option>` +
+                motmSelect.innerHTML = `<option value="">-- No MOTM Selected --</option>` + 
                     rosterPlayers.map(p => `
                         <option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>
                             #${p.jersey} - ${p.name}
@@ -1627,6 +1714,7 @@
                         if (playerStats[p.jersey]) {
                             playerStats[p.jersey].goals = 0;
                             playerStats[p.jersey].assists = 0;
+                            playerStats[p.jersey].defensivePlays = 0;
                         }
                     });
                     displayRoster();
@@ -1666,7 +1754,7 @@
                     console.warn("Firestore match read error:", err);
                 });
 
-                // Listen for Player Stats
+                // Listen for Player Stats & Family Info
                 const statsDocRef = doc(db, 'stats', 'season_totals');
                 onSnapshot(statsDocRef, (snap) => {
                     let needsSave = false;
@@ -1693,6 +1781,7 @@
                     }
 
                     displayRoster();
+                    if (activeModalJersey) openPlayerCard(activeModalJersey);
                 }, (err) => {
                     console.warn("Firestore stats read error:", err);
                 });
@@ -1748,6 +1837,8 @@
                 const stats = playerStats[player.jersey] || { goals: 0, assists: 0, highlightUrl: '' };
                 const points = (stats.goals || 0) + (stats.assists || 0);
                 const hasVideo = !!stats.highlightUrl;
+                const hasFamilyPhoto = !!stats.familyPhoto;
+                const parentsDisplay = stats.customParents || player.parents || 'N/A';
 
                 return `
                     <div onclick="openPlayerCard(${player.jersey})" 
@@ -1760,9 +1851,10 @@
                                 <div class="flex items-center space-x-1.5">
                                     <h3 class="text-sm font-bold text-white truncate">${player.name}</h3>
                                     ${hasVideo ? `<span class="text-[10px] bg-blue-950 border border-blue-600/50 text-blue-300 px-1.5 py-0.2 rounded font-semibold flex-shrink-0">🎬 Video</span>` : ''}
+                                    ${hasFamilyPhoto ? `<span class="text-[10px] bg-emerald-950 border border-emerald-600/50 text-emerald-300 px-1.5 py-0.2 rounded font-semibold flex-shrink-0">👨‍👩‍👦 Family</span>` : ''}
                                 </div>
                                 <p class="text-[11px] font-semibold text-blue-400 uppercase tracking-wide truncate">${player.position || 'Player'}</p>
-                                <p class="text-[11px] text-gray-400 truncate mt-0.5">Parents: ${player.parents || 'N/A'}</p>
+                                <p class="text-[11px] text-gray-400 truncate mt-0.5">Parents: ${parentsDisplay}</p>
                             </div>
                         </div>
 
@@ -1793,13 +1885,16 @@
             if (!player) return;
 
             activeModalJersey = jersey;
-            const stats = playerStats[jersey] || { goals: 0, assists: 0, defensivePlays: 0, highlightUrl: '' };
-            const totalPoints = (stats.goals || 0) + (stats.assists || 0);
+            const stats = playerStats[jersey] || { goals: 0, assists: 0, defensivePlays: 0, highlightUrl: '', customParents: '', familySiblings: '', familyPhoto: '' };
             const motmAwards = getPlayerMOTMCount(jersey);
             const playerEvents = matchState.events.filter(
                 e => (e.type === 'us' && (e.scorerJersey === jersey || e.assistJersey === jersey)) ||
                      (e.type === 'defense' && e.defenderJersey === jersey)
             );
+
+            const displayParents = stats.customParents || player.parents || 'Not entered yet';
+            const displaySiblings = stats.familySiblings || '';
+            const hasFamilyPhoto = !!stats.familyPhoto;
 
             let mediaBannerHTML = '';
             if (stats.highlightUrl) {
@@ -1837,7 +1932,8 @@
                     </div>
                 </div>
 
-                <div class="p-4 space-y-4">
+                <div class="p-4 space-y-3.5">
+                    <!-- Season Totals -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <h3 class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Season Totals</h3>
@@ -1866,6 +1962,64 @@
                         </div>
                     </div>
 
+                    <!-- 👨‍👩‍👦 FAMILY & PARENTS SECTION -->
+                    <div class="bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-950/20 border border-emerald-600/30 rounded-2xl p-3.5 shadow-md">
+                        <div class="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-base">👨‍👩‍👦</span>
+                                <h4 class="text-xs font-extrabold text-white">Family & Parents</h4>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                <button onclick="triggerFamilyPhotoUpload(${player.jersey})" 
+                                        class="px-2 py-1 rounded-lg bg-emerald-900/60 hover:bg-emerald-800 border border-emerald-500/50 text-[10px] font-bold text-emerald-200 transition active:scale-95 flex items-center space-x-1">
+                                    <span>📷</span>
+                                    <span>${hasFamilyPhoto ? 'Change Photo' : '+ Photo'}</span>
+                                </button>
+                                <button onclick="openEditFamilyModal(${player.jersey})" 
+                                        class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] font-semibold text-gray-300 transition">
+                                    ✏️ Edit
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <!-- Photo Thumbnail -->
+                            <div class="flex-shrink-0">
+                                ${hasFamilyPhoto ? `
+                                    <div onclick="openFamilyPhotoLightbox('${stats.familyPhoto}', '${player.name}\\'s Family', '${displayParents}', '${displaySiblings}')"
+                                         class="w-16 h-16 rounded-xl overflow-hidden border-2 border-emerald-500/60 shadow-lg cursor-pointer hover:opacity-90 transition relative group">
+                                        <img src="${stats.familyPhoto}" alt="${player.name}'s Family" class="w-full h-full object-cover" />
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                            <span class="text-xs">🔍</span>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div onclick="triggerFamilyPhotoUpload(${player.jersey})" 
+                                         class="w-16 h-16 rounded-xl border border-dashed border-zinc-700 bg-zinc-900 flex flex-col items-center justify-center text-center p-1 cursor-pointer hover:border-emerald-500/70 hover:bg-zinc-800/80 transition">
+                                        <span class="text-lg">📷</span>
+                                        <span class="text-[9px] text-gray-400 font-semibold mt-0.5 leading-tight">+ Add</span>
+                                    </div>
+                                `}
+                            </div>
+
+                            <!-- Family Details -->
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <div>
+                                    <span class="text-[9px] font-bold uppercase text-emerald-400 block tracking-wider">Parents / Guardians</span>
+                                    <p class="text-xs font-bold text-white truncate">${displayParents}</p>
+                                </div>
+                                ${displaySiblings ? `
+                                <div>
+                                    <span class="text-[9px] font-bold uppercase text-gray-400 block tracking-wider">Siblings / Family</span>
+                                    <p class="text-[11px] text-gray-300 truncate">${displaySiblings}</p>
+                                </div>` : `
+                                <p class="text-[10px] text-gray-500 italic">Tap "Edit" to add siblings or family notes.</p>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Match Actions -->
                     <div class="bg-zinc-950/70 border border-zinc-800 rounded-xl p-3">
                         <h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Current Match Actions</h4>
                         ${playerEvents.length === 0 
@@ -1917,6 +2071,168 @@
             document.getElementById('player-modal').classList.remove('hidden');
         }
 
+        let currentUploadJersey = null;
+
+        function triggerFamilyPhotoUpload(jersey) {
+            currentUploadJersey = jersey;
+            const fileInput = document.getElementById('family-photo-file-input');
+            if (fileInput) {
+                fileInput.value = '';
+                fileInput.click();
+            }
+        }
+
+        function triggerFamilyPhotoUploadFromModal() {
+            const jersey = parseInt(document.getElementById('edit-family-jersey')?.value, 10);
+            if (jersey) triggerFamilyPhotoUpload(jersey);
+        }
+
+        function processFamilyPhotoFile(event) {
+            const file = event.target.files?.[0];
+            if (!file || !currentUploadJersey) return;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 640;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.78);
+
+                    if (!playerStats[currentUploadJersey]) {
+                        playerStats[currentUploadJersey] = { goals: 0, assists: 0, defensivePlays: 0 };
+                    }
+                    playerStats[currentUploadJersey].familyPhoto = compressedBase64;
+
+                    const urlInput = document.getElementById('edit-family-photo-url');
+                    if (urlInput) urlInput.value = '';
+
+                    saveStatsToCloud();
+                    displayRoster();
+                    if (activeModalJersey === currentUploadJersey) {
+                        openPlayerCard(currentUploadJersey);
+                    }
+                };
+                img.src = evt.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openEditFamilyModal(jersey) {
+            const player = rosterPlayers.find(p => p.jersey === jersey);
+            if (!player) return;
+            const stats = playerStats[jersey] || {};
+
+            document.getElementById('edit-family-jersey').value = jersey;
+            document.getElementById('edit-family-player-name').textContent = `#${player.jersey} - ${player.name}`;
+            document.getElementById('edit-family-parents').value = stats.customParents || player.parents || '';
+            document.getElementById('edit-family-siblings').value = stats.familySiblings || '';
+            document.getElementById('edit-family-photo-url').value = (stats.familyPhoto && !stats.familyPhoto.startsWith('data:')) ? stats.familyPhoto : '';
+
+            document.getElementById('edit-family-modal').classList.remove('hidden');
+        }
+
+        function closeEditFamilyModal() {
+            document.getElementById('edit-family-modal').classList.add('hidden');
+        }
+
+        function saveFamilyModalData() {
+            const jersey = parseInt(document.getElementById('edit-family-jersey').value, 10);
+            if (!jersey) return;
+
+            if (!playerStats[jersey]) {
+                playerStats[jersey] = { goals: 0, assists: 0, defensivePlays: 0 };
+            }
+
+            const parentsVal = (document.getElementById('edit-family-parents')?.value || '').trim();
+            const siblingsVal = (document.getElementById('edit-family-siblings')?.value || '').trim();
+            const urlVal = (document.getElementById('edit-family-photo-url')?.value || '').trim();
+
+            playerStats[jersey].customParents = parentsVal;
+            playerStats[jersey].familySiblings = siblingsVal;
+
+            if (urlVal) {
+                playerStats[jersey].familyPhoto = urlVal;
+            }
+
+            closeEditFamilyModal();
+            saveStatsToCloud();
+            displayRoster();
+            if (activeModalJersey === jersey) {
+                openPlayerCard(jersey);
+            }
+        }
+
+        function removeCurrentFamilyPhoto() {
+            const jersey = parseInt(document.getElementById('edit-family-jersey')?.value, 10);
+            if (!jersey || !playerStats[jersey]) return;
+
+            playerStats[jersey].familyPhoto = '';
+            const urlInput = document.getElementById('edit-family-photo-url');
+            if (urlInput) urlInput.value = '';
+
+            saveStatsToCloud();
+            displayRoster();
+            if (activeModalJersey === jersey) {
+                openPlayerCard(jersey);
+            }
+        }
+
+        function openFamilyPhotoLightbox(photoUrl, title, subtitle, siblings) {
+            const modal = document.getElementById('family-photo-lightbox-modal');
+            const imgEl = document.getElementById('family-lightbox-img');
+            const titleEl = document.getElementById('family-lightbox-title');
+            const subtitleEl = document.getElementById('family-lightbox-subtitle');
+            const footerEl = document.getElementById('family-lightbox-footer');
+
+            if (imgEl) imgEl.src = photoUrl;
+            if (titleEl) titleEl.textContent = title || 'Family Photo';
+            if (subtitleEl) subtitleEl.textContent = subtitle || '';
+
+            if (footerEl) {
+                if (siblings) {
+                    footerEl.innerHTML = `<span class="text-emerald-300 font-semibold">Family Members:</span> ${siblings}`;
+                    footerEl.classList.remove('hidden');
+                } else {
+                    footerEl.innerHTML = '';
+                    footerEl.classList.add('hidden');
+                }
+            }
+
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeFamilyPhotoLightbox() {
+            const modal = document.getElementById('family-photo-lightbox-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function handleFamilyLightboxBackdrop(event) {
+            if (event.target.id === 'family-photo-lightbox-modal') {
+                closeFamilyPhotoLightbox();
+            }
+        }
+
         function closePlayerModal() {
             document.getElementById('player-modal').classList.add('hidden');
             activeModalJersey = null;
@@ -1924,15 +2240,6 @@
 
         function handleBackdropClick(event) {
             if (event.target.id === 'player-modal') closePlayerModal();
-        }
-
-        function adjustPlayerStat(jersey, field, delta) {
-            if (!isCoachMode) { openCoachAuthModal(); return; }
-            if (!playerStats[jersey]) return;
-            playerStats[jersey][field] = Math.max(0, (playerStats[jersey][field] || 0) + delta);
-            displayRoster();
-            saveStatsToCloud();
-            if (activeModalJersey === jersey) openPlayerCard(jersey);
         }
 
         function savePlayerHighlight(jersey) {
@@ -2220,6 +2527,7 @@
             `;
         }
 
+        // Window Exports for inline HTML onclick handlers
         window.openDefensiveModal = openDefensiveModal;
         window.closeDefensiveModal = closeDefensiveModal;
         window.confirmDefensivePlay = confirmDefensivePlay;
@@ -2236,7 +2544,6 @@
         window.openPlayerCard = openPlayerCard;
         window.closePlayerModal = closePlayerModal;
         window.handleBackdropClick = handleBackdropClick;
-        window.adjustPlayerStat = adjustPlayerStat;
         window.savePlayerHighlight = savePlayerHighlight;
         window.openCoachAuthModal = openCoachAuthModal;
         window.closeCoachAuthModal = closeCoachAuthModal;
@@ -2264,6 +2571,17 @@
         window.resetAllSeasonStatsConfirm = resetAllSeasonStatsConfirm;
         window.closeConfirmModal = closeConfirmModal;
         window.handleHeaderBgError = handleHeaderBgError;
+
+        window.triggerFamilyPhotoUpload = triggerFamilyPhotoUpload;
+        window.triggerFamilyPhotoUploadFromModal = triggerFamilyPhotoUploadFromModal;
+        window.processFamilyPhotoFile = processFamilyPhotoFile;
+        window.openEditFamilyModal = openEditFamilyModal;
+        window.closeEditFamilyModal = closeEditFamilyModal;
+        window.saveFamilyModalData = saveFamilyModalData;
+        window.removeCurrentFamilyPhoto = removeCurrentFamilyPhoto;
+        window.openFamilyPhotoLightbox = openFamilyPhotoLightbox;
+        window.closeFamilyPhotoLightbox = closeFamilyPhotoLightbox;
+        window.handleFamilyLightboxBackdrop = handleFamilyLightboxBackdrop;
 
         // Startup lifecycle
         document.addEventListener('DOMContentLoaded', () => {
