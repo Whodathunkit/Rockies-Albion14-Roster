@@ -1423,6 +1423,22 @@
                                         </div>
                                     ` : `
                                         <p class="text-xs text-gray-400 italic mt-0.5">Decided in the locker room post-game ⚽</p>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            const listEl = document.getElementById('match-events-list');
+            if (!listEl) return;
+
+            if (matchState.events.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-gray-500 italic py-2 text-center">No goals or defensive events logged yet.</p>`;
+                return;
+            }
+
             listEl.innerHTML = matchState.events.map(ev => {
                 const isDefense = ev.type === 'defense';
                 const isUsGoal = ev.type === 'us';
