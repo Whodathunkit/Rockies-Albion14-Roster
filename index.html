@@ -61,7 +61,55 @@
 </head>
 <body class="min-h-screen bg-[#0c0d12] text-gray-100 antialiased selection:bg-blue-600 selection:text-white pb-16">
 
-    <div class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+    <!-- FAMILY ACCESS LOCK SCREEN (Shown until unlocked) -->
+    <div id="family-gatekeeper-overlay" class="fixed inset-0 z-[100] bg-[#0c0d12] flex items-center justify-center p-4">
+        <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-blue-600/40 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl relative overflow-hidden">
+            <!-- Subtle blue glow backdrop -->
+            <div class="absolute -top-16 -left-16 w-32 h-32 bg-blue-600/20 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-16 -right-16 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="relative z-10">
+                <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" 
+                     alt="Rockies FC Logo" 
+                     class="mx-auto mb-3 drop-shadow-lg"
+                     style="max-height: 72px;" />
+                
+                <h2 class="text-xl font-extrabold text-white tracking-tight">Rockies Albion 14</h2>
+                <div class="inline-flex items-center space-x-1.5 bg-blue-950/80 border border-blue-500/40 px-2.5 py-0.5 rounded-full text-[10px] font-bold text-blue-300 my-2">
+                    <span>🛡️ Private Team Portal</span>
+                </div>
+                <p class="text-xs text-gray-300 mt-1 mb-5">
+                    Enter the team passcode to access our private player roster, match tracker, and video clips.
+                </p>
+
+                <div class="space-y-3">
+                    <div>
+                        <input id="family-pass-input" type="password" 
+                               placeholder="Enter Team Passcode" 
+                               autocomplete="off"
+                               onkeydown="if(event.key === 'Enter') checkFamilyPass()"
+                               class="w-full bg-zinc-800 border border-zinc-700 text-center tracking-wider text-sm font-semibold rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+                        <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">
+                            Incorrect passcode. Please check with your coach or team chat.
+                        </p>
+                    </div>
+
+                    <button onclick="checkFamilyPass()" 
+                            class="w-full py-2.5 rounded-xl font-bold text-sm bg-gradient-to-r from-[#003C71] to-blue-600 hover:from-blue-700 hover:to-blue-500 text-white shadow-lg shadow-blue-950/50 transition active:scale-95 flex items-center justify-center space-x-2">
+                        <span>Enter Team Site</span>
+                        <span>⚽</span>
+                    </button>
+                </div>
+
+                <p class="text-[11px] text-gray-400 mt-4">
+                    🔒 Kept on this device so you won't need to re-enter it every visit.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTENT (Hidden while locked) -->
+    <div id="main-team-app" class="max-w-3xl mx-auto px-3 sm:px-4 py-4 sm:py-6 hidden">
 
         <header class="bg-gradient-to-b from-[#003C71] to-[#002244] text-white text-center mb-6 rounded-2xl shadow-2xl p-5 sm:p-6 border border-blue-600/40 relative overflow-hidden">
             <!-- Background Team Photo with Gradient Overlay -->
@@ -252,6 +300,14 @@
                 </div>
             </div>
         </section>
+
+        <!-- Footer with Relock option -->
+        <footer class="mt-8 pt-4 border-t border-zinc-800/80 text-center flex items-center justify-between text-[11px] text-gray-400 px-2">
+            <span>Calgary Rockies Albion 14 • Private Portal</span>
+            <button onclick="lockFamilyPortal()" class="text-gray-400 hover:text-white underline">
+                🔒 Relock Site
+            </button>
+        </footer>
     </div>
 
     <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
@@ -436,6 +492,54 @@
         let db = null;
         let auth = null;
         let isCloudActive = false;
+
+        // TEAM FAMILY PASSCODE GATE
+        // Accepts: 'albion14', '1414', or 'rockies14' (case-insensitive)
+        const VALID_FAMILY_PASSCODES = ['albion14', '1414', 'rockies14'];
+        const FAMILY_AUTH_KEY = 'rockies_albion14_family_authenticated_v1';
+
+        function checkFamilyPass() {
+            const input = document.getElementById('family-pass-input');
+            const errorMsg = document.getElementById('family-pass-error');
+            const entered = (input?.value || '').trim().toLowerCase();
+
+            if (VALID_FAMILY_PASSCODES.includes(entered)) {
+                localStorage.setItem(FAMILY_AUTH_KEY, 'true');
+                unlockFamilyPortal();
+            } else {
+                if (errorMsg) errorMsg.classList.remove('hidden');
+                if (input) {
+                    input.classList.add('border-rose-500');
+                    input.focus();
+                }
+            }
+        }
+
+        function unlockFamilyPortal() {
+            const gatekeeper = document.getElementById('family-gatekeeper-overlay');
+            const appContent = document.getElementById('main-team-app');
+            if (gatekeeper) gatekeeper.classList.add('hidden');
+            if (appContent) appContent.classList.remove('hidden');
+        }
+
+        function lockFamilyPortal() {
+            localStorage.removeItem(FAMILY_AUTH_KEY);
+            const gatekeeper = document.getElementById('family-gatekeeper-overlay');
+            const appContent = document.getElementById('main-team-app');
+            const input = document.getElementById('family-pass-input');
+            const errorMsg = document.getElementById('family-pass-error');
+            
+            if (input) {
+                input.value = '';
+                input.classList.remove('border-rose-500');
+            }
+            if (errorMsg) errorMsg.classList.add('hidden');
+            if (gatekeeper) gatekeeper.classList.remove('hidden');
+            if (appContent) appContent.classList.add('hidden');
+        }
+
+        window.checkFamilyPass = checkFamilyPass;
+        window.lockFamilyPortal = lockFamilyPortal;
 
         // COACH ACCESS CONTROL (Default PIN: 1414)
         const COACH_PIN = "1414";
@@ -1458,6 +1562,14 @@
 
         // Startup lifecycle
         document.addEventListener('DOMContentLoaded', () => {
+            // Check if family is already authenticated
+            if (localStorage.getItem(FAMILY_AUTH_KEY) === 'true') {
+                unlockFamilyPortal();
+            } else {
+                const input = document.getElementById('family-pass-input');
+                setTimeout(() => { if (input) input.focus(); }, 150);
+            }
+
             rosterPlayers = parseCSV(csvData);
             displayRoster();
             renderMatchTracker();
