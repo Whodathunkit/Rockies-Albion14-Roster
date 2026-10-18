@@ -241,14 +241,14 @@
 3,Nael Salazar Simon,Paulina,Armando,GK
 4,Logan Martens,Tyler,Rosie,Defense
 5,Elijah Amoako,Franklin,Linda,Striker
-11,Tristan D'Mello,Melvin,Charlotte,Winger/Striker
-62,Elnathan Udoh,Emmanuel,Dépéjú,Defense/Midfield
+11,Tristan D'Mello,Melvin,Charlotte,Striker/Midfield
+62,Elnathan (Nathan) Udoh,Emmanuel,Dépéjú,Defense
 14,Haaris Nathoo,Rizwan,Rabea,GK
-22,Yazed Manasrah,,,Defense/Midfield
+22,Yazed (Zizou) Manasrah,,,Defense/Midfield
 35,Nyle Zachary,,,Midfield
 52,Sam Campbell,,,Defense
-58,Harrison Locke,,,Midfield
-65,Nicholas Lai,,,Defense
+58,Harrison (Harry) Locke,Paul,Lauren,Midfield
+65,Nicholas (Nic) Lai,Andy,Bonnie,Defense
 70,Esteban Bazurto,,,Striker`;
 
         let rosterPlayers = [];
@@ -258,19 +258,22 @@
             4: 'videos/04-logan.mp4'
         };
 
+        // Glitch-free match state using baseSeconds and timestamp tracking
         let matchState = {
             usScore: 0,
             themScore: 0,
             opponentName: 'Opponent',
             period: '1st Half',
-            secondsElapsed: 0,
+            baseSeconds: 0,
+            timerStartedAt: null,
             isRunning: false,
-            lastUpdated: Date.now(),
-            timerInterval: null,
-            events: []
+            isFinished: false,
+            events: [],
+            history: []
         };
 
         let activeModalJersey = null;
+        let cloudSaveTimer = null;
 
         function parseCSV(csvString) {
             const lines = csvString.trim().split('\n');
@@ -328,7 +331,7 @@
                 label.className = 'text-blue-300';
             } else if (status === 'local') {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
-                label.textContent = text || 'Local Mode (Awaiting Firebase keys)';
+                label.textContent = text || 'Local Mode';
                 label.className = 'text-amber-300';
             } else {
                 dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-400';
@@ -337,33 +340,47 @@
             }
         }
 
-        async function saveMatchToCloud() {
-            if (!isCloudActive || !auth?.currentUser || !db) return;
+        // Clean, single Firestore save function with debouncing to prevent UI glitching
+        function saveMatchToCloud(immediate = false) {
+            if (!isCloudActive || !db) return;
+            clearTimeout(cloudSaveTimer);
+            if (immediate) {
+                executeSaveMatch();
+            } else {
+                cloudSaveTimer = setTimeout(executeSaveMatch, 350);
+            }
+        }
+
+        async function executeSaveMatch() {
+            if (!isCloudActive || !db) return;
             try {
                 setCloudStatus('syncing', 'Saving match...');
-                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matches', 'current_match');
+                const matchDocRef = doc(db, 'matches', 'current_match');
                 await setDoc(matchDocRef, {
                     usScore: matchState.usScore,
                     themScore: matchState.themScore,
                     opponentName: matchState.opponentName,
                     period: matchState.period,
-                    secondsElapsed: matchState.secondsElapsed,
+                    baseSeconds: matchState.baseSeconds,
+                    timerStartedAt: matchState.timerStartedAt,
                     isRunning: matchState.isRunning,
-                    lastUpdated: Date.now(),
-                    events: matchState.events
+                    isFinished: matchState.isFinished,
+                    events: matchState.events,
+                    history: matchState.history || [],
+                    lastUpdated: Date.now()
                 }, { merge: true });
                 setCloudStatus('connected');
             } catch (err) {
                 console.error("Error saving match:", err);
-                setCloudStatus('connected', 'Cloud Synced (Saved)');
+                setCloudStatus('error', 'Cloud Save Blocked: Check Rules');
             }
         }
 
         async function saveStatsToCloud() {
-            if (!isCloudActive || !auth?.currentUser || !db) return;
+            if (!isCloudActive || !db) return;
             try {
                 setCloudStatus('syncing', 'Saving stats...');
-                const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'player_stats', 'season_totals');
+                const statsDocRef = doc(db, 'stats', 'season_totals');
                 await setDoc(statsDocRef, {
                     totals: playerStats,
                     lastUpdated: Date.now()
@@ -371,7 +388,7 @@
                 setCloudStatus('connected');
             } catch (err) {
                 console.error("Error saving stats:", err);
-                setCloudStatus('connected', 'Cloud Synced (Saved)');
+                setCloudStatus('error', 'Cloud Save Blocked: Check Rules');
             }
         }
 
@@ -577,7 +594,17 @@
                 tabTrackerBtn.className = 'px-5 py-2.5 rounded-lg text-sm md:text-base font-bold transition-all bg-white text-rockies-blue shadow';
                 tabRosterBtn.className = 'px-5 py-2.5 rounded-lg text-sm md:text-base font-bold transition-all text-gray-200 hover:text-white';
                 renderMatchTracker();
+                renderMatchHistory();
             }
+        }
+
+        // Computes exact elapsed time without fighting intervals across phones
+        function getElapsedSeconds() {
+            if (!matchState.isRunning || !matchState.timerStartedAt) {
+                return matchState.baseSeconds || 0;
+            }
+            const diff = Math.floor((Date.now() - matchState.timerStartedAt) / 1000);
+            return Math.max(0, (matchState.baseSeconds || 0) + diff);
         }
 
         function formatTime(totalSeconds) {
@@ -587,57 +614,126 @@
         }
 
         function updateClockUI() {
-            document.getElementById('clock-display').textContent = formatTime(matchState.secondsElapsed);
+            const clockEl = document.getElementById('clock-display');
+            if (clockEl) clockEl.textContent = formatTime(getElapsedSeconds());
+
             const btn = document.getElementById('btn-start-pause');
-            if (matchState.isRunning) {
-                btn.textContent = '⏸ Pause Clock';
-                btn.className = 'px-6 py-2.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-black shadow-lg transition';
-            } else {
-                btn.textContent = '▶ Start Clock';
-                btn.className = 'px-6 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition';
+            if (btn) {
+                if (matchState.isRunning) {
+                    btn.textContent = '⏸ Pause Clock';
+                    btn.className = 'px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-400 text-black shadow-lg transition';
+                } else {
+                    btn.textContent = '▶ Start Clock';
+                    btn.className = 'px-5 py-2.5 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg transition';
+                }
+            }
+
+            const finalBanner = document.getElementById('final-banner');
+            if (finalBanner) {
+                if (matchState.isFinished) {
+                    finalBanner.classList.remove('hidden');
+                } else {
+                    finalBanner.classList.add('hidden');
+                }
             }
         }
 
         function toggleTimer() {
             if (matchState.isRunning) {
-                clearInterval(matchState.timerInterval);
+                // Pause: bake current elapsed seconds into baseSeconds
+                matchState.baseSeconds = getElapsedSeconds();
+                matchState.timerStartedAt = null;
                 matchState.isRunning = false;
             } else {
+                // Start / Resume: set anchor timestamp
+                matchState.timerStartedAt = Date.now();
                 matchState.isRunning = true;
-                matchState.timerInterval = setInterval(() => {
-                    matchState.secondsElapsed++;
-                    updateClockUI();
-                }, 1000);
+                matchState.isFinished = false;
             }
             updateClockUI();
-            saveMatchToCloud();
+            saveMatchToCloud(true);
         }
 
         function adjustClock(deltaSeconds) {
-            matchState.secondsElapsed = Math.max(0, matchState.secondsElapsed + deltaSeconds);
+            const current = getElapsedSeconds();
+            matchState.baseSeconds = Math.max(0, current + deltaSeconds);
+            if (matchState.isRunning) {
+                matchState.timerStartedAt = Date.now();
+            }
             updateClockUI();
             saveMatchToCloud();
         }
 
-        function setPeriod(periodName) {
+        function setPeriod(periodName, shouldSave = true) {
             matchState.period = periodName;
-            document.getElementById('period-label').textContent = periodName;
+            const label = document.getElementById('period-label');
+            if (label) label.textContent = periodName;
+
             const p1 = document.getElementById('period-1');
             const p2 = document.getElementById('period-2');
-            if (periodName === '1st Half') {
-                p1.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-rockies-blue text-white';
-                p2.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-400 hover:text-white';
-            } else {
-                p2.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-rockies-blue text-white';
-                p1.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-400 hover:text-white';
-            }
-            saveMatchToCloud();
+            const pf = document.getElementById('period-final');
+
+            const defaultClass = 'px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-400 hover:text-white';
+            const activeClass = 'px-3 py-1 rounded-lg text-xs font-bold bg-rockies-blue text-white';
+
+            if (p1) p1.className = periodName === '1st Half' ? activeClass : defaultClass;
+            if (p2) p2.className = periodName === '2nd Half' ? activeClass : defaultClass;
+            if (pf) pf.className = periodName === 'Final' ? 'px-3 py-1 rounded-lg text-xs font-bold bg-rose-800 text-white' : defaultClass;
+
+            if (shouldSave) saveMatchToCloud();
         }
 
         function updateOpponentName(name) {
             matchState.opponentName = name.trim() || 'Opponent';
-            document.getElementById('score-them-label').textContent = matchState.opponentName;
+            const scoreLabel = document.getElementById('score-them-label');
+            if (scoreLabel) scoreLabel.textContent = matchState.opponentName;
             saveMatchToCloud();
+        }
+
+        function endMatchConfirm() {
+            openConfirmModal(
+                'End Match (Final Whistle)?',
+                `Stop the clock and save final score (${matchState.usScore} - ${matchState.themScore} vs ${matchState.opponentName}) to Match History?`,
+                () => endMatch()
+            );
+        }
+
+        function endMatch() {
+            // Stop clock and freeze elapsed
+            matchState.baseSeconds = getElapsedSeconds();
+            matchState.timerStartedAt = null;
+            matchState.isRunning = false;
+            matchState.isFinished = true;
+            setPeriod('Final', false);
+
+            // Archive to history log
+            const summary = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                usScore: matchState.usScore,
+                themScore: matchState.themScore,
+                opponent: matchState.opponentName,
+                duration: formatTime(matchState.baseSeconds),
+                events: [...matchState.events]
+            };
+
+            if (!matchState.history) matchState.history = [];
+            matchState.history.unshift(summary);
+
+            updateClockUI();
+            renderMatchTracker();
+            renderMatchHistory();
+            saveMatchToCloud(true);
+        }
+
+        function resumeMatch() {
+            matchState.isFinished = false;
+            if (matchState.period === 'Final') {
+                setPeriod('2nd Half', false);
+            }
+            updateClockUI();
+            renderMatchTracker();
+            saveMatchToCloud(true);
         }
 
         function openGoalModal() {
@@ -679,7 +775,7 @@
 
             matchState.events.unshift({
                 id: Date.now(),
-                timeStr: formatTime(matchState.secondsElapsed),
+                timeStr: formatTime(getElapsedSeconds()),
                 period: matchState.period,
                 type: 'us',
                 scorerJersey: scorer.jersey,
@@ -690,7 +786,7 @@
             closeGoalModal();
             renderMatchTracker();
             displayRoster();
-            saveMatchToCloud();
+            saveMatchToCloud(true);
             saveStatsToCloud();
         }
 
@@ -701,7 +797,7 @@
             if (delta > 0) {
                 matchState.events.unshift({
                     id: Date.now(),
-                    timeStr: formatTime(matchState.secondsElapsed),
+                    timeStr: formatTime(getElapsedSeconds()),
                     period: matchState.period,
                     type: 'them',
                     scorerJersey: null,
@@ -711,7 +807,7 @@
             }
             renderMatchTracker();
             displayRoster();
-            saveMatchToCloud();
+            saveMatchToCloud(true);
         }
 
         function deleteMatchEvent(eventId) {
@@ -762,6 +858,35 @@
             `).join('');
         }
 
+        function renderMatchHistory() {
+            const listEl = document.getElementById('match-history-list');
+            const countEl = document.getElementById('history-count');
+            if (!listEl) return;
+
+            const history = matchState.history || [];
+            if (countEl) countEl.textContent = `${history.length} match${history.length === 1 ? '' : 'es'} saved`;
+
+            if (history.length === 0) {
+                listEl.innerHTML = `<p class="text-xs text-gray-500 italic py-2">No completed matches yet. Tapping "End Match" archives final game summaries here.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = history.map(item => `
+                <div class="bg-zinc-950/70 border border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-zinc-800 text-gray-300">${item.date}</span>
+                            <span class="text-xs text-gray-400">Time: ${item.duration}</span>
+                        </div>
+                        <div class="text-base font-extrabold text-white mt-1">
+                            Rockies Albion 14 <span class="text-blue-400">${item.usScore}</span> - <span class="text-rose-400">${item.themScore}</span> ${item.opponent}
+                        </div>
+                        <p class="text-xs text-gray-400 mt-0.5">${item.events.filter(e => e.type === 'us').length} Rockies goals logged</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         function openConfirmModal(title, message, onConfirm) {
             document.getElementById('confirm-title').textContent = title;
             document.getElementById('confirm-message').textContent = message;
@@ -776,24 +901,29 @@
 
         function resetClockConfirm() {
             openConfirmModal('Reset Clock?', 'Reset the timer back to 00:00.', () => {
-                if (matchState.isRunning) toggleTimer();
-                matchState.secondsElapsed = 0;
+                matchState.baseSeconds = 0;
+                matchState.timerStartedAt = matchState.isRunning ? Date.now() : null;
                 updateClockUI();
-                saveMatchToCloud();
+                saveMatchToCloud(true);
             });
         }
 
         function resetNewMatchConfirm() {
-            openConfirmModal('Start New Match?', 'Reset scoreboard and clock to 0-0 while keeping season totals.', () => {
-                if (matchState.isRunning) toggleTimer();
-                matchState.secondsElapsed = 0;
+            openConfirmModal('Start New Match?', 'Reset scoreboard and timer for a new game. (Season stats and Past Match History remain saved).', () => {
+                matchState.baseSeconds = 0;
+                matchState.timerStartedAt = null;
+                matchState.isRunning = false;
+                matchState.isFinished = false;
+                matchState.period = '1st Half';
                 matchState.usScore = 0;
                 matchState.themScore = 0;
+                matchState.opponentName = 'Opponent';
                 matchState.events = [];
+                setPeriod('1st Half', false);
                 updateClockUI();
                 renderMatchTracker();
                 displayRoster();
-                saveMatchToCloud();
+                saveMatchToCloud(true);
             });
         }
 
@@ -805,7 +935,7 @@
             );
 
             if (!hasValidKeys) {
-                setCloudStatus('local', 'Local Mode (Add Firebase Keys in code to Sync)');
+                setCloudStatus('local', 'Local Mode (Add Firebase Keys in code)');
                 return;
             }
 
@@ -814,23 +944,27 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Authenticate before queries (Rule 3)
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                if (!auth.currentUser) {
-                    setCloudStatus('local', 'Authentication pending');
-                    return;
+                // Authenticate anonymously so Firebase accepts requests
+                try {
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                } catch (authErr) {
+                    console.warn("Auth warning:", authErr);
+                    // If anonymous auth isn't enabled in console, inform user
+                    if (authErr.code === 'auth/admin-restricted-operation' || authErr.code === 'auth/operation-not-allowed') {
+                        setCloudStatus('error', 'Turn on Anonymous Auth in Firebase');
+                        return;
+                    }
                 }
 
                 isCloudActive = true;
-                setCloudStatus('connected');
+                setCloudStatus('connected', 'Cloud Synced (Live)');
 
-                // 1. Listen for Live Match State updates in Realtime
-                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matches', 'current_match');
+                // Single listener on 'matches/current_match'
+                const matchDocRef = doc(db, 'matches', 'current_match');
                 onSnapshot(matchDocRef, (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
@@ -838,39 +972,31 @@
                         matchState.themScore = data.themScore ?? matchState.themScore;
                         matchState.opponentName = data.opponentName ?? matchState.opponentName;
                         matchState.period = data.period ?? matchState.period;
+                        matchState.baseSeconds = data.baseSeconds ?? (data.secondsElapsed ?? matchState.baseSeconds);
+                        matchState.timerStartedAt = data.timerStartedAt ?? null;
+                        matchState.isRunning = Boolean(data.isRunning);
+                        matchState.isFinished = Boolean(data.isFinished);
                         matchState.events = data.events ?? matchState.events;
+                        matchState.history = data.history ?? matchState.history ?? [];
 
-                        // Resume running clock across refresh
-                        if (data.isRunning && data.lastUpdated) {
-                            const elapsedDiff = Math.floor((Date.now() - data.lastUpdated) / 1000);
-                            matchState.secondsElapsed = (data.secondsElapsed || 0) + Math.max(0, elapsedDiff);
-                            if (!matchState.isRunning) {
-                                matchState.isRunning = true;
-                                if (matchState.timerInterval) clearInterval(matchState.timerInterval);
-                                matchState.timerInterval = setInterval(() => {
-                                    matchState.secondsElapsed++;
-                                    updateClockUI();
-                                }, 1000);
-                            }
-                        } else {
-                            matchState.secondsElapsed = data.secondsElapsed ?? matchState.secondsElapsed;
-                            if (matchState.isRunning) {
-                                clearInterval(matchState.timerInterval);
-                                matchState.isRunning = false;
-                            }
+                        const oppInput = document.getElementById('opponent-input');
+                        if (oppInput && document.activeElement !== oppInput) {
+                            oppInput.value = matchState.opponentName;
                         }
 
-                        setPeriod(matchState.period);
+                        setPeriod(matchState.period, false);
                         updateClockUI();
                         renderMatchTracker();
+                        renderMatchHistory();
                         displayRoster();
                     }
                 }, (err) => {
                     console.warn("Match snapshot error:", err);
+                    setCloudStatus('error', 'Firestore Read Blocked: Check Rules');
                 });
 
-                // 2. Listen for Season Totals updates in Realtime
-                const statsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'player_stats', 'season_totals');
+                // Single listener on 'stats/season_totals'
+                const statsDocRef = doc(db, 'stats', 'season_totals');
                 onSnapshot(statsDocRef, (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
@@ -885,7 +1011,7 @@
 
             } catch (err) {
                 console.error("Firebase initialization failed:", err);
-                setCloudStatus('local', 'Local Mode (Check Firebase Config)');
+                setCloudStatus('error', 'Firebase Error: ' + err.message);
             }
         }
 
@@ -907,13 +1033,25 @@
         window.resetClockConfirm = resetClockConfirm;
         window.resetNewMatchConfirm = resetNewMatchConfirm;
         window.closeConfirmModal = closeConfirmModal;
+        window.endMatchConfirm = endMatchConfirm;
+        window.endMatch = endMatch;
+        window.resumeMatch = resumeMatch;
 
         document.addEventListener('DOMContentLoaded', () => {
             rosterPlayers = parseCSV(csvData);
             displayRoster();
             renderMatchTracker();
+            renderMatchHistory();
             updateClockUI();
             initFirebaseSync();
+
+            // Smooth 1-second display ticker that reads current elapsed time without jitter
+            setInterval(() => {
+                if (matchState.isRunning) {
+                    const clockEl = document.getElementById('clock-display');
+                    if (clockEl) clockEl.textContent = formatTime(getElapsedSeconds());
+                }
+            }, 1000);
         });
     </script>
 </body>
