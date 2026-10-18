@@ -226,6 +226,11 @@
 
         let rosterPlayers = [];
         let playerStats = {}; 
+
+        // Default highlight clips / intro videos stored in your repo
+        const playerMediaDefaults = {
+            4: 'videos/04-logan.mp4'
+        };
         
         let matchState = {
             usScore: 0,
@@ -270,7 +275,11 @@
                 if (name && !isNaN(jersey)) {
                     roster.push({ jersey, name, position, parents });
                     if (!playerStats[jersey]) {
-                        playerStats[jersey] = { goals: 0, assists: 0, highlightUrl: '' };
+                        playerStats[jersey] = { 
+                            goals: 0, 
+                            assists: 0, 
+                            highlightUrl: playerMediaDefaults[jersey] || '' 
+                        };
                     }
                 }
             }
@@ -334,7 +343,7 @@
 
             let mediaBannerHTML = '';
             if (stats.highlightUrl) {
-                const isVideo = stats.highlightUrl.match(/\.(mp4|webm|ogg)$/i);
+                const isVideo = stats.highlightUrl.match(/\.(mp4|webm|ogg|mov)$/i) || stats.highlightUrl.includes('videos/');
                 if (isVideo) {
                     mediaBannerHTML = `<video src="${stats.highlightUrl}" autoplay loop muted playsinline class="w-full h-52 sm:h-64 object-cover bg-black"></video>`;
                 } else {
