@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Block search engines for team privacy -->
+    <!-- Block search engines for privacy -->
     <meta name="robots" content="noindex, nofollow">
     <title>Rockies Albion 14 | Team Roster & Live Match Tracker</title>
     
@@ -37,14 +37,12 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* Constrain logo so it NEVER blows up even on slow networks */
         .team-logo {
-            max-height: 88px;
+            max-height: 84px;
             width: auto;
             object-fit: contain;
         }
 
-        /* Custom sleek scrollbars */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -67,18 +65,18 @@
 
         <header class="bg-gradient-to-b from-[#003C71] to-[#002244] text-white text-center mb-6 rounded-2xl shadow-2xl p-5 sm:p-6 border border-blue-600/40 relative overflow-hidden">
             <!-- Background Team Photo with Gradient Overlay -->
-            <div class="absolute inset-0 z-0 pointer-events-none">
+            <div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                 <img id="team-header-bg" 
-                     src="videos/albion%2014%20team%20pic.jpg" 
-                     alt="Rockies Albion 14 Team Photo"
-                     onerror="if (!this.dataset.tried) { this.dataset.tried='1'; this.src='videos/albion%2014%20team%20pic.png'; } else if (this.dataset.tried==='1') { this.dataset.tried='2'; this.src='videos/albion%2014%20team%20pic.jpeg'; } else if (this.dataset.tried==='2') { this.dataset.tried='3'; this.src='videos/albion%2014%20team%20pic'; }"
-                     class="w-full h-full object-cover opacity-30 filter blur-[0.4px] scale-105" />
+                     src="videos/albion%2014%20team%20pic.jpeg" 
+                     alt=""
+                     onerror="handleHeaderBgError(this)"
+                     class="w-full h-full object-cover opacity-35 filter blur-[0.3px] scale-105 transition-opacity duration-500" />
                 <div class="absolute inset-0 bg-gradient-to-b from-[#003C71]/80 via-[#002244]/85 to-[#001830]/95"></div>
             </div>
 
-            <!-- Header Content (Elevated with relative z-10 for sharp contrast & clickability) -->
+            <!-- Header Content -->
             <div class="relative z-10">
-                <!-- Team Logo with strict maximum sizing -->
+                <!-- Team Logo -->
                 <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" 
                      alt="Calgary Rockies FC Logo" 
                      class="team-logo mx-auto mb-2 drop-shadow-xl"
@@ -119,7 +117,7 @@
                 <span id="player-count-badge" class="text-[11px] bg-zinc-800 text-gray-300 px-2 py-0.5 rounded-md font-semibold">12 Players</span>
             </div>
             
-            <!-- Cards list container (Single column on mobile, max 1 column wide for clean phone scrolling) -->
+            <!-- Cards list container -->
             <div id="roster-list" class="space-y-2.5">
                 <!-- Dynamic Player cards injected via JS -->
             </div>
@@ -157,8 +155,8 @@
                     <!-- Final Banner -->
                     <div id="final-banner" class="hidden mt-3 inline-flex items-center space-x-2 bg-rose-950/80 border border-rose-600/70 px-3.5 py-1 rounded-full text-xs font-bold text-rose-200">
                         <span>🏁 MATCH COMPLETED (FINAL)</span>
-                        <span class="text-rose-400 coach-control">|</span>
-                        <button onclick="resumeMatch()" class="text-rose-300 underline hover:text-white coach-control">Resume</button>
+                        <span class="text-rose-400">|</span>
+                        <button onclick="resumeMatch()" class="text-rose-300 underline hover:text-white">Resume</button>
                     </div>
 
                     <!-- Spectator Notice -->
@@ -424,7 +422,7 @@
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Your exact Firebase configuration keys
+        // Firebase configuration keys
         const firebaseConfig = {
             apiKey: "AIzaSyBiHCsbZ_d36OyxaZpivk8tifKazvwLhCs",
             authDomain: "rockies-albion-14.firebaseapp.com",
@@ -442,6 +440,12 @@
         // COACH ACCESS CONTROL (Default PIN: 1414)
         const COACH_PIN = "1414";
         let isCoachMode = localStorage.getItem('rockies_coach_mode_unlocked') === 'true';
+
+        // Baseline official goals (Elijah #5: 1 goal, Sam #52: 1 goal)
+        const baselineSeasonStats = {
+            5: { goals: 1, assists: 0 },
+            52: { goals: 1, assists: 0 }
+        };
 
         const csvData = `Jersey Number,Player Name,Parent 1,Parent 2,Position
 3,Nael Salazar Simon,Paulina,Armando,GK
@@ -482,6 +486,28 @@
         let activeModalJersey = null;
         let cloudSaveTimer = null;
 
+        // Smart image error handler to try case variations
+        function handleHeaderBgError(img) {
+            const tries = [
+                'videos/albion%2014%20team%20pic.jpeg',
+                'videos/albion%2014%20team%20pic.jpg',
+                'videos/albion%2014%20team%20pic.png',
+                'videos/albion%2014%20team%20pic.JPG',
+                'videos/albion 14 team pic.jpeg',
+                'videos/albion 14 team pic.jpg',
+                'videos/albion 14 team pic.png',
+                'videos/albion%2014%20team%20pic'
+            ];
+            let idx = parseInt(img.dataset.tryIdx || '0', 10);
+            if (idx < tries.length) {
+                img.dataset.tryIdx = (idx + 1).toString();
+                img.src = tries[idx];
+            } else {
+                img.style.display = 'none';
+            }
+        }
+        window.handleHeaderBgError = handleHeaderBgError;
+
         // Parse CSV string into player objects
         function parseCSV(csvString) {
             const lines = csvString.trim().split('\n');
@@ -501,9 +527,10 @@
                     if (!isNaN(jersey) && name) {
                         roster.push({ jersey, name, parents, position });
                         if (!playerStats[jersey]) {
+                            const base = baselineSeasonStats[jersey] || { goals: 0, assists: 0 };
                             playerStats[jersey] = {
-                                goals: 0,
-                                assists: 0,
+                                goals: base.goals,
+                                assists: base.assists,
                                 highlightUrl: playerMediaDefaults[jersey] || ''
                             };
                         }
@@ -566,6 +593,7 @@
                         updateCoachUI();
                         renderMatchTracker();
                         renderMatchHistory();
+                        displayRoster();
                     }
                 );
             } else {
@@ -598,6 +626,7 @@
                 updateCoachUI();
                 renderMatchTracker();
                 renderMatchHistory();
+                displayRoster();
             } else {
                 if (err) err.classList.remove('hidden');
             }
@@ -1098,13 +1127,30 @@
                 // Listen for Player Stats
                 const statsDocRef = doc(db, 'stats', 'season_totals');
                 onSnapshot(statsDocRef, (snap) => {
+                    let needsSave = false;
                     if (snap.exists()) {
                         const remoteStats = snap.data();
                         Object.keys(remoteStats).forEach(j => {
                             if (playerStats[j]) playerStats[j] = { ...playerStats[j], ...remoteStats[j] };
                         });
-                        displayRoster();
                     }
+
+                    // Enforce official goals for Elijah (#5) and Sam (#52) if cloud has 0
+                    Object.keys(baselineSeasonStats).forEach(j => {
+                        const base = baselineSeasonStats[j];
+                        if (playerStats[j]) {
+                            if ((playerStats[j].goals || 0) < base.goals) {
+                                playerStats[j].goals = base.goals;
+                                needsSave = true;
+                            }
+                        }
+                    });
+
+                    if (needsSave && isCloudActive) {
+                        saveStatsToCloud();
+                    }
+
+                    displayRoster();
                 }, (err) => {
                     console.warn("Firestore stats read error:", err);
                 });
@@ -1193,6 +1239,10 @@
                                 <span class="text-[9px] text-blue-300 block font-bold">PTS</span>
                                 <span class="text-xs font-extrabold text-blue-400">${points}</span>
                             </div>
+                            ${isCoachMode ? `
+                            <div class="flex items-center space-x-1 pl-1 ml-1 border-l border-zinc-700" onclick="event.stopPropagation()">
+                                <button onclick="adjustPlayerStat(${player.jersey}, 'goals', 1)" title="Add Goal" class="px-1.5 py-0.5 bg-[#003C71] hover:bg-blue-600 text-white rounded text-[10px] font-bold shadow">+G</button>
+                            </div>` : ''}
                         </div>
                     </div>
                 `;
@@ -1389,7 +1439,6 @@
             }
         }
 
-        // Expose functions globally for inline HTML event handlers
         window.switchTab = switchTab;
         window.openPlayerCard = openPlayerCard;
         window.closePlayerModal = closePlayerModal;
