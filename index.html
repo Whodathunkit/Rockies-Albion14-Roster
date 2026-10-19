@@ -215,7 +215,7 @@
                                 ⚽ + Goal
                             </button>
                             <button onclick="openDefensiveModal()" class="px-2.5 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-teal-100 font-extrabold text-xs shadow active:scale-95 transition">
-                                🛡️ + Stop
+                                🛡️ + Defensive Play
                             </button>
                         </div>
                     </div>
@@ -588,7 +588,7 @@
                 </h3>
                 <button onclick="closeGoalModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
-            <form onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-3.5 text-xs">
+            <form id="rockies-goal-form" onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-3.5 text-xs">
                 <!-- 1. Scorer -->
                 <div>
                     <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">1. Goal Scorer (Required)</label>
@@ -666,7 +666,7 @@
                 </h3>
                 <button onclick="closeOpponentGoalModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
-            <form onsubmit="confirmOpponentGoal(event)" class="mt-3 space-y-3 text-xs">
+            <form id="opponent-goal-form" onsubmit="confirmOpponentGoal(event)" class="mt-3 space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
                     <input type="text" id="opponent-goal-name-input" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold" />
@@ -683,37 +683,55 @@
         </div>
     </div>
 
-    <!-- MODAL 2: DEFENSIVE STOP MODAL -->
-    <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-teal-500/40 rounded-2xl max-w-md w-full p-6 shadow-2xl my-auto">
+    <!-- MODAL 2: DEFENSIVE BIG PLAY / CLEARANCE MODAL -->
+    <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-teal-500/40 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <h3 class="text-base font-extrabold text-white flex items-center space-x-2">
-                    <span>🛡️</span><span>Record Defensive Stop / Clearance</span>
-                </h3>
-                <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🛡️</span>
+                    <div>
+                        <h3 class="text-base font-extrabold text-white">Record Defensive Big Play</h3>
+                        <p class="text-[11px] text-teal-300">Goal-line clearances, blocks & key stops</p>
+                    </div>
+                </div>
+                <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
-            <form onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-4 text-xs">
+            <form id="rockies-defense-form" onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-3.5 text-xs">
+                <!-- 1. Defender / Keeper -->
                 <div>
-                    <label class="block font-bold text-gray-300 uppercase mb-1">Defender or Goalkeeper</label>
+                    <label class="block font-bold text-teal-300 uppercase tracking-wider mb-1">1. Defender or Goalkeeper (Required)</label>
                     <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold"></select>
                 </div>
+                <!-- 2. Defensive Action -->
                 <div>
-                    <label class="block font-bold text-gray-300 uppercase mb-1">Action Type</label>
+                    <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">2. Defensive Action Type (Required)</label>
                     <select id="defense-type-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold">
-                        <option value="Goal-Line Clearance 🧤">Goal-Line Clearance 🧤</option>
-                        <option value="Last-Man Shot Block 🛑">Last-Man Shot Block 🛑</option>
-                        <option value="1-on-1 Breakaway Save 🦅">1-on-1 Breakaway Save 🦅</option>
+                        <option value="Goal-Line Clearance 🧤">Goal-Line Clearance (Off the Line) 🧤</option>
+                        <option value="Crucial Last-Man Shot Block 🛑">Crucial Last-Man Shot Block 🛑</option>
+                        <option value="1-on-1 Breakaway Save (GK) 🦅">1-on-1 Breakaway Save (GK) 🦅</option>
                         <option value="Flying Header Clearance 🛡️">Flying Header Clearance 🛡️</option>
-                        <option value="Crucial Tackle in the Box 🧱">Crucial Tackle in the Box 🧱</option>
+                        <option value="Crucial Box Tackle / Dispossession 🧱">Crucial Box Tackle / Dispossession 🧱</option>
+                        <option value="Breakaway Interception / Cutoff 🔐">Breakaway Interception / Cutoff 🔐</option>
                     </select>
                 </div>
+                <!-- 3. Description / Highlight Note -->
                 <div>
-                    <label class="block font-bold text-gray-300 uppercase mb-1">Notes (Optional)</label>
-                    <input type="text" id="defense-note-input" placeholder="e.g. Big stop on the line!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
+                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Highlight Note</label>
+                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line with open net!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                </div>
+                <!-- 4. Video Clip (Phone Upload or Direct Link) -->
+                <div>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">4. Video Clip (From Device or Link)</label>
+                    <div class="space-y-1.5">
+                        <button type="button" onclick="triggerVideoUpload('defensive-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
+                            <span>📱 Pick / Record Video from Phone</span>
+                        </button>
+                        <input type="text" id="defense-video-input" placeholder="Or paste link / videos/04-logan-clearance.mp4" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                    </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
                     <button type="button" onclick="closeDefensiveModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold shadow">Save Stop</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold shadow">Save Defensive Play</button>
                 </div>
             </form>
         </div>
@@ -1294,7 +1312,18 @@
             timerRunning: false,
             period: "1st Half",
             motmJersey: null,
-            events: [],
+            events: [
+                {
+                    id: 2,
+                    type: "defense",
+                    time: "28:37",
+                    playerJersey: 4,
+                    playerName: "Logan Martens",
+                    action: "Goal-Line Clearance 🧤",
+                    note: "Crucial clearance off the post!",
+                    video: ""
+                }
+            ],
             shootout: {
                 active: false,
                 usKicks: [],
@@ -1303,7 +1332,7 @@
             stats: {
                 shotsUs: 0, shotsThem: 0,
                 sotUs: 0, sotThem: 0,
-                savesUs: 0, savesThem: 0,
+                savesUs: 1, savesThem: 0,
                 cornersUs: 0, cornersThem: 0
             },
             history: []
@@ -1767,7 +1796,6 @@
             if (statusEl) statusEl.textContent = 'Uploading to Firebase Storage...';
             if (modal) modal.classList.remove('hidden');
 
-            // Attempt Firebase Storage Upload if Storage is active
             if (storage && auth?.currentUser) {
                 try {
                     const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -1783,7 +1811,6 @@
                         },
                         (error) => {
                             console.warn("Storage upload notice:", error);
-                            // Fallback to local Blob URL if cloud rules or permissions are restricted
                             finishLocalVideoFallback(file);
                         },
                         async () => {
@@ -1797,7 +1824,6 @@
                 }
             }
 
-            // Fallback for offline or local preview
             finishLocalVideoFallback(file);
         }
 
@@ -1827,6 +1853,9 @@
             if (activeVideoUploadTarget === 'goal-modal') {
                 const goalInput = document.getElementById('goal-video-input');
                 if (goalInput) goalInput.value = url;
+            } else if (activeVideoUploadTarget === 'defensive-modal') {
+                const defInput = document.getElementById('defense-video-input');
+                if (defInput) defInput.value = url;
             } else if (activeVideoUploadTarget === 'player-modal' && activePlayerCard) {
                 const playerInput = document.getElementById('modal-player-video-input');
                 if (playerInput) playerInput.value = url;
@@ -2102,6 +2131,22 @@
 
         function closeGoalModal() {
             document.getElementById('goal-modal').classList.add('hidden');
+            resetGoalModalFields();
+        }
+
+        function resetGoalModalFields() {
+            const scorerSel = document.getElementById('goal-scorer-select');
+            if (scorerSel) scorerSel.selectedIndex = 0;
+            const assistSel = document.getElementById('goal-assist-select');
+            if (assistSel) assistSel.value = '';
+            const phaseSel = document.getElementById('goal-phase-select');
+            if (phaseSel) phaseSel.selectedIndex = 0;
+            const finishSel = document.getElementById('goal-finish-select');
+            if (finishSel) finishSel.selectedIndex = 0;
+            const tagInput = document.getElementById('goal-tag-input');
+            if (tagInput) tagInput.value = '';
+            const videoInput = document.getElementById('goal-video-input');
+            if (videoInput) videoInput.value = '';
         }
 
         function setGoalTag(tag) {
@@ -2140,7 +2185,9 @@
                 video
             });
 
-            closeGoalModal();
+            // Cleanly clear fields after saving
+            resetGoalModalFields();
+            document.getElementById('goal-modal').classList.add('hidden');
             renderMatchTracker();
             renderRoster();
             renderLeaderboard();
@@ -2155,6 +2202,8 @@
 
         function closeOpponentGoalModal() {
             document.getElementById('opponent-goal-modal').classList.add('hidden');
+            const noteInput = document.getElementById('opponent-goal-note-input');
+            if (noteInput) noteInput.value = '';
         }
 
         function confirmOpponentGoal(e) {
@@ -2189,6 +2238,18 @@
 
         function closeDefensiveModal() {
             document.getElementById('defensive-modal').classList.add('hidden');
+            resetDefensiveModalFields();
+        }
+
+        function resetDefensiveModalFields() {
+            const defSel = document.getElementById('defense-player-select');
+            if (defSel) defSel.selectedIndex = 0;
+            const typeSel = document.getElementById('defense-type-select');
+            if (typeSel) typeSel.selectedIndex = 0;
+            const noteInput = document.getElementById('defense-note-input');
+            if (noteInput) noteInput.value = '';
+            const videoInput = document.getElementById('defense-video-input');
+            if (videoInput) videoInput.value = '';
         }
 
         function confirmDefensiveStop(e) {
@@ -2196,6 +2257,7 @@
             const playerJersey = parseInt(document.getElementById('defense-player-select').value);
             const action = document.getElementById('defense-type-select').value;
             const note = document.getElementById('defense-note-input').value.trim();
+            const video = document.getElementById('defense-video-input')?.value.trim() || '';
             const p = players.find(r => r.jersey === playerJersey);
 
             matchState.stats.savesUs = (matchState.stats.savesUs || 0) + 1;
@@ -2206,10 +2268,13 @@
                 playerJersey,
                 playerName: p ? p.name : "Defender",
                 action,
-                note
+                note,
+                video
             });
 
-            closeDefensiveModal();
+            // Cleanly clear fields after saving
+            resetDefensiveModalFields();
+            document.getElementById('defensive-modal').classList.add('hidden');
             renderMatchTracker();
             renderRoster();
             renderLeaderboard();
@@ -2349,9 +2414,10 @@
                                 <div class="flex items-center space-x-3">
                                     <span class="text-lg">🛡️</span>
                                     <div>
-                                        <div class="flex items-center space-x-2">
+                                        <div class="flex flex-wrap items-center gap-1.5">
                                             <span class="text-xs font-black text-white">#${ev.playerJersey} ${ev.playerName}</span>
                                             <span class="text-[10px] bg-teal-900 text-teal-200 px-1.5 py-0.2 rounded font-bold">${ev.action}</span>
+                                            ${ev.video ? `<button onclick="openVideoClipModal('${ev.video}', '#${ev.playerJersey} ${ev.playerName} Defensive Stop', '${ev.time}')" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
                                         </div>
                                         ${ev.note ? `<p class="text-[10px] text-zinc-400 mt-0.5">${ev.note}</p>` : ''}
                                     </div>
