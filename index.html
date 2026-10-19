@@ -15,58 +15,42 @@
             background-color: #090d16;
             color: #f3f4f6;
         }
-        .bg-rockies-blue { background-color: #003C71; }
-        .text-rockies-gold { color: #FFB81C; }
-        .border-rockies-blue { border-color: #003C71; }
         .tab-btn.active {
             background-color: #003C71;
             color: #ffffff;
             border-color: #3b82f6;
             box-shadow: 0 4px 14px rgba(0, 60, 113, 0.4);
         }
-        /* Custom scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 9999px;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white pb-12">
 
     <!-- ================= 1. TEAM FAMILY PASSCODE LOCK SCREEN ================= -->
     <div id="family-pass-gate" class="fixed inset-0 bg-[#070b14] z-[100] flex items-center justify-center p-4">
-        <div class="max-w-md w-full bg-zinc-900/90 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center relative overflow-hidden">
-            <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
-            <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-[#003C71] to-blue-600 flex items-center justify-center p-3 shadow-lg shadow-blue-950/60 border border-blue-400/30">
-                <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies Logo" class="h-full w-auto object-contain brightness-125 filter" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC14'" />
+        <div class="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center relative overflow-hidden">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-[#003C71] flex items-center justify-center p-3 shadow-lg border border-blue-400/30">
+                <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC14'" />
             </div>
 
-            <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-950/80 border border-blue-500/40 text-blue-300 mb-2">
-                <span>🔒 Family & Player Portal</span>
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-950/80 border border-blue-500/40 text-blue-300 mb-2">
+                🔒 Family & Player Portal
             </span>
 
             <h2 class="text-2xl font-black text-white tracking-tight">Rockies Albion 14</h2>
-            <p class="text-xs text-gray-400 mt-1 mb-6">Enter the team passcode provided in the team chat to view roster and match center.</p>
+            <p class="text-xs text-gray-400 mt-1 mb-6">Enter the team passcode to access the roster, schedule, and match tracker.</p>
 
             <form onsubmit="handleFamilyPassSubmit(event)" class="space-y-4">
                 <div>
-                    <input type="password" id="family-passcode-input" autofocus autocomplete="current-password" placeholder="Enter Team Passcode..." class="w-full text-center px-4 py-3 rounded-xl bg-zinc-950/90 border border-zinc-700 text-white placeholder-zinc-500 text-base font-bold tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner">
-                    <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">Incorrect passcode. Please check with Coach Kevin or Tyler.</p>
+                    <input type="password" id="family-passcode-input" autofocus autocomplete="current-password" placeholder="Enter Team Passcode..." class="w-full text-center px-4 py-3 rounded-xl bg-zinc-950 border border-zinc-700 text-white placeholder-zinc-500 text-base font-bold tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner">
+                    <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">Incorrect passcode. Try <code class="text-zinc-300">albion14</code> or <code class="text-zinc-300">1414</code>.</p>
                 </div>
-                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-[#003C71] hover:from-blue-600 hover:to-blue-700 text-white text-sm font-extrabold uppercase tracking-wider shadow-lg shadow-blue-950/60 active:scale-98 transition">
+                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-[#003C71] hover:from-blue-600 hover:to-blue-700 text-white text-sm font-extrabold uppercase tracking-wider shadow-lg active:scale-98 transition">
                     Unlock Team Site →
                 </button>
             </form>
-            <p class="text-[11px] text-zinc-500 mt-5">Hint for parents: Use <code class="text-zinc-400">albion14</code> or <code class="text-zinc-400">1414</code></p>
         </div>
     </div>
 
@@ -74,7 +58,7 @@
     <header class="relative bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center p-1.5 shadow-md border border-blue-400/30">
+                <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center p-1.5 shadow border border-blue-400/30">
                     <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
                 </div>
                 <div>
@@ -88,7 +72,6 @@
                 </div>
             </div>
 
-            <!-- Mode Toggle (Spectator vs Coach Mode) -->
             <div class="flex items-center space-x-2">
                 <button id="btn-mode-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95">
                     <span id="mode-toggle-icon">🔒</span>
@@ -132,7 +115,6 @@
                     <span class="text-[10px] text-zinc-400 font-semibold">Calgary Rockies FC</span>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <!-- Head Coach -->
                     <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
@@ -147,7 +129,6 @@
                         </div>
                     </div>
 
-                    <!-- Team Manager -->
                     <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
@@ -163,20 +144,20 @@
                 </div>
             </div>
 
-            <!-- Roster Grid Header -->
+            <!-- Roster Header -->
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-black text-white tracking-tight">Active Team Roster</h2>
-                    <p class="text-xs text-zinc-400">Tap any player to open their card, family profile, and official match records.</p>
+                    <p class="text-xs text-zinc-400">Tap any player to open their card, family profile, and season records.</p>
                 </div>
                 <div class="text-right">
-                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full">16 Players</span>
+                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full">12 Players</span>
                 </div>
             </div>
 
             <!-- Roster Cards Container -->
             <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-                <!-- Injected via JavaScript -->
+                <!-- Dynamically populated via JS -->
             </div>
         </section>
 
@@ -201,29 +182,27 @@
                 <div class="grid grid-cols-5 items-center py-6 text-center">
                     <!-- Home Team -->
                     <div class="col-span-2 space-y-2">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#003C71] border border-blue-400/40 p-2 flex items-center justify-center shadow-lg shadow-blue-950/80">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#003C71] border border-blue-400/40 p-2 flex items-center justify-center shadow-lg">
                             <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies" class="h-full w-auto object-contain brightness-125" />
                         </div>
                         <h4 class="text-sm sm:text-base font-black text-white tracking-tight">Rockies Albion 14</h4>
                         <div id="score-us" class="text-5xl sm:text-6xl font-black text-white tracking-tighter">0</div>
 
-                        <!-- Coach Quick Adjustment Box -->
                         <div id="box-score-coach-us" class="hidden pt-2 flex items-center justify-center space-x-1.5">
-                            <button onclick="openGoalModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-md active:scale-95 transition">
+                            <button onclick="openGoalModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow active:scale-95 transition">
                                 ⚽ + Goal
                             </button>
-                            <button onclick="openDefensiveModal()" class="px-2.5 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-teal-100 font-extrabold text-xs shadow-md active:scale-95 transition">
+                            <button onclick="openDefensiveModal()" class="px-2.5 py-1.5 rounded-xl bg-teal-800 hover:bg-teal-700 text-teal-100 font-extrabold text-xs shadow active:scale-95 transition">
                                 🛡️ + Stop
                             </button>
                         </div>
                     </div>
 
-                    <!-- Match Timer & VS -->
+                    <!-- Timer & VS -->
                     <div class="col-span-1 space-y-2">
                         <span class="text-xs font-black uppercase tracking-wider text-zinc-500">VS</span>
                         <div id="timer-display" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-tight">00:00</div>
 
-                        <!-- Coach Timer Controls -->
                         <div id="box-timer-controls" class="hidden flex flex-col items-center space-y-1.5 pt-1">
                             <button id="btn-toggle-timer" onclick="toggleMatchTimer()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition">
                                 ▶ Start
@@ -234,15 +213,14 @@
 
                     <!-- Away Team -->
                     <div class="col-span-2 space-y-2">
-                        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-zinc-800 border border-zinc-700 p-2 flex items-center justify-center shadow-lg">
+                        <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-zinc-800 border border-zinc-700 p-2 flex items-center justify-center shadow">
                             <span class="text-2xl">🛡️</span>
                         </div>
                         <h4 id="opponent-name-display" class="text-sm sm:text-base font-black text-gray-200 tracking-tight">Opponent</h4>
                         <div id="score-them" class="text-5xl sm:text-6xl font-black text-gray-300 tracking-tighter">0</div>
 
-                        <!-- Coach Opponent Quick Adjustment Box -->
                         <div id="box-score-coach-them" class="hidden pt-2 flex items-center justify-center space-x-1.5">
-                            <button onclick="recordOpponentGoal()" class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-extrabold text-xs shadow-md active:scale-95 transition">
+                            <button onclick="recordOpponentGoal()" class="px-3 py-1.5 rounded-xl bg-rose-700 hover:bg-rose-600 text-white font-extrabold text-xs shadow active:scale-95 transition">
                                 ⚽ + Opp Goal
                             </button>
                         </div>
@@ -251,7 +229,7 @@
 
                 <!-- Spectator Notice -->
                 <div id="box-viewer-notice" class="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-2.5 text-center text-xs text-zinc-400 mt-2">
-                    👀 Spectator Mode Active. Scores, clock, and event updates stream live automatically.
+                    👀 Spectator Mode Active. Scores, clock, and play-by-play updates stream live.
                 </div>
 
                 <!-- Man of the Match Spotlight Bar -->
@@ -276,7 +254,7 @@
                 </div>
             </div>
 
-            <!-- Match Events / Play-by-Play Timeline -->
+            <!-- Play-by-Play Timeline -->
             <div class="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                     <div class="flex items-center space-x-2">
@@ -287,7 +265,7 @@
                 </div>
 
                 <div id="match-timeline-list" class="space-y-2.5">
-                    <p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet. Kick off the match to record goals and defensive stops.</p>
+                    <p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>
                 </div>
             </div>
 
@@ -300,7 +278,7 @@
                     </div>
                 </div>
                 <div id="past-matches-list" class="space-y-2.5">
-                    <!-- Populated dynamically -->
+                    <!-- Injected dynamically -->
                 </div>
             </div>
         </section>
@@ -319,7 +297,6 @@
                 </div>
             </div>
 
-            <!-- Schedule Filter Tabs -->
             <div class="flex space-x-2 text-xs font-bold">
                 <button onclick="filterSchedule('all')" id="sched-filter-all" class="px-3 py-1.5 rounded-xl bg-zinc-800 text-white">All Events</button>
                 <button onclick="filterSchedule('game')" id="sched-filter-game" class="px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white">⚽ Games Only</button>
@@ -327,7 +304,7 @@
             </div>
 
             <div id="schedule-cards-list" class="space-y-3.5">
-                <!-- Injected via JavaScript -->
+                <!-- Dynamically injected -->
             </div>
         </section>
 
@@ -347,7 +324,7 @@
                         <span>CMSA Official</span>
                         <span>↗</span>
                     </a>
-                    <button id="btn-ai-scan-standings" onclick="triggerStandingsScreenshotUpload()" class="hidden px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-purple-950/50 active:scale-95 flex items-center space-x-1.5">
+                    <button id="btn-ai-scan-standings" onclick="triggerStandingsScreenshotUpload()" class="hidden px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold transition shadow active:scale-95 flex items-center space-x-1.5">
                         <span>✨ AI Scan Screenshot</span>
                     </button>
                     <button id="btn-edit-standings" onclick="openEditStandingsModal()" class="hidden px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow active:scale-95 flex items-center space-x-1.5">
@@ -374,7 +351,7 @@
                         </tr>
                     </thead>
                     <tbody id="standings-table-rows" class="divide-y divide-zinc-800/80 font-medium">
-                        <!-- Populated dynamically -->
+                        <!-- Populated dynamically via JS -->
                     </tbody>
                 </table>
             </div>
@@ -384,10 +361,10 @@
         <section id="view-leaderboard" class="hidden space-y-6">
             <div>
                 <h2 class="text-xl font-black text-white tracking-tight">Team Season Honors</h2>
-                <p class="text-xs text-zinc-400">Celebrating finishers, playmakers, lock-down defending, and match MVP awards.</p>
+                <p class="text-xs text-zinc-400">Celebrating scorers, playmakers, lock-down defending, and match MVP awards.</p>
             </div>
 
-            <!-- 4 Leaderboard Podiums Grid -->
+            <!-- Leaderboard Podiums Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <!-- 1. Golden Boot (Goals) -->
@@ -399,9 +376,7 @@
                         </div>
                         <span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-full">Top Finishers</span>
                     </div>
-                    <div id="podium-goals" class="space-y-2">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div id="podium-goals" class="space-y-2"></div>
                 </div>
 
                 <!-- 2. Playmaker Award (Assists) -->
@@ -413,9 +388,7 @@
                         </div>
                         <span class="text-[10px] font-bold text-blue-400 bg-blue-950/60 border border-blue-500/30 px-2 py-0.5 rounded-full">Top Setup Passes</span>
                     </div>
-                    <div id="podium-assists" class="space-y-2">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div id="podium-assists" class="space-y-2"></div>
                 </div>
 
                 <!-- 3. Defensive Heroics & Clearances -->
@@ -427,9 +400,7 @@
                         </div>
                         <span class="text-[10px] font-bold text-teal-400 bg-teal-950/60 border border-teal-500/30 px-2 py-0.5 rounded-full">Goal-Line Stops & Blocks</span>
                     </div>
-                    <div id="podium-defense" class="space-y-2">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div id="podium-defense" class="space-y-2"></div>
                 </div>
 
                 <!-- 4. Man of the Match Honors -->
@@ -441,9 +412,7 @@
                         </div>
                         <span class="text-[10px] font-bold text-amber-400 bg-amber-950/60 border border-amber-500/30 px-2 py-0.5 rounded-full">Locker Room MVPs</span>
                     </div>
-                    <div id="podium-motm" class="space-y-2">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div id="podium-motm" class="space-y-2"></div>
                 </div>
             </div>
 
@@ -453,9 +422,7 @@
                     <span class="text-lg">✨</span>
                     <h3 class="text-sm font-extrabold text-white">Season Tactical Highlights & Tags</h3>
                 </div>
-                <div id="highlights-tag-cloud" class="flex flex-wrap gap-2 pt-1">
-                    <!-- Populated dynamically -->
-                </div>
+                <div id="highlights-tag-cloud" class="flex flex-wrap gap-2 pt-1"></div>
             </div>
         </section>
 
@@ -469,14 +436,12 @@
         </button>
     </footer>
 
-    <!-- ================= 3. ALL MODALS & DIALOGS ================= -->
+    <!-- ================= 3. MODALS & DIALOGS ================= -->
 
-    <!-- Hidden file inputs for Camera Roll uploads -->
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
-    <input type="file" id="video-upload-file-input" accept="video/*" class="hidden" onchange="processVideoUploadFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
 
-    <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
+    <!-- MODAL 1: RECORD GOAL -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl my-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -488,9 +453,7 @@
             <form onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Scorer (Required)</label>
-                    <select id="goal-scorer-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-blue-500">
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="goal-scorer-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-blue-500"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Assist (Optional)</label>
@@ -517,7 +480,7 @@
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
                     <button type="button" onclick="closeGoalModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-950/50">Save Goal</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow">Save Goal</button>
                 </div>
             </form>
         </div>
@@ -535,9 +498,7 @@
             <form onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-4">
                 <div>
                     <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Defender or Goalkeeper</label>
-                    <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500">
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Action Type</label>
@@ -551,11 +512,11 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Notes (Optional)</label>
-                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared it off the back post!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
+                    <input type="text" id="defense-note-input" placeholder="e.g. Big stop on the line!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
                     <button type="button" onclick="closeDefensiveModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow-lg">Save Stop</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow">Save Stop</button>
                 </div>
             </form>
         </div>
@@ -566,23 +527,21 @@
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
             <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
 
-            <!-- Card Banner with Photo / Intro Video -->
-            <div id="modal-player-media-banner" class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30">
-                <!-- Injected dynamically -->
-            </div>
+            <!-- Card Banner -->
+            <div id="modal-player-media-banner" class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30"></div>
 
-            <!-- Player Identity -->
+            <!-- Identity -->
             <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div>
                     <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
                     <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow-lg">
+                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
                     <span id="modal-player-jersey">#0</span>
                 </div>
             </div>
 
-            <!-- Season Official Stats Tiles (Read-Only) -->
+            <!-- Stats -->
             <div class="mt-4">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
@@ -608,7 +567,7 @@
                 </div>
             </div>
 
-            <!-- Family & Parents Section -->
+            <!-- Family & Parents -->
             <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
                 <div class="flex items-center justify-between mb-2">
                     <div class="flex items-center space-x-2">
@@ -710,9 +669,7 @@
                 <button onclick="closeEditStandingsModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
             <div class="mt-4 space-y-3 text-xs">
-                <div id="edit-standings-list" class="space-y-2.5 max-h-[55vh] overflow-y-auto pr-1">
-                    <!-- Populated dynamically -->
-                </div>
+                <div id="edit-standings-list" class="space-y-2.5 max-h-[55vh] overflow-y-auto pr-1"></div>
                 <div class="pt-3 border-t border-zinc-800 flex items-center justify-between">
                     <button type="button" onclick="addStandingsTeam()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold">
                         ➕ Add Another Team
@@ -726,7 +683,7 @@
         </div>
     </div>
 
-    <!-- MODAL 8: GEMINI AI STANDINGS SCANNER & PREVIEW -->
+    <!-- MODAL 8: GEMINI AI STANDINGS SCANNER -->
     <div id="ai-standings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-purple-500/50 rounded-2xl max-w-xl w-full p-5 shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -736,13 +693,13 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-extrabold text-white">Gemini Standings Scanner</h3>
-                        <p class="text-[10px] text-purple-300 font-semibold">Automated CMSA Table Extraction</p>
+                        <p class="text-[10px] text-purple-300 font-semibold">CMSA Table Extraction</p>
                     </div>
                 </div>
                 <button onclick="closeAiStandingsModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
 
-            <!-- Loading State -->
+            <!-- Loading -->
             <div id="ai-standings-loading" class="py-10 text-center space-y-4">
                 <div class="relative w-16 h-16 mx-auto">
                     <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 animate-ping"></div>
@@ -758,7 +715,7 @@
                 </div>
             </div>
 
-            <!-- Preview & Confirmation State -->
+            <!-- Preview & Confirm -->
             <div id="ai-standings-preview" class="hidden space-y-3 pt-3">
                 <div class="flex items-center justify-between bg-purple-950/40 border border-purple-500/30 rounded-xl p-3">
                     <div class="flex items-center space-x-2">
@@ -781,16 +738,14 @@
                                 <th class="py-2 px-3">Club</th>
                                 <th class="py-2 px-1 text-center">GP</th>
                                 <th class="py-2 px-1 text-center">W</th>
-                                <th class="py-2 px-1 text-center">L</th>
                                 <th class="py-2 px-1 text-center">T</th>
+                                <th class="py-2 px-1 text-center">L</th>
                                 <th class="py-2 px-1 text-center">GF</th>
                                 <th class="py-2 px-1 text-center">GA</th>
                                 <th class="py-2 px-2 text-center font-bold text-white">PTS</th>
                             </tr>
                         </thead>
-                        <tbody id="ai-standings-preview-rows" class="divide-y divide-zinc-800/80 bg-zinc-900/60 font-medium text-[11px]">
-                            <!-- Injected dynamically -->
-                        </tbody>
+                        <tbody id="ai-standings-preview-rows" class="divide-y divide-zinc-800/80 bg-zinc-900/60 font-medium text-[11px]"></tbody>
                     </table>
                 </div>
 
@@ -798,1383 +753,751 @@
                     <button type="button" onclick="closeAiStandingsModal()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">
                         Discard
                     </button>
-                    <button type="button" onclick="confirmApplyAiStandings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-lg transition active:scale-95">
-                        ✅ Confirm & Update Standings
+                    <button type="button" onclick="confirmApplyAiStandings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-lg">
+                        ✅ Confirm & Sync Standings
                     </button>
                 </div>
             </div>
 
-            <!-- Error State -->
-            <div id="ai-standings-error" class="hidden py-8 text-center space-y-3">
-                <div class="w-12 h-12 rounded-xl bg-rose-950/60 border border-rose-600/50 mx-auto flex items-center justify-center text-2xl text-rose-400">
+            <!-- Error Dialog with API Key Setup -->
+            <div id="ai-standings-error" class="hidden py-6 text-center space-y-4">
+                <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-2xl mx-auto">
                     ⚠️
                 </div>
                 <div>
                     <h4 class="text-sm font-extrabold text-white">Could Not Read Standings</h4>
-                    <p id="ai-standings-error-msg" class="text-xs text-gray-300 mt-1 max-w-sm mx-auto">
-                        Please ensure the screenshot clearly includes the "Boys U13 Tier 2" table headers and rows.
+                    <p id="ai-standings-error-msg" class="text-xs text-rose-300 mt-1 max-w-sm mx-auto">
+                        Could not parse table automatically.
                     </p>
                 </div>
+                <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-left max-w-sm mx-auto space-y-2">
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase">Gemini API Key Setup</label>
+                    <input type="password" id="gemini-api-key-input" placeholder="Paste your Gemini API Key here..." class="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-white" />
+                    <button onclick="saveGeminiApiKey()" class="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition">
+                        Save API Key
+                    </button>
+                </div>
                 <div class="flex justify-center space-x-2 pt-2">
-                    <button onclick="closeAiStandingsModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-xs text-gray-300 font-semibold">Close</button>
-                    <button onclick="triggerStandingsScreenshotUpload()" class="px-4 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs text-white font-bold">Try Another Photo</button>
+                    <button onclick="closeAiStandingsModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Close</button>
+                    <button onclick="triggerStandingsScreenshotUpload()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">Try Another Photo</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 9: GENERAL CONFIRMATION MODAL -->
-    <div id="confirm-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
-            <h4 id="confirm-title" class="text-sm font-black text-white">Confirm Action</h4>
-            <p id="confirm-message" class="text-xs text-zinc-400 mt-1 mb-4">Are you sure?</p>
-            <div class="flex space-x-2">
-                <button onclick="closeConfirmModal(false)" class="flex-1 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Cancel</button>
-                <button onclick="closeConfirmModal(true)" class="flex-1 py-2 rounded-xl bg-rose-600 text-white text-xs font-bold">Confirm</button>
-            </div>
-        </div>
-    </div>
+    <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
+    <script>
+        // Official 12-Player Roster for Rockies Albion 14
+        const ROSTER_DATA = [
+            { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
+            { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "" },
+            { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "" },
+            { jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "" },
+            { jersey: 10, name: "Nyle Zachary", position: "Midfield / Forward", parents: "Not listed", siblings: "" },
+            { jersey: 11, name: "Tristan D'Mello", position: "Winger / Striker", parents: "Melvin & Charlotte", siblings: "" },
+            { jersey: 14, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
+            { jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense / Midfield", parents: "Not listed", siblings: "" },
+            { jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Not listed", siblings: "" },
+            { jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "" },
+            { jersey: 62, name: "Elnathan Udoh", position: "Defense / Midfield", parents: "Emmanuel & Dépéjú", siblings: "" },
+            { jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "" },
+            { jersey: 70, name: "Esteban Bazurto", position: "Midfield / Winger", parents: "Not listed", siblings: "" }
+        ];
 
-    <!-- ================= 4. APPLICATION LOGIC (FIREBASE & MODULE SCRIPT) ================= -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        // Active State
+        let isCoachMode = false;
+        let activePlayer = null;
+        let matchTimerInterval = null;
+        let timerSeconds = 0;
+        let isTimerRunning = false;
+        let extractedStandingsPreview = [];
 
-        // Firebase Configuration (Matching your verified rockies-albion-14 project)
-        const firebaseConfig = {
-            apiKey: "AIzaSyDummyKey-ForFirebaseInit",
-            authDomain: "rockies-albion-14.firebaseapp.com",
-            projectId: "rockies-albion-14",
-            storageBucket: "rockies-albion-14.firebasestorage.app",
-            messagingSenderId: "1234567890",
-            appId: "1:1234567890:web:dummy"
+        // Current Match State
+        let matchState = {
+            opponent: "SWU Atletico 14B",
+            ourScore: 0,
+            theirScore: 0,
+            motmJersey: null,
+            events: [],
+            history: []
         };
 
-        let db = null;
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-        } catch (e) {
-            console.warn("Running in local offline fallback mode:", e);
-        }
-
-        // ================= MASTER ROSTER DATA =================
-        const players = [
-            { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
-            { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "videos/04-logan.mp4" },
-            { id: 5, jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", photo: "", videoUrl: "" },
-            { id: 8, jersey: 8, name: "Wesley Asare", position: "Midfield/Winger", parents: "Collins & Mayelin", siblings: "", photo: "", videoUrl: "" },
-            { id: 9, jersey: 9, name: "Owen Saunders", position: "Winger/Striker", parents: "Leigh & Graham", siblings: "", photo: "", videoUrl: "" },
-            { id: 10, jersey: 10, name: "Danylo Loiko", position: "Striker", parents: "Yuliia & Dmytro", siblings: "", photo: "", videoUrl: "" },
-            { id: 11, jersey: 11, name: "Tristan D'Mello", position: "Winger/Striker", parents: "Melvin & Charlotte", siblings: "", photo: "", videoUrl: "" },
-            { id: 14, jersey: 14, name: "Haaris Nathoo", position: "GK", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "" },
-            { id: 16, jersey: 16, name: "Cole Robblee", position: "Winger", parents: "Alaina & Ian", siblings: "", photo: "", videoUrl: "" },
-            { id: 22, jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "" },
-            { id: 24, jersey: 24, name: "Henry Thomas", position: "Winger", parents: "Steve & Shauna", siblings: "", photo: "", videoUrl: "" },
-            { id: 28, jersey: 28, name: "Andrew Tang", position: "Defense/Midfield", parents: "Norm & Jessica", siblings: "", photo: "", videoUrl: "" },
-            { id: 46, jersey: 46, name: "Chukwukadibia Odumodu", position: "Midfield/Defense", parents: "Bukas & Ijeoma", siblings: "", photo: "", videoUrl: "" },
-            { id: 49, jersey: 49, name: "Kaleb Habtom", position: "Midfield/Winger", parents: "Habtom", siblings: "", photo: "", videoUrl: "" },
-            { id: 52, jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Family Campbell", siblings: "", photo: "", videoUrl: "" },
-            { id: 62, jersey: 62, name: "Elnathan (Nathan) Udoh", position: "Defense/Midfield", parents: "Emmanuel & Dépéjú", siblings: "", photo: "", videoUrl: "" }
+        // CMSA Official Boys U13 Tier 2 Standings (from official CMSA table)
+        let standingsData = [
+            { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, gf: 5, ga: 0, gd: 5, pts: 3 },
+            { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, gf: 7, ga: 2, gd: 5, pts: 3 },
+            { rank: 3, name: "Villains Cyclones 14", gp: 1, w: 1, t: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 3 },
+            { rank: 4, name: "WHU West Hills Gunners 14", gp: 1, w: 1, t: 0, l: 0, gf: 6, ga: 3, gd: 3, pts: 3 },
+            { rank: 5, name: "Foothills 2014 Prospects", gp: 1, w: 1, t: 0, l: 0, gf: 3, ga: 1, gd: 2, pts: 3 },
+            { rank: 6, name: "EMFC Juventus 14", gp: 1, w: 1, t: 0, l: 0, gf: 6, ga: 4, gd: 2, pts: 3 },
+            { rank: 7, name: "MUSC Storm 14", gp: 1, w: 1, t: 0, l: 0, gf: 3, ga: 2, gd: 1, pts: 3 },
+            { rank: 8, name: "CalGlen Royals 14", gp: 1, w: 1, t: 0, l: 0, gf: 3, ga: 2, gd: 1, pts: 3 },
+            { rank: 9, name: "SWU Atletico 14B", gp: 0, w: 0, t: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 },
+            { rank: 10, name: "Rockies Albion 14", gp: 0, w: 0, t: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 },
+            { rank: 11, name: "Blizzard United 14 Boys", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 3, gd: -1, pts: 0 },
+            { rank: 12, name: "SWU Barca 14B", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 3, gd: -1, pts: 0 },
+            { rank: 13, name: "RANGERS ATHLETICS 14", gp: 1, w: 0, t: 0, l: 1, gf: 1, ga: 3, gd: -2, pts: 0 },
+            { rank: 14, name: "New Frontier SC 2014 Boys", gp: 1, w: 0, t: 0, l: 1, gf: 4, ga: 6, gd: -2, pts: 0 },
+            { rank: 15, name: "Chinooks FC Premiers 2014", gp: 1, w: 0, t: 0, l: 1, gf: 1, ga: 4, gd: -3, pts: 0 },
+            { rank: 16, name: "Spartans Admirals", gp: 1, w: 0, t: 0, l: 1, gf: 3, ga: 6, gd: -3, pts: 0 },
+            { rank: 17, name: "CCFC Calgary City FC Whitecaps", gp: 1, w: 0, t: 0, l: 1, gf: 0, ga: 5, gd: -5, pts: 0 },
+            { rank: 18, name: "CWFC B2014 Green", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 7, gd: -5, pts: 0 }
         ];
 
-        // ================= CMSA U13 TIER 2 STANDINGS DATA =================
-        let leagueStandings = [
-            { id: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, l: 0, t: 0, gf: 5, ga: 0, isUs: false },
-            { id: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, l: 0, t: 0, gf: 7, ga: 2, isUs: false },
-            { id: 3, name: "Villains Cyclones 14", gp: 1, w: 1, l: 0, t: 0, gf: 4, ga: 1, isUs: false },
-            { id: 4, name: "WHU West Hills Gunners 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 3, isUs: false },
-            { id: 5, name: "Foothills 2014 Prospects", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 1, isUs: false },
-            { id: 6, name: "EMFC Juventus 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 4, isUs: false },
-            { id: 7, name: "Rockies Albion 14", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 4, isUs: true },
-            { id: 8, name: "Chestermere United Excelsior 14", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 3, isUs: false },
-            { id: 9, name: "Calgary West FC 14", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 4, isUs: false },
-            { id: 10, name: "Chinooks FC 2014 Strikers", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 6, isUs: false },
-            { id: 11, name: "Spartans SC 14", gp: 1, w: 0, l: 1, t: 0, gf: 0, ga: 5, isUs: false },
-            { id: 12, name: "CUPC Thunder 14", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
-        ];
-
-        // ================= SCHEDULE DATA =================
-        let scheduleEvents = [
+        // Team Schedule & Fixtures
+        let scheduleData = [
             {
-                id: 101,
+                id: "sched-1",
                 type: "game",
-                title: "CMSA League Match vs Blizzard Alliance",
-                opponent: "Blizzard Alliance 14 Boys",
+                title: "CMSA Match vs SWU Atletico 14B",
+                opponent: "SWU Atletico 14B",
                 date: "Saturday, Oct 24, 2026",
-                kickoff: "10:15 AM",
-                arrival: "9:45 AM (30 min prior)",
-                location: "Calgary Soccer Centre (Field 2)",
-                mapUrl: "https://maps.google.com/?q=Calgary+Soccer+Centre",
-                jerseyKit: "Royal Blue Kit (White socks)"
+                kickoff: "3:30 PM",
+                arrival: "2:45 PM",
+                pitch: "Shane Homes West Soccer Dome - Field 4",
+                address: "11014 Bearspaw Dam Rd NW, Calgary, AB",
+                notes: "Royal Blue kits, bring both jerseys. Arrive 45 mins prior for warm-ups."
             },
             {
-                id: 102,
+                id: "sched-2",
                 type: "practice",
-                title: "Midweek Tactical Training & Set Pieces",
+                title: "Team Tactical Training",
                 opponent: "",
                 date: "Tuesday, Oct 27, 2026",
-                kickoff: "6:30 PM - 8:00 PM",
+                kickoff: "6:30 PM",
                 arrival: "6:15 PM",
-                location: "Shouldice Athletic Park",
-                mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary",
-                jerseyKit: "Practice Bibs & Shin Guards"
+                pitch: "Beddington Heights School Gymnasium",
+                address: "95 Bermuda Rd NW, Calgary, AB",
+                notes: "Indoor flat shoes, shin guards, and size 4 ball required."
             },
             {
-                id: 103,
+                id: "sched-3",
                 type: "game",
-                title: "CMSA League Match vs Villains Cyclones",
-                opponent: "Villains Cyclones 14",
+                title: "CMSA Match vs Blizzard Alliance 14 Boys",
+                opponent: "Blizzard Alliance 14 Boys",
                 date: "Saturday, Oct 31, 2026",
-                kickoff: "1:00 PM",
+                kickoff: "1:15 PM",
                 arrival: "12:30 PM",
-                location: "West Soccer Dome",
-                mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome",
-                jerseyKit: "Royal Blue Kit"
+                pitch: "Calgary West Soccer Centre - Field 2",
+                address: "11014 Bearspaw Dam Rd NW, Calgary, AB",
+                notes: "Black kits (alternate). Check in with Manager Tyler."
             }
         ];
 
-        // ================= MATCH STATE =================
-        let matchState = {
-            scoreUs: 0,
-            scoreThem: 0,
-            opponentName: "Calgary Blizzard SC",
-            timerSeconds: 0,
-            timerRunning: false,
-            motmJersey: 22,
-            events: [
-                { id: 1, type: "goal", scorerJersey: 5, scorerName: "Elijah Amoako", assistJersey: null, assistName: "Solo", tag: "Upper 90 🚀", time: "14:22", videoUrl: "" },
-                { id: 2, type: "defense", playerJersey: 4, playerName: "Logan Martens", action: "Goal-Line Clearance 🧤", note: "Crucial clearance off the post!", time: "28:37", videoUrl: "" }
-            ],
-            history: [
-                {
-                    id: 991,
-                    opponent: "Chestermere United",
-                    date: "Oct 11, 2026",
-                    scoreUs: 3,
-                    scoreThem: 1,
-                    motmJersey: 22,
-                    motmName: "Yazed (Zizou) Manasrah",
-                    eventsCount: 4
-                }
-            ]
-        };
-
-        let timerInterval = null;
-        let isCoachMode = false;
-        let activePlayerCard = null;
-        let confirmActionCallback = null;
-        let currentScheduleFilter = 'all';
-        let pendingAiParsedTeams = [];
-
-        // ================= PASSCODE GATE =================
-        function checkAutoUnlock() {
-            const saved = localStorage.getItem('rockies_family_auth');
-            if (saved === 'unlocked_ok') {
-                const gate = document.getElementById('family-pass-gate');
-                if (gate) gate.classList.add('hidden');
+        // Passcode Lock Screen Handler
+        function handleFamilyPassSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('family-passcode-input').value.trim().toLowerCase();
+            if (input === 'albion14' || input === '1414' || input === 'rockies14') {
+                localStorage.setItem('rfc14_family_unlocked', 'true');
+                document.getElementById('family-pass-gate').classList.add('hidden');
+            } else {
+                document.getElementById('family-pass-error').classList.remove('hidden');
             }
         }
 
-        function handleFamilyPassSubmit(e) {
-            e.preventDefault();
-            const input = document.getElementById('family-passcode-input');
-            const error = document.getElementById('family-pass-error');
-            const val = (input?.value || '').trim().toLowerCase();
-
-            if (val === 'albion14' || val === '1414' || val === 'rockies14') {
-                localStorage.setItem('rockies_family_auth', 'unlocked_ok');
-                const gate = document.getElementById('family-pass-gate');
-                if (gate) gate.classList.add('hidden');
-            } else {
-                if (error) error.classList.remove('hidden');
+        function checkStoredPasscode() {
+            if (localStorage.getItem('rfc14_family_unlocked') === 'true') {
+                document.getElementById('family-pass-gate').classList.add('hidden');
             }
         }
 
         function relockSite() {
-            localStorage.removeItem('rockies_family_auth');
-            const gate = document.getElementById('family-pass-gate');
-            if (gate) gate.classList.remove('hidden');
-            const input = document.getElementById('family-passcode-input');
-            if (input) input.value = '';
+            localStorage.removeItem('rfc14_family_unlocked');
+            location.reload();
         }
 
-        // ================= NAVIGATION =================
-        function switchTab(tabName) {
-            const tabs = ['roster', 'tracker', 'schedule', 'standings', 'leaderboard'];
-            tabs.forEach(t => {
-                const btn = document.getElementById(`tab-btn-${t}`);
-                const view = document.getElementById(`view-${t}`);
-                if (t === tabName) {
-                    if (btn) btn.className = 'tab-btn active px-3.5 py-1.5 rounded-xl border border-transparent transition whitespace-nowrap flex items-center space-x-1.5';
-                    if (view) view.classList.remove('hidden');
-                } else {
-                    if (btn) btn.className = 'tab-btn px-3.5 py-1.5 rounded-xl border border-transparent text-gray-400 hover:text-white hover:bg-zinc-800 transition whitespace-nowrap flex items-center space-x-1.5';
-                    if (view) view.classList.add('hidden');
-                }
-            });
-
-            if (tabName === 'roster') renderRoster();
-            if (tabName === 'tracker') renderMatchTracker();
-            if (tabName === 'schedule') renderSchedule();
-            if (tabName === 'standings') renderStandings();
-            if (tabName === 'leaderboard') renderLeaderboard();
-        }
-
-        // ================= COACH MODE & PERMISSIONS =================
+        // Coach Mode Handlers
         function toggleCoachMode() {
             if (isCoachMode) {
                 isCoachMode = false;
-                updateCoachModeUI();
+                applyCoachModeUI();
             } else {
-                openCoachAuthModal();
+                document.getElementById('coach-auth-modal').classList.remove('hidden');
+                document.getElementById('coach-pin-input').value = '';
+                document.getElementById('coach-pin-error').classList.add('hidden');
             }
         }
 
-        function openCoachAuthModal() {
-            const modal = document.getElementById('coach-auth-modal');
-            const pinInput = document.getElementById('coach-pin-input');
-            const pinErr = document.getElementById('coach-pin-error');
-            if (pinInput) pinInput.value = '';
-            if (pinErr) pinErr.classList.add('hidden');
-            if (modal) modal.classList.remove('hidden');
-            if (pinInput) setTimeout(() => pinInput.focus(), 100);
-        }
-
         function closeCoachAuthModal() {
-            const modal = document.getElementById('coach-auth-modal');
-            if (modal) modal.classList.add('hidden');
+            document.getElementById('coach-auth-modal').classList.add('hidden');
         }
 
         function submitCoachPin(e) {
             e.preventDefault();
-            const pin = document.getElementById('coach-pin-input')?.value;
-            if (pin === '1414') {
+            const pin = document.getElementById('coach-pin-input').value.trim();
+            if (pin === '1414' || pin === 'albion14') {
                 isCoachMode = true;
                 closeCoachAuthModal();
-                updateCoachModeUI();
+                applyCoachModeUI();
             } else {
-                const err = document.getElementById('coach-pin-error');
-                if (err) err.classList.remove('hidden');
+                document.getElementById('coach-pin-error').classList.remove('hidden');
             }
         }
 
-        function updateCoachModeUI() {
-            const toggleBtn = document.getElementById('btn-mode-toggle');
-            const toggleIcon = document.getElementById('mode-toggle-icon');
-            const toggleLabel = document.getElementById('mode-toggle-label');
-            const timerControls = document.getElementById('box-timer-controls');
+        function applyCoachModeUI() {
+            const btn = document.getElementById('btn-mode-toggle');
+            const icon = document.getElementById('mode-toggle-icon');
+            const label = document.getElementById('mode-toggle-label');
+            const coachUs = document.getElementById('box-score-coach-us');
+            const coachThem = document.getElementById('box-score-coach-them');
+            const timerCtrl = document.getElementById('box-timer-controls');
+            const motmCoach = document.getElementById('motm-coach-selector-box');
             const viewerNotice = document.getElementById('box-viewer-notice');
-            const usCoachBox = document.getElementById('box-score-coach-us');
-            const themCoachBox = document.getElementById('box-score-coach-them');
-            const motmCoachBox = document.getElementById('motm-coach-selector-box');
             const addEventBtn = document.getElementById('btn-add-event');
+            const aiScanBtn = document.getElementById('btn-ai-scan-standings');
             const editStandingsBtn = document.getElementById('btn-edit-standings');
-            const aiScanStandingsBtn = document.getElementById('btn-ai-scan-standings');
-            const startNewMatchBtn = document.getElementById('btn-start-new-match');
+            const newMatchBtn = document.getElementById('btn-start-new-match');
 
             if (isCoachMode) {
-                if (toggleIcon) toggleIcon.textContent = '🔓';
-                if (toggleLabel) toggleLabel.textContent = 'Coach Mode (Active)';
-                if (toggleBtn) toggleBtn.className = 'inline-flex items-center space-x-1.5 bg-emerald-950/80 border border-emerald-500/70 px-3 py-1.5 rounded-full text-[11px] font-bold text-emerald-200 transition shadow backdrop-blur-sm';
-                if (timerControls) timerControls.classList.remove('hidden');
+                btn.className = "inline-flex items-center space-x-1.5 bg-emerald-600 hover:bg-emerald-500 border border-emerald-400 px-3 py-1.5 rounded-full text-[11px] font-black text-white shadow transition active:scale-95";
+                icon.textContent = "🔓";
+                label.textContent = "Coach Mode Active";
+                if (coachUs) coachUs.classList.remove('hidden');
+                if (coachThem) coachThem.classList.remove('hidden');
+                if (timerCtrl) timerCtrl.classList.remove('hidden');
+                if (motmCoach) motmCoach.classList.remove('hidden');
                 if (viewerNotice) viewerNotice.classList.add('hidden');
-                if (usCoachBox) usCoachBox.classList.remove('hidden');
-                if (themCoachBox) themCoachBox.classList.remove('hidden');
-                if (motmCoachBox) motmCoachBox.classList.remove('hidden');
                 if (addEventBtn) addEventBtn.classList.remove('hidden');
+                if (aiScanBtn) aiScanBtn.classList.remove('hidden');
                 if (editStandingsBtn) editStandingsBtn.classList.remove('hidden');
-                if (aiScanStandingsBtn) aiScanStandingsBtn.classList.remove('hidden');
-                if (startNewMatchBtn) startNewMatchBtn.classList.remove('hidden');
+                if (newMatchBtn) newMatchBtn.classList.remove('hidden');
             } else {
-                if (toggleIcon) toggleIcon.textContent = '🔒';
-                if (toggleLabel) toggleLabel.textContent = 'Spectator Mode';
-                if (toggleBtn) toggleBtn.className = 'inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm';
-                if (timerControls) timerControls.classList.add('hidden');
+                btn.className = "inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow active:scale-95";
+                icon.textContent = "🔒";
+                label.textContent = "Spectator Mode";
+                if (coachUs) coachUs.classList.add('hidden');
+                if (coachThem) coachThem.classList.add('hidden');
+                if (timerCtrl) timerCtrl.classList.add('hidden');
+                if (motmCoach) motmCoach.classList.add('hidden');
                 if (viewerNotice) viewerNotice.classList.remove('hidden');
-                if (usCoachBox) usCoachBox.classList.add('hidden');
-                if (themCoachBox) themCoachBox.classList.add('hidden');
-                if (motmCoachBox) motmCoachBox.classList.add('hidden');
                 if (addEventBtn) addEventBtn.classList.add('hidden');
+                if (aiScanBtn) aiScanBtn.classList.add('hidden');
                 if (editStandingsBtn) editStandingsBtn.classList.add('hidden');
-                if (aiScanStandingsBtn) aiScanStandingsBtn.classList.add('hidden');
-                if (startNewMatchBtn) startNewMatchBtn.classList.add('hidden');
+                if (newMatchBtn) newMatchBtn.classList.add('hidden');
             }
-
-            renderRoster();
-            renderMatchTracker();
             renderSchedule();
+            renderMatchTracker();
         }
 
-        // ================= STATS COMPUTATION & MOTM SYNC =================
-        function getPlayerGoals(jersey) {
+        // Tab Navigation
+        function switchTab(tabId) {
+            const tabs = ['roster', 'tracker', 'schedule', 'standings', 'leaderboard'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tabId) {
+                    if (el) el.classList.remove('hidden');
+                    if (btn) {
+                        btn.classList.add('active');
+                        btn.classList.remove('text-gray-400');
+                    }
+                } else {
+                    if (el) el.classList.add('hidden');
+                    if (btn) {
+                        btn.classList.remove('active');
+                        btn.classList.add('text-gray-400');
+                    }
+                }
+            });
+
+            if (tabId === 'roster') renderRoster();
+            if (tabId === 'tracker') renderMatchTracker();
+            if (tabId === 'schedule') renderSchedule();
+            if (tabId === 'standings') renderStandings();
+            if (tabId === 'leaderboard') renderLeaderboard();
+        }
+
+        // Roster Renderer
+        function renderRoster() {
+            const grid = document.getElementById('roster-grid');
+            if (!grid) return;
+            grid.innerHTML = '';
+
+            ROSTER_DATA.forEach(player => {
+                const goals = getPlayerStat(player.jersey, 'goals');
+                const assists = getPlayerStat(player.jersey, 'assists');
+                const stops = getPlayerStat(player.jersey, 'stops');
+                const motm = getPlayerMOTMCount(player.jersey);
+
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 rounded-2xl p-4 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5";
+                card.onclick = () => openPlayerModal(player);
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h3 class="text-sm font-black text-white">${player.name}</h3>
+                            </div>
+                            <p class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mt-0.5">${player.position}</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center text-white font-black text-sm shadow">
+                            #${player.jersey}
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px]">
+                        <span class="text-zinc-400 font-semibold truncate max-w-[150px]">👨‍👩‍👦 ${player.parents}</span>
+                        <div class="flex items-center space-x-2 text-zinc-300 font-bold">
+                            <span>⚽ ${goals}</span>
+                            <span>👟 ${assists}</span>
+                            ${motm > 0 ? `<span class="text-amber-400 font-black">🎖️ ${motm}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Stats Helpers
+        function getPlayerStat(jersey, type) {
             let count = 0;
-            matchState.events.forEach(e => {
-                if (e.type === 'goal' && e.scorerJersey === jersey) count++;
+            // From historical games
+            (matchState.history || []).forEach(match => {
+                (match.events || []).forEach(ev => {
+                    if (type === 'goals' && ev.scorerJersey === jersey) count++;
+                    if (type === 'assists' && ev.assistJersey === jersey) count++;
+                    if (type === 'stops' && ev.playerJersey === jersey && ev.isDefensive) count++;
+                });
+            });
+            // From current active match
+            (matchState.events || []).forEach(ev => {
+                if (type === 'goals' && ev.scorerJersey === jersey) count++;
+                if (type === 'assists' && ev.assistJersey === jersey) count++;
+                if (type === 'stops' && ev.playerJersey === jersey && ev.isDefensive) count++;
             });
             return count;
         }
 
-        function getPlayerAssists(jersey) {
-            let count = 0;
-            matchState.events.forEach(e => {
-                if (e.type === 'goal' && e.assistJersey === jersey) count++;
-            });
-            return count;
-        }
-
-        function getPlayerStops(jersey) {
-            let count = 0;
-            matchState.events.forEach(e => {
-                if (e.type === 'defense' && e.playerJersey === jersey) count++;
-            });
-            return count;
-        }
-
+        // MOTM Calculator without double counting
         function getPlayerMOTMCount(jersey) {
             let count = 0;
-            // 1. Count from past match history
             (matchState.history || []).forEach(m => {
                 if (m.motmJersey === jersey) count++;
             });
-            // 2. Count active game only if not already in history
-            const activeAlreadyArchived = (matchState.history || []).some(m => m.id === matchState.currentMatchId);
-            if (!activeAlreadyArchived && matchState.motmJersey === jersey) {
+            if (matchState.motmJersey === jersey && (!matchState.history || !matchState.history.some(h => h.id === matchState.currentMatchId))) {
                 count++;
             }
             return count;
         }
 
-        // ================= ROSTER RENDERING =================
-        function renderRoster() {
-            const grid = document.getElementById('roster-grid');
-            if (!grid) return;
+        // Player Modal Handlers
+        function openPlayerModal(player) {
+            activePlayer = player;
+            document.getElementById('modal-player-name').textContent = player.name;
+            document.getElementById('modal-player-position').textContent = player.position;
+            document.getElementById('modal-player-jersey').textContent = `#${player.jersey}`;
+            document.getElementById('modal-stat-goals').textContent = getPlayerStat(player.jersey, 'goals');
+            document.getElementById('modal-stat-assists').textContent = getPlayerStat(player.jersey, 'assists');
+            document.getElementById('modal-stat-stops').textContent = getPlayerStat(player.jersey, 'stops');
+            document.getElementById('modal-stat-motm').textContent = getPlayerMOTMCount(player.jersey);
 
-            grid.innerHTML = players.map(p => {
-                const goals = getPlayerGoals(p.jersey);
-                const assists = getPlayerAssists(p.jersey);
-                const stops = getPlayerStops(p.jersey);
-                const motms = getPlayerMOTMCount(p.jersey);
-                const hasFamilyPhoto = !!p.photo;
-                const hasVideo = !!p.videoUrl;
+            document.getElementById('modal-family-parents').textContent = player.parents || "Not listed";
+            document.getElementById('modal-family-siblings').textContent = player.siblings || "None recorded";
 
-                return `
-                <div onclick="openPlayerModal(${p.jersey})" class="bg-zinc-900 border border-zinc-800/90 hover:border-blue-500/50 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
-                    <div class="flex items-start justify-between">
-                        <div class="pr-2">
-                            <div class="flex items-center space-x-1.5">
-                                <h3 class="text-sm font-extrabold text-white group-hover:text-blue-400 transition">${p.name}</h3>
-                                ${hasVideo ? `<span class="text-[10px] bg-blue-950 border border-blue-500/40 text-blue-300 px-1.5 py-0.2 rounded font-bold">▶ Clip</span>` : ''}
-                            </div>
-                            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${p.position}</p>
-                            <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${p.parents || 'Family'}</p>
+            // Banner video or photo
+            const banner = document.getElementById('modal-player-media-banner');
+            const savedVideo = localStorage.getItem(`rfc14_vid_${player.jersey}`);
+            if (savedVideo) {
+                banner.innerHTML = `<video src="${savedVideo}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
+            } else {
+                banner.innerHTML = `
+                    <div class="text-center p-4">
+                        <div class="w-16 h-16 rounded-full bg-blue-900/60 border border-blue-400 flex items-center justify-center text-3xl mx-auto mb-2 text-white font-black">
+                            #${player.jersey}
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-[#003C71] border border-blue-400/40 flex items-center justify-center text-sm font-black text-white shadow-md flex-shrink-0">
-                            #${p.jersey}
-                        </div>
+                        <span class="text-xs font-bold text-blue-200">${player.name}</span>
                     </div>
-
-                    <!-- Mini Stat Chips -->
-                    <div class="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold">
-                        <div class="flex items-center space-x-2 text-zinc-300">
-                            <span>⚽ ${goals}</span>
-                            <span>👟 ${assists}</span>
-                            <span>🛡️ ${stops}</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                            ${motms > 0 ? `<span class="bg-amber-950/80 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded text-[10px]">🎖️ ${motms}</span>` : ''}
-                            ${hasFamilyPhoto ? `<span class="bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.5 rounded text-[10px]">👨‍👩‍👦</span>` : ''}
-                        </div>
-                    </div>
-                </div>
                 `;
-            }).join('');
-
-            const countEl = document.getElementById('roster-player-count');
-            if (countEl) countEl.textContent = `${players.length} Players`;
-        }
-
-        // ================= PLAYER CARD MODAL =================
-        function openPlayerModal(jersey) {
-            const player = players.find(p => p.jersey === jersey);
-            if (!player) return;
-            activePlayerCard = player;
-
-            const modal = document.getElementById('player-modal');
-            const nameEl = document.getElementById('modal-player-name');
-            const posEl = document.getElementById('modal-player-position');
-            const jerseyEl = document.getElementById('modal-player-jersey');
-            const mediaBanner = document.getElementById('modal-player-media-banner');
-            const statGoals = document.getElementById('modal-stat-goals');
-            const statAssists = document.getElementById('modal-stat-assists');
-            const statStops = document.getElementById('modal-stat-stops');
-            const statMotm = document.getElementById('modal-stat-motm');
-            const parentsEl = document.getElementById('modal-family-parents');
-            const siblingsEl = document.getElementById('modal-family-siblings');
-            const familyThumb = document.getElementById('modal-family-photo-thumb');
-            const coachVideoCtrl = document.getElementById('modal-coach-video-ctrl');
-            const videoInput = document.getElementById('modal-player-video-input');
-
-            if (nameEl) nameEl.textContent = player.name;
-            if (posEl) posEl.textContent = player.position;
-            if (jerseyEl) jerseyEl.textContent = `#${player.jersey}`;
-            if (statGoals) statGoals.textContent = getPlayerGoals(player.jersey);
-            if (statAssists) statAssists.textContent = getPlayerAssists(player.jersey);
-            if (statStops) statStops.textContent = getPlayerStops(player.jersey);
-            if (statMotm) statMotm.textContent = getPlayerMOTMCount(player.jersey);
-            if (parentsEl) parentsEl.textContent = player.parents || 'Not listed';
-            if (siblingsEl) siblingsEl.textContent = player.siblings || 'None recorded';
-
-            // Media Banner (Video or Default Logo)
-            if (mediaBanner) {
-                if (player.videoUrl) {
-                    mediaBanner.innerHTML = `
-                        <video src="${player.videoUrl}" controls playsinline autoplay loop muted class="w-full h-full object-cover rounded-2xl"></video>
-                    `;
-                } else {
-                    mediaBanner.innerHTML = `
-                        <div class="text-center p-4">
-                            <span class="text-5xl font-black text-blue-300/30">#${player.jersey}</span>
-                            <h4 class="text-lg font-black text-white mt-1">${player.name}</h4>
-                            <p class="text-xs text-blue-300 uppercase tracking-widest font-semibold">${player.position}</p>
-                        </div>
-                    `;
-                }
             }
 
-            // Family photo thumbnail
-            if (familyThumb) {
-                if (player.photo) {
-                    familyThumb.innerHTML = `<img src="${player.photo}" alt="Family" class="w-full h-full object-cover" />`;
-                } else {
-                    familyThumb.innerHTML = `<span class="text-2xl">👨‍👩‍👦</span>`;
-                }
+            // Coach video controller
+            const coachVidCtrl = document.getElementById('modal-coach-video-ctrl');
+            if (isCoachMode && coachVidCtrl) {
+                coachVidCtrl.classList.remove('hidden');
+                document.getElementById('modal-player-video-input').value = savedVideo || '';
+            } else if (coachVidCtrl) {
+                coachVidCtrl.classList.add('hidden');
             }
 
-            // Coach controls
-            if (coachVideoCtrl) {
-                if (isCoachMode) {
-                    coachVideoCtrl.classList.remove('hidden');
-                    if (videoInput) videoInput.value = player.videoUrl || '';
-                } else {
-                    coachVideoCtrl.classList.add('hidden');
-                }
-            }
-
-            if (modal) modal.classList.remove('hidden');
+            document.getElementById('player-modal').classList.remove('hidden');
         }
 
         function closePlayerModal() {
-            const modal = document.getElementById('player-modal');
-            if (modal) modal.classList.add('hidden');
-            activePlayerCard = null;
+            document.getElementById('player-modal').classList.add('hidden');
+            activePlayer = null;
         }
 
         function savePlayerVideoUrl() {
-            if (!activePlayerCard) return;
-            const input = document.getElementById('modal-player-video-input');
-            activePlayerCard.videoUrl = (input?.value || '').trim();
-            openPlayerModal(activePlayerCard.jersey);
+            if (!activePlayer) return;
+            const url = document.getElementById('modal-player-video-input').value.trim();
+            if (url) {
+                localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
+            } else {
+                localStorage.removeItem(`rfc14_vid_${activePlayer.jersey}`);
+            }
+            openPlayerModal(activePlayer);
+        }
+
+        // Family Details Handlers
+        function openEditFamilyModal() {
+            if (!activePlayer) return;
+            document.getElementById('input-family-parents').value = activePlayer.parents || '';
+            document.getElementById('input-family-siblings').value = activePlayer.siblings || '';
+            document.getElementById('edit-family-modal').classList.remove('hidden');
+        }
+
+        function closeEditFamilyModal() {
+            document.getElementById('edit-family-modal').classList.add('hidden');
+        }
+
+        function saveFamilyDetails(e) {
+            e.preventDefault();
+            if (!activePlayer) return;
+            activePlayer.parents = document.getElementById('input-family-parents').value.trim();
+            activePlayer.siblings = document.getElementById('input-family-siblings').value.trim();
+            closeEditFamilyModal();
+            openPlayerModal(activePlayer);
             renderRoster();
         }
 
-        // ================= FAMILY PHOTOS & DETAILS =================
         function triggerFamilyPhotoUpload() {
-            const input = document.getElementById('family-photo-file-input');
-            if (input) {
-                input.value = '';
-                input.click();
-            }
+            document.getElementById('family-photo-file-input').click();
         }
 
         function processFamilyPhotoFile(e) {
-            const file = e.target.files?.[0];
-            if (!file || !activePlayerCard) return;
-
+            const file = e.target.files[0];
+            if (!file || !activePlayer) return;
             const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 640;
-                    let w = img.width;
-                    let h = img.height;
-                    if (w > h) {
-                        if (w > maxDim) {
-                            h = Math.round((h * maxDim) / w);
-                            w = maxDim;
-                        }
-                    } else {
-                        if (h > maxDim) {
-                            w = Math.round((w * maxDim) / h);
-                            h = maxDim;
-                        }
-                    }
-                    canvas.width = w;
-                    canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.85);
-
-                    activePlayerCard.photo = compressedBase64;
-                    openPlayerModal(activePlayerCard.jersey);
-                    renderRoster();
-                };
-                img.src = event.target.result;
+            reader.onload = function(evt) {
+                localStorage.setItem(`rfc14_fam_${activePlayer.jersey}`, evt.target.result);
+                openPlayerModal(activePlayer);
+                renderRoster();
             };
             reader.readAsDataURL(file);
         }
 
         function openFamilyPhotoLightbox() {
-            if (!activePlayerCard || !activePlayerCard.photo) return;
-            const modal = document.getElementById('family-lightbox-modal');
-            const img = document.getElementById('family-lightbox-img');
-            const title = document.getElementById('family-lightbox-title');
-            const sub = document.getElementById('family-lightbox-sub');
-
-            if (img) img.src = activePlayerCard.photo;
-            if (title) title.textContent = `${activePlayerCard.name}'s Family`;
-            if (sub) sub.textContent = `Parents: ${activePlayerCard.parents || 'Not listed'} ${activePlayerCard.siblings ? `• Siblings: ${activePlayerCard.siblings}` : ''}`;
-            if (modal) modal.classList.remove('hidden');
+            if (!activePlayer) return;
+            const photo = localStorage.getItem(`rfc14_fam_${activePlayer.jersey}`);
+            if (photo) {
+                document.getElementById('family-lightbox-img').src = photo;
+                document.getElementById('family-lightbox-title').textContent = `${activePlayer.name}'s Family`;
+                document.getElementById('family-lightbox-sub').textContent = `Parents: ${activePlayer.parents}`;
+                document.getElementById('family-lightbox-modal').classList.remove('hidden');
+            }
         }
 
         function closeFamilyPhotoLightbox() {
-            const modal = document.getElementById('family-lightbox-modal');
-            if (modal) modal.classList.add('hidden');
+            document.getElementById('family-lightbox-modal').classList.add('hidden');
         }
 
-        function openEditFamilyModal() {
-            if (!activePlayerCard) return;
-            const modal = document.getElementById('edit-family-modal');
-            const pInput = document.getElementById('input-family-parents');
-            const sInput = document.getElementById('input-family-siblings');
-            if (pInput) pInput.value = activePlayerCard.parents || '';
-            if (sInput) sInput.value = activePlayerCard.siblings || '';
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeEditFamilyModal() {
-            const modal = document.getElementById('edit-family-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function saveFamilyDetails(e) {
-            e.preventDefault();
-            if (!activePlayerCard) return;
-            const pInput = document.getElementById('input-family-parents');
-            const sInput = document.getElementById('input-family-siblings');
-            activePlayerCard.parents = (pInput?.value || '').trim();
-            activePlayerCard.siblings = (sInput?.value || '').trim();
-            closeEditFamilyModal();
-            openPlayerModal(activePlayerCard.jersey);
-            renderRoster();
-        }
-
-        // ================= LIVE TRACKER & SCOREBOARD =================
+        // Match Tracker Logic
         function renderMatchTracker() {
-            const scoreUs = document.getElementById('score-us');
-            const scoreThem = document.getElementById('score-them');
-            const timerEl = document.getElementById('timer-display');
-            const opponentEl = document.getElementById('opponent-name-display');
-            const motmEl = document.getElementById('motm-name-display');
-            const eventCountEl = document.getElementById('match-event-count');
-            const timelineList = document.getElementById('match-timeline-list');
-            const motmSelect = document.getElementById('motm-player-select');
-
-            if (scoreUs) scoreUs.textContent = matchState.scoreUs;
-            if (scoreThem) scoreThem.textContent = matchState.scoreThem;
-            if (timerEl) {
-                const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
-                const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${m}:${s}`;
-            }
-            if (opponentEl) opponentEl.textContent = matchState.opponentName || 'Opponent';
+            document.getElementById('score-us').textContent = matchState.ourScore;
+            document.getElementById('score-them').textContent = matchState.theirScore;
+            document.getElementById('opponent-name-display').textContent = matchState.opponent;
 
             // MOTM Display
-            const motmPlayer = players.find(p => p.jersey === matchState.motmJersey);
-            if (motmEl) {
-                motmEl.textContent = motmPlayer 
-                    ? `Man of the Match: #${motmPlayer.jersey} ${motmPlayer.name} 🌟` 
-                    : "Man of the Match: Not Crowned Yet";
+            const motmBox = document.getElementById('motm-name-display');
+            if (matchState.motmJersey) {
+                const p = ROSTER_DATA.find(r => r.jersey === matchState.motmJersey);
+                motmBox.textContent = `Man of the Match: #${p.jersey} ${p.name} 🎖️`;
+            } else {
+                motmBox.textContent = "Man of the Match: Not Crowned Yet";
             }
 
-            // Populate MOTM select in coach mode
-            if (motmSelect && motmSelect.children.length <= 1) {
-                motmSelect.innerHTML = '<option value="">Select MOTM...</option>' + 
-                    players.map(p => `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
+            // Populate MOTM dropdown
+            const motmSelect = document.getElementById('motm-player-select');
+            if (motmSelect) {
+                motmSelect.innerHTML = '<option value="">Select MOTM...</option>';
+                ROSTER_DATA.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.jersey;
+                    opt.textContent = `#${p.jersey} ${p.name}`;
+                    if (matchState.motmJersey === p.jersey) opt.selected = true;
+                    motmSelect.appendChild(opt);
+                });
             }
 
-            // Timeline Events
-            if (eventCountEl) eventCountEl.textContent = `${matchState.events.length} Events Logged`;
-            if (timelineList) {
-                if (matchState.events.length === 0) {
-                    timelineList.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>`;
-                } else {
-                    timelineList.innerHTML = matchState.events.map(ev => {
-                        const isGoal = ev.type === 'goal';
-                        return `
-                        <div class="flex items-center justify-between p-3 rounded-2xl ${isGoal ? 'bg-blue-950/40 border border-blue-500/30' : 'bg-teal-950/30 border border-teal-500/30'}">
-                            <div class="flex items-center space-x-3">
-                                <span class="text-lg">${isGoal ? '⚽' : '🛡️'}</span>
+            // Populate Scorer and Defender Dropdowns
+            const scorerSelect = document.getElementById('goal-scorer-select');
+            const assistSelect = document.getElementById('goal-assist-select');
+            const defSelect = document.getElementById('defense-player-select');
+
+            if (scorerSelect) {
+                scorerSelect.innerHTML = '';
+                ROSTER_DATA.forEach(p => {
+                    scorerSelect.innerHTML += `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`;
+                });
+            }
+            if (assistSelect) {
+                assistSelect.innerHTML = '<option value="">None (Solo / Unassisted)</option>';
+                ROSTER_DATA.forEach(p => {
+                    assistSelect.innerHTML += `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`;
+                });
+            }
+            if (defSelect) {
+                defSelect.innerHTML = '';
+                ROSTER_DATA.forEach(p => {
+                    defSelect.innerHTML += `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`;
+                });
+            }
+
+            // Render Events Timeline
+            const list = document.getElementById('match-timeline-list');
+            if (!list) return;
+            list.innerHTML = '';
+
+            if (matchState.events.length === 0) {
+                list.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>';
+            } else {
+                matchState.events.forEach((ev, idx) => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs";
+                    if (ev.isDefensive) {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-teal-400 font-bold">🛡️</span>
                                 <div>
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-xs font-black text-white">${isGoal ? ev.scorerName : ev.playerName}</span>
-                                        <span class="text-[10px] ${isGoal ? 'bg-blue-900 text-blue-200' : 'bg-teal-900 text-teal-200'} px-1.5 py-0.2 rounded font-bold">
-                                            ${isGoal ? ev.tag : ev.action}
-                                        </span>
-                                    </div>
-                                    <p class="text-[10px] text-zinc-400 mt-0.5">
-                                        ${isGoal ? (ev.assistName ? `Assist: ${ev.assistName}` : 'Unassisted') : (ev.note || 'Defensive stop')}
-                                    </p>
+                                    <span class="font-extrabold text-white">#${ev.playerJersey} ${ev.playerName}</span>
+                                    <span class="text-teal-300 font-semibold">• ${ev.action}</span>
+                                    ${ev.note ? `<span class="text-zinc-400 italic">("${ev.note}")</span>` : ''}
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                                ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>` : ''}
-                            </div>
-                        </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
                         `;
-                    }).join('');
-                }
+                    } else if (ev.isOpponent) {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-rose-400 font-bold">⚽</span>
+                                <div>
+                                    <span class="font-extrabold text-white">${matchState.opponent} Goal</span>
+                                </div>
+                            </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-emerald-400 font-bold">⚽</span>
+                                <div>
+                                    <span class="font-extrabold text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
+                                    ${ev.assistName ? `<span class="text-zinc-400 font-medium"> (Ast: #${ev.assistJersey} ${ev.assistName})</span>` : ''}
+                                    <span class="text-amber-400 text-[10px] font-bold uppercase ml-1">${ev.tag}</span>
+                                </div>
+                            </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                        `;
+                    }
+                    list.appendChild(row);
+                });
             }
+            document.getElementById('match-event-count').textContent = `${matchState.events.length} Events Logged`;
+        }
 
-            renderPastMatches();
+        // Timer Handlers
+        function formatTimer(sec) {
+            const m = Math.floor(sec / 60).toString().padStart(2, '0');
+            const s = (sec % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
         }
 
         function toggleMatchTimer() {
-            matchState.timerRunning = !matchState.timerRunning;
             const btn = document.getElementById('btn-toggle-timer');
-            if (matchState.timerRunning) {
-                if (btn) {
-                    btn.textContent = '⏸ Pause';
-                    btn.className = 'px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold shadow transition';
-                }
-                if (!timerInterval) {
-                    timerInterval = setInterval(() => {
-                        matchState.timerSeconds++;
-                        const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
-                        const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
-                        const timerEl = document.getElementById('timer-display');
-                        if (timerEl) timerEl.textContent = `${m}:${s}`;
-                    }, 1000);
-                }
+            if (isTimerRunning) {
+                clearInterval(matchTimerInterval);
+                isTimerRunning = false;
+                btn.textContent = "▶ Resume";
+                btn.className = "px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow transition";
             } else {
-                if (btn) {
-                    btn.textContent = '▶ Start';
-                    btn.className = 'px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition';
-                }
-                if (timerInterval) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
+                isTimerRunning = true;
+                btn.textContent = "⏸ Pause";
+                btn.className = "px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold shadow transition";
+                matchTimerInterval = setInterval(() => {
+                    timerSeconds++;
+                    document.getElementById('timer-display').textContent = formatTimer(timerSeconds);
+                }, 1000);
             }
         }
 
         function resetTimerPrompt() {
-            if (!isCoachMode) return;
-            matchState.timerSeconds = 0;
-            const timerEl = document.getElementById('timer-display');
-            if (timerEl) timerEl.textContent = '00:00';
+            if (confirm("Reset the match clock to 00:00?")) {
+                clearInterval(matchTimerInterval);
+                isTimerRunning = false;
+                timerSeconds = 0;
+                document.getElementById('timer-display').textContent = "00:00";
+                document.getElementById('btn-toggle-timer').textContent = "▶ Start";
+            }
         }
 
-        // ================= GOAL & DEFENSIVE ACTIONS =================
+        // Goal Modal Handlers
         function openGoalModal() {
-            const modal = document.getElementById('goal-modal');
-            const scorerSel = document.getElementById('goal-scorer-select');
-            const assistSel = document.getElementById('goal-assist-select');
-
-            if (scorerSel) {
-                scorerSel.innerHTML = players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})</option>`).join('');
-            }
-            if (assistSel) {
-                assistSel.innerHTML = '<option value="">None (Solo / Unassisted)</option>' + 
-                    players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`).join('');
-            }
-            if (modal) modal.classList.remove('hidden');
+            document.getElementById('goal-modal').classList.remove('hidden');
         }
-
         function closeGoalModal() {
-            const modal = document.getElementById('goal-modal');
-            if (modal) modal.classList.add('hidden');
+            document.getElementById('goal-modal').classList.add('hidden');
         }
-
         function confirmRockiesGoal(e) {
             e.preventDefault();
-            const scorerJersey = parseInt(document.getElementById('goal-scorer-select')?.value, 10);
-            const assistVal = document.getElementById('goal-assist-select')?.value;
-            const assistJersey = assistVal ? parseInt(assistVal, 10) : null;
-            const tag = document.getElementById('goal-tag-select')?.value || 'Goal ⚽';
-            const videoUrl = (document.getElementById('goal-video-input')?.value || '').trim();
+            const scorerJersey = parseInt(document.getElementById('goal-scorer-select').value);
+            const assistJerseyVal = document.getElementById('goal-assist-select').value;
+            const assistJersey = assistJerseyVal ? parseInt(assistJerseyVal) : null;
+            const tag = document.getElementById('goal-tag-select').value;
+            const video = document.getElementById('goal-video-input').value.trim();
 
-            const scorer = players.find(p => p.jersey === scorerJersey);
-            const assist = players.find(p => p.jersey === assistJersey);
+            const scorer = ROSTER_DATA.find(r => r.jersey === scorerJersey);
+            const assist = assistJersey ? ROSTER_DATA.find(r => r.jersey === assistJersey) : null;
 
-            const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
-            const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
-
-            matchState.scoreUs++;
+            matchState.ourScore++;
             matchState.events.unshift({
-                id: Date.now(),
-                type: 'goal',
+                time: formatTimer(timerSeconds),
                 scorerJersey,
-                scorerName: scorer ? scorer.name : `Jersey #${scorerJersey}`,
+                scorerName: scorer ? scorer.name : "Scorer",
                 assistJersey,
-                assistName: assist ? assist.name : '',
+                assistName: assist ? assist.name : null,
                 tag,
-                time: `${m}:${s}`,
-                videoUrl
+                video
             });
 
             closeGoalModal();
             renderMatchTracker();
-            renderRoster();
-            renderLeaderboard();
         }
 
-        function recordOpponentGoal() {
-            matchState.scoreThem++;
-            renderMatchTracker();
-        }
-
+        // Defensive Stop Handlers
         function openDefensiveModal() {
-            const modal = document.getElementById('defensive-modal');
-            const playerSel = document.getElementById('defense-player-select');
-            if (playerSel) {
-                playerSel.innerHTML = players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})</option>`).join('');
-            }
-            if (modal) modal.classList.remove('hidden');
+            document.getElementById('defensive-modal').classList.remove('hidden');
         }
-
         function closeDefensiveModal() {
-            const modal = document.getElementById('defensive-modal');
-            if (modal) modal.classList.add('hidden');
+            document.getElementById('defensive-modal').classList.add('hidden');
         }
-
         function confirmDefensiveStop(e) {
             e.preventDefault();
-            const jersey = parseInt(document.getElementById('defense-player-select')?.value, 10);
-            const action = document.getElementById('defense-type-select')?.value || 'Defensive Stop 🛡️';
-            const note = (document.getElementById('defense-note-input')?.value || '').trim();
-
-            const player = players.find(p => p.jersey === jersey);
-            const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
-            const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+            const playerJersey = parseInt(document.getElementById('defense-player-select').value);
+            const action = document.getElementById('defense-type-select').value;
+            const note = document.getElementById('defense-note-input').value.trim();
+            const p = ROSTER_DATA.find(r => r.jersey === playerJersey);
 
             matchState.events.unshift({
-                id: Date.now(),
-                type: 'defense',
-                playerJersey: jersey,
-                playerName: player ? player.name : `Jersey #${jersey}`,
+                isDefensive: true,
+                time: formatTimer(timerSeconds),
+                playerJersey,
+                playerName: p ? p.name : "Defender",
                 action,
-                note,
-                time: `${m}:${s}`,
-                videoUrl: ''
+                note
             });
 
             closeDefensiveModal();
             renderMatchTracker();
-            renderRoster();
-            renderLeaderboard();
         }
 
-        function deleteMatchEvent(id) {
-            matchState.events = matchState.events.filter(e => e.id !== id);
+        function recordOpponentGoal() {
+            matchState.theirScore++;
+            matchState.events.unshift({
+                isOpponent: true,
+                time: formatTimer(timerSeconds)
+            });
             renderMatchTracker();
-            renderRoster();
-            renderLeaderboard();
         }
 
         function setLockerRoomMOTM() {
-            const sel = document.getElementById('motm-player-select');
-            const jersey = sel?.value ? parseInt(sel.value, 10) : null;
-            matchState.motmJersey = jersey;
-            renderMatchTracker();
-            renderRoster();
-            renderLeaderboard();
+            const val = document.getElementById('motm-player-select').value;
+            if (val) {
+                matchState.motmJersey = parseInt(val);
+                renderMatchTracker();
+            }
         }
 
         function resetNewMatchConfirm() {
-            openConfirmModal("Start New Match", "Archive current match score and reset scoreboard to 0-0?", () => {
-                if (matchState.scoreUs > 0 || matchState.scoreThem > 0 || matchState.events.length > 0) {
-                    const motmP = players.find(p => p.jersey === matchState.motmJersey);
-                    matchState.history.unshift({
-                        id: Date.now(),
-                        opponent: matchState.opponentName || 'CMSA Club',
-                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        scoreUs: matchState.scoreUs,
-                        scoreThem: matchState.scoreThem,
-                        motmJersey: matchState.motmJersey,
-                        motmName: motmP ? motmP.name : 'Unassigned',
-                        eventsCount: matchState.events.length
-                    });
-                }
-                matchState.scoreUs = 0;
-                matchState.scoreThem = 0;
-                matchState.timerSeconds = 0;
-                matchState.timerRunning = false;
+            if (confirm("Archive current game to match history and start a fresh match?")) {
+                matchState.history.unshift({
+                    opponent: matchState.opponent,
+                    ourScore: matchState.ourScore,
+                    theirScore: matchState.theirScore,
+                    motmJersey: matchState.motmJersey,
+                    events: [...matchState.events],
+                    date: new Date().toLocaleDateString()
+                });
+                matchState.ourScore = 0;
+                matchState.theirScore = 0;
                 matchState.motmJersey = null;
                 matchState.events = [];
+                timerSeconds = 0;
+                clearInterval(matchTimerInterval);
+                isTimerRunning = false;
+                document.getElementById('timer-display').textContent = "00:00";
                 renderMatchTracker();
-                renderRoster();
-                renderLeaderboard();
-            });
-        }
-
-        function renderPastMatches() {
-            const list = document.getElementById('past-matches-list');
-            if (!list) return;
-
-            if (!matchState.history || matchState.history.length === 0) {
-                list.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-2">No past matches recorded yet.</p>`;
-                return;
             }
-
-            list.innerHTML = matchState.history.map(m => {
-                const isWin = m.scoreUs > m.scoreThem;
-                const isDraw = m.scoreUs === m.scoreThem;
-                return `
-                <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs">
-                    <div>
-                        <div class="flex items-center space-x-2">
-                            <span class="font-extrabold text-white">vs ${m.opponent}</span>
-                            <span class="${isWin ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : (isDraw ? 'bg-amber-950 text-amber-300 border-amber-500/40' : 'bg-rose-950 text-rose-300 border-rose-500/40')} border text-[10px] px-1.5 py-0.2 rounded font-bold uppercase">
-                                ${isWin ? 'WIN' : (isDraw ? 'DRAW' : 'LOSS')}
-                            </span>
-                        </div>
-                        <p class="text-[10px] text-zinc-400 mt-0.5">${m.date} • ${m.motmName ? `🎖️ MOTM: ${m.motmName}` : 'No MOTM recorded'}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-sm font-black text-white">${m.scoreUs} - ${m.scoreThem}</span>
-                    </div>
-                </div>
-                `;
-            }).join('');
         }
 
-        // ================= SCHEDULE & OPPONENT SCOUTING =================
-        function renderSchedule() {
+        // Schedule Renderer
+        function renderSchedule(filter = 'all') {
             const list = document.getElementById('schedule-cards-list');
             if (!list) return;
+            list.innerHTML = '';
 
-            const filtered = scheduleEvents.filter(ev => {
-                if (currentScheduleFilter === 'all') return true;
-                return ev.type === currentScheduleFilter;
-            });
+            const filtered = scheduleData.filter(item => filter === 'all' || item.type === filter);
 
-            list.innerHTML = filtered.map(ev => {
-                const isGame = ev.type === 'game';
-                // Opponent scouting record from standings
-                let oppRecord = null;
-                if (isGame && ev.opponent) {
-                    oppRecord = leagueStandings.find(s => s.name.toLowerCase().includes(ev.opponent.toLowerCase()) || ev.opponent.toLowerCase().includes(s.name.toLowerCase()));
+            filtered.forEach(item => {
+                const isGame = item.type === 'game';
+                const card = document.createElement('div');
+                card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-lg space-y-3";
+
+                // Opponent scouting data
+                let opponentBadge = '';
+                if (isGame && item.opponent) {
+                    const opp = standingsData.find(s => s.name.toLowerCase().includes(item.opponent.toLowerCase()) || item.opponent.toLowerCase().includes(s.name.toLowerCase()));
+                    if (opp) {
+                        opponentBadge = `
+                            <div class="mt-2 p-2.5 rounded-xl bg-zinc-950 border border-blue-900/40 text-xs flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-bold text-blue-300">📈 Opponent Record: ${opp.w}W - ${opp.l}L - ${opp.t}T (${opp.pts} pts • #${opp.rank} in Tier 2)</span>
+                                <span class="text-zinc-400">GF: <strong class="text-white">${opp.gf}</strong> | GA: <strong class="text-white">${opp.ga}</strong> | GD: <strong class="text-white">${opp.gd > 0 ? '+'+opp.gd : opp.gd}</strong></span>
+                            </div>
+                        `;
+                    }
                 }
 
-                return `
-                <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3 relative overflow-hidden">
+                card.innerHTML = `
                     <div class="flex items-start justify-between">
-                        <div class="space-y-1">
-                            <div class="flex items-center space-x-2">
-                                <span class="${isGame ? 'bg-blue-950 text-blue-300 border-blue-500/50' : 'bg-emerald-950 text-emerald-300 border-emerald-500/50'} border text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">
-                                    ${isGame ? '⚽ Match Day' : '🏃 Team Training'}
-                                </span>
-                                <span class="text-xs font-bold text-zinc-400">${ev.date}</span>
-                            </div>
-                            <h3 class="text-base font-black text-white tracking-tight">${ev.title}</h3>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-sm font-black text-amber-400">${ev.kickoff}</span>
-                            <p class="text-[10px] text-zinc-400 font-semibold">Arrive: ${ev.arrival}</p>
-                        </div>
-                    </div>
-
-                    <!-- Opponent Scouting Banner (If Game) -->
-                    ${oppRecord ? `
-                    <div class="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-2.5 flex items-center justify-between text-[11px]">
                         <div class="flex items-center space-x-2">
-                            <span class="text-sm">📈</span>
+                            <span class="text-xl">${isGame ? '⚽' : '🏃'}</span>
                             <div>
-                                <span class="font-extrabold text-white">Opponent Record: </span>
-                                <span class="text-emerald-300 font-bold">${oppRecord.w}W</span> - <span class="text-rose-300">${oppRecord.l}L</span> - <span class="text-amber-300">${oppRecord.t}T</span>
-                                <span class="text-zinc-400">(${ (oppRecord.w * 3) + oppRecord.t } pts)</span>
+                                <h3 class="text-sm font-black text-white">${item.title}</h3>
+                                <p class="text-xs text-zinc-400 font-semibold mt-0.5">📅 ${item.date} • Kickoff: <strong class="text-white">${item.kickoff}</strong> (Arrive: ${item.arrival})</p>
                             </div>
                         </div>
-                        <div class="text-zinc-300 font-semibold">
-                            GF: <span class="text-white font-bold">${oppRecord.gf}</span> | GA: <span class="text-white font-bold">${oppRecord.ga}</span>
-                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isGame ? 'bg-blue-950 text-blue-300 border border-blue-500/30' : 'bg-emerald-950 text-emerald-300 border border-emerald-500/30'} uppercase">
+                            ${isGame ? 'Match' : 'Training'}
+                        </span>
                     </div>
-                    ` : ''}
 
-                    <!-- Location & Kit Notes -->
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-zinc-800/80 text-xs">
-                        <div class="flex items-center space-x-2 text-zinc-300">
-                            <span>📍 ${ev.location}</span>
-                            <a href="${ev.mapUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 font-bold underline">Maps ↗</a>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-[11px] text-zinc-400">👕 ${ev.jerseyKit}</span>
-                            ${isGame && isCoachMode ? `
-                                <button onclick="startMatchFromSchedule('${ev.opponent}')" class="px-3 py-1 rounded-xl bg-[#003C71] hover:bg-blue-600 text-white font-bold text-[11px] shadow">
-                                    ⚡ Start Match in Tracker
-                                </button>
-                            ` : ''}
-                        </div>
+                    <div class="text-xs text-zinc-300 flex items-center justify-between">
+                        <span>📍 ${item.pitch}</span>
+                        <a href="https://maps.google.com/?q=${encodeURIComponent(item.address)}" target="_blank" class="text-blue-400 hover:text-white underline text-[11px] font-bold">
+                            Maps ↗
+                        </a>
                     </div>
-                </div>
+
+                    ${opponentBadge}
+
+                    <div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+                        <p class="italic">${item.notes}</p>
+                        ${isGame && isCoachMode ? `
+                            <button onclick="startMatchFromSchedule('${item.opponent}')" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow transition active:scale-95">
+                                ⚡ Start Match in Tracker
+                            </button>
+                        ` : ''}
+                    </div>
                 `;
-            }).join('');
+                list.appendChild(card);
+            });
         }
 
         function filterSchedule(type) {
-            currentScheduleFilter = type;
-            const allBtn = document.getElementById('sched-filter-all');
-            const gameBtn = document.getElementById('sched-filter-game');
-            const pracBtn = document.getElementById('sched-filter-practice');
-
-            if (allBtn) allBtn.className = type === 'all' ? 'px-3 py-1.5 rounded-xl bg-zinc-800 text-white' : 'px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white';
-            if (gameBtn) gameBtn.className = type === 'game' ? 'px-3 py-1.5 rounded-xl bg-zinc-800 text-white' : 'px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white';
-            if (pracBtn) pracBtn.className = type === 'practice' ? 'px-3 py-1.5 rounded-xl bg-zinc-800 text-white' : 'px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white';
-
-            renderSchedule();
-        }
-
-        function startMatchFromSchedule(oppName) {
-            matchState.opponentName = oppName || 'CMSA Opponent';
-            switchTab('tracker');
-        }
-
-        // ================= STANDINGS & AI SCANNER =================
-        function renderStandings() {
-            const tbody = document.getElementById('standings-table-rows');
-            if (!tbody) return;
-
-            // Sort by Points, then Goal Difference, then Goals For
-            const sorted = [...leagueStandings].sort((a, b) => {
-                const ptsA = (a.w * 3) + a.t;
-                const ptsB = (b.w * 3) + b.t;
-                if (ptsB !== ptsA) return ptsB - ptsA;
-                const gdA = a.gf - a.ga;
-                const gdB = b.gf - b.ga;
-                if (gdB !== gdA) return gdB - gdA;
-                return b.gf - a.gf;
-            });
-
-            tbody.innerHTML = sorted.map((t, idx) => {
-                const pts = (t.w * 3) + t.t;
-                const gd = t.gf - t.ga;
-                const gdDisplay = gd > 0 ? `+${gd}` : gd;
-                const isRockies = t.isUs;
-
-                return `
-                <tr class="${isRockies ? 'bg-blue-950/40 text-blue-100 font-bold border-l-4 border-blue-500' : 'hover:bg-zinc-800/40 transition'}">
-                    <td class="py-3 px-3 text-center text-zinc-400 font-bold">${idx + 1}</td>
-                    <td class="py-3 px-4 font-bold ${isRockies ? 'text-white' : 'text-gray-200'}">
-                        ${t.name}
-                        ${isRockies ? `<span class="bg-blue-900 text-blue-200 border border-blue-400 text-[9px] px-1.5 py-0.5 rounded font-black ml-1.5 uppercase">Our Team</span>` : ''}
-                    </td>
-                    <td class="py-3 px-2 text-center text-zinc-400">${t.gp}</td>
-                    <td class="py-3 px-2 text-center text-emerald-400 font-bold">${t.w}</td>
-                    <td class="py-3 px-2 text-center text-amber-300">${t.t}</td>
-                    <td class="py-3 px-2 text-center text-rose-400">${t.l}</td>
-                    <td class="py-3 px-2 text-center">${t.gf}</td>
-                    <td class="py-3 px-2 text-center">${t.ga}</td>
-                    <td class="py-3 px-2 text-center font-bold ${gd > 0 ? 'text-emerald-400' : (gd < 0 ? 'text-rose-400' : 'text-zinc-400')}">${gdDisplay}</td>
-                    <td class="py-3 px-3 text-center font-black text-white text-sm">${pts}</td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function openEditStandingsModal() {
-            if (!isCoachMode) return;
-            const modal = document.getElementById('edit-standings-modal');
-            const list = document.getElementById('edit-standings-list');
-            if (list) {
-                list.innerHTML = leagueStandings.map((t, idx) => `
-                    <div class="flex items-center space-x-2 bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-zinc-500 font-bold w-4">${idx + 1}</span>
-                        <input type="text" value="${t.name}" class="flex-1 px-2 py-1 rounded bg-zinc-900 border border-zinc-700 text-white font-bold" id="standings-name-${t.id}">
-                        <div class="flex items-center space-x-1 text-[11px]">
-                            <span class="text-zinc-400">W:</span><input type="number" value="${t.w}" class="w-10 px-1 py-1 rounded bg-zinc-900 border border-zinc-700 text-center" id="standings-w-${t.id}">
-                            <span class="text-zinc-400">T:</span><input type="number" value="${t.t}" class="w-10 px-1 py-1 rounded bg-zinc-900 border border-zinc-700 text-center" id="standings-t-${t.id}">
-                            <span class="text-zinc-400">L:</span><input type="number" value="${t.l}" class="w-10 px-1 py-1 rounded bg-zinc-900 border border-zinc-700 text-center" id="standings-l-${t.id}">
-                            <span class="text-zinc-400">GF:</span><input type="number" value="${t.gf}" class="w-10 px-1 py-1 rounded bg-zinc-900 border border-zinc-700 text-center" id="standings-gf-${t.id}">
-                            <span class="text-zinc-400">GA:</span><input type="number" value="${t.ga}" class="w-10 px-1 py-1 rounded bg-zinc-900 border border-zinc-700 text-center" id="standings-ga-${t.id}">
-                        </div>
-                    </div>
-                `).join('');
-            }
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeEditStandingsModal() {
-            const modal = document.getElementById('edit-standings-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function saveEditedStandings() {
-            leagueStandings.forEach(t => {
-                const nameInput = document.getElementById(`standings-name-${t.id}`);
-                const wInput = document.getElementById(`standings-w-${t.id}`);
-                const tInput = document.getElementById(`standings-t-${t.id}`);
-                const lInput = document.getElementById(`standings-l-${t.id}`);
-                const gfInput = document.getElementById(`standings-gf-${t.id}`);
-                const gaInput = document.getElementById(`standings-ga-${t.id}`);
-
-                if (nameInput) t.name = nameInput.value.trim();
-                if (wInput) t.w = parseInt(wInput.value, 10) || 0;
-                if (tInput) t.t = parseInt(tInput.value, 10) || 0;
-                if (lInput) t.l = parseInt(lInput.value, 10) || 0;
-                if (gfInput) t.gf = parseInt(gfInput.value, 10) || 0;
-                if (gaInput) t.ga = parseInt(gaInput.value, 10) || 0;
-                t.gp = t.w + t.t + t.l;
-            });
-            closeEditStandingsModal();
-            renderStandings();
-            renderSchedule();
-        }
-
-        function addStandingsTeam() {
-            leagueStandings.push({
-                id: Date.now(),
-                name: "New Club",
-                gp: 0,
-                w: 0,
-                l: 0,
-                t: 0,
-                gf: 0,
-                ga: 0,
-                isUs: false
-            });
-            openEditStandingsModal();
-        }
-
-        // ================= GEMINI AI STANDINGS SCANNER =================
-        function triggerStandingsScreenshotUpload() {
-            if (!isCoachMode) {
-                openCoachAuthModal();
-                return;
-            }
-            const input = document.getElementById('standings-screenshot-file-input');
-            if (input) {
-                input.value = '';
-                input.click();
-            }
-        }
-
-        function closeAiStandingsModal() {
-            const modal = document.getElementById('ai-standings-modal');
-            if (modal) modal.classList.add('hidden');
-            pendingAiParsedTeams = [];
-        }
-
-        async function processStandingsScreenshot(e) {
-            const file = e.target.files?.[0];
-            if (!file) return;
-
-            const modal = document.getElementById('ai-standings-modal');
-            const loading = document.getElementById('ai-standings-loading');
-            const preview = document.getElementById('ai-standings-preview');
-            const error = document.getElementById('ai-standings-error');
-
-            if (modal) modal.classList.remove('hidden');
-            if (loading) loading.classList.remove('hidden');
-            if (preview) preview.classList.add('hidden');
-            if (error) error.classList.add('hidden');
-
-            try {
-                // Resize for vision payload
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const maxDim = 1600;
-                            let w = img.width, h = img.height;
-                            if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-                            else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-                            canvas.width = w; canvas.height = h;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-                            resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
-                        };
-                        img.onerror = reject;
-                        img.src = event.target.result;
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                const prompt = `Analyze this CMSA league standings screenshot. Locate the "Boys U13 Tier 2" table.
-Extract every team in rank order with:
-- name: Full club name
-- gp: Games Played
-- w: Wins
-- l: Losses
-- t: Ties
-- gf: Goals For
-- ga: Goals Against
-Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
-
-                const apiKey = ""; // Can be populated with user API key or backend proxy
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            role: "user",
-                            parts: [
-                                { text: prompt },
-                                { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-                            ]
-                        }],
-                        generationConfig: {
-                            responseMimeType: "application/json"
-                        }
-                    })
-                });
-
-                if (!response.ok) throw new Error("Gemini API connection error");
-                const result = await response.json();
-                const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                const parsed = JSON.parse(rawJson);
-
-                if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("No teams detected");
-
-                pendingAiParsedTeams = parsed.map((item, idx) => ({
-                    id: Date.now() + idx,
-                    name: item.name,
-                    gp: Number(item.gp) || 0,
-                    w: Number(item.w) || 0,
-                    l: Number(item.l) || 0,
-                    t: Number(item.t) || 0,
-                    gf: Number(item.gf) || 0,
-                    ga: Number(item.ga) || 0,
-                    isUs: (item.name || '').toLowerCase().includes('rockies') || (item.name || '').toLowerCase().includes('albion')
-                }));
-
-                const tbody = document.getElementById('ai-standings-preview-rows');
-                const badge = document.getElementById('ai-standings-count-badge');
-                if (badge) badge.textContent = `${pendingAiParsedTeams.length} Teams Extracted`;
-                if (tbody) {
-                    tbody.innerHTML = pendingAiParsedTeams.map((t, idx) => `
-                        <tr>
-                            <td class="py-2 px-2 text-center text-zinc-400">${idx + 1}</td>
-                            <td class="py-2 px-3 font-bold text-white">${t.name}</td>
-                            <td class="py-2 px-1 text-center">${t.gp}</td>
-                            <td class="py-2 px-1 text-center text-emerald-400 font-bold">${t.w}</td>
-                            <td class="py-2 px-1 text-center text-rose-400">${t.l}</td>
-                            <td class="py-2 px-1 text-center text-amber-300">${t.t}</td>
-                            <td class="py-2 px-1 text-center">${t.gf}</td>
-                            <td class="py-2 px-1 text-center">${t.ga}</td>
-                            <td class="py-2 px-2 text-center font-black text-white">${(t.w * 3) + t.t}</td>
-                        </tr>
-                    `).join('');
-                }
-
-                if (loading) loading.classList.add('hidden');
-                if (preview) preview.classList.remove('hidden');
-
-            } catch (err) {
-                console.error("Gemini Vision Standings Error:", err);
-                if (loading) loading.classList.add('hidden');
-                if (error) {
-                    const msg = document.getElementById('ai-standings-error-msg');
-                    if (msg) msg.textContent = "Could not parse table automatically. Please ensure screenshot is clear or update via 'Edit Standings'.";
-                    error.classList.remove('hidden');
-                }
-            }
-        }
-
-        function confirmApplyAiStandings() {
-            if (!pendingAiParsedTeams || pendingAiParsedTeams.length === 0) return;
-            leagueStandings = [...pendingAiParsedTeams];
-            closeAiStandingsModal();
-            renderStandings();
-            renderSchedule();
-        }
-
-        // ================= LEADERBOARD PODIUMS =================
-        function renderLeaderboard() {
-            const goalsPodium = document.getElementById('podium-goals');
-            const assistsPodium = document.getElementById('podium-assists');
-            const defensePodium = document.getElementById('podium-defense');
-            const motmPodium = document.getElementById('podium-motm');
-            const tagsCloud = document.getElementById('highlights-tag-cloud');
-
-            // 1. Goals Leaderboard
-            const scorers = players.map(p => ({ ...p, goals: getPlayerGoals(p.jersey) }))
-                .filter(p => p.goals > 0)
-                .sort((a, b) => b.goals - a.goals);
-
-            if (goalsPodium) {
-                if (scorers.length === 0) {
-                    goalsPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No goals scored yet.</p>`;
-                } else {
-                    goalsPodium.innerHTML = scorers.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-amber-400 text-sm">${p.goals} <span class="text-[10px] text-zinc-400">Goals</span></span>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            // 2. Assists Leaderboard
-            const playmakers = players.map(p => ({ ...p, assists: getPlayerAssists(p.jersey) }))
-                .filter(p => p.assists > 0)
-                .sort((a, b) => b.assists - a.assists);
-
-            if (assistsPodium) {
-                if (playmakers.length === 0) {
-                    assistsPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No assists recorded yet.</p>`;
-                } else {
-                    assistsPodium.innerHTML = playmakers.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-blue-400 text-sm">${p.assists} <span class="text-[10px] text-zinc-400">Assists</span></span>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            // 3. Defensive Heroics
-            const defenders = players.map(p => ({ ...p, stops: getPlayerStops(p.jersey) }))
-                .filter(p => p.stops > 0)
-                .sort((a, b) => b.stops - a.stops);
-
-            if (defensePodium) {
-                if (defenders.length === 0) {
-                    defensePodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No defensive stops logged yet.</p>`;
-                } else {
-                    defensePodium.innerHTML = defenders.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-teal-300 text-sm">${p.stops} <span class="text-[10px] text-zinc-400">Stops</span></span>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            // 4. MOTM Honors
-            const motmLeaders = players.map(p => ({ ...p, motms: getPlayerMOTMCount(p.jersey) }))
-                .filter(p => p.motms > 0)
-                .sort((a, b) => b.motms - a.motms);
-
-            if (motmPodium) {
-                if (motmLeaders.length === 0) {
-                    motmPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No MOTM awards crowned yet.</p>`;
-                } else {
-                    motmPodium.innerHTML = motmLeaders.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-amber-400 text-sm">${p.motms} <span class="text-[10px] text-zinc-400">Awards</span></span>
-                        </div>
-                    `).join('');
-                }
-            }
-
-            // Highlight tags
-            if (tagsCloud) {
-                const tags = matchState.events.map(e => e.tag || e.action).filter(Boolean);
-                if (tags.length === 0) {
-                    tagsCloud.innerHTML = `<span class="text-xs text-zinc-500 italic">No technique tags logged yet.</span>`;
-                } else {
-                    tagsCloud.innerHTML = [...new Set(tags)].map(t => `
-                        <span class="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs font-bold text-gray-200">
-                            ${t}
-                        </span>
-                    `).join('');
-                }
-            }
-        }
-
-        // ================= GENERAL CONFIRM MODAL =================
-        function openConfirmModal(title, msg, onConfirm) {
-            const modal = document.getElementById('confirm-modal');
-            const titleEl = document.getElementById('confirm-title');
-            const msgEl = document.getElementById('confirm-message');
-            if (titleEl) titleEl.textContent = title;
-            if (msgEl) msgEl.textContent = msg;
-            confirmActionCallback = onConfirm;
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeConfirmModal(confirmed) {
-            const modal = document.getElementById('confirm-modal');
-            if (modal) modal.classList.add('hidden');
-            if (confirmed && typeof confirmActionCallback === 'function') {
-                confirmActionCallback();
-            }
-            confirmActionCallback = null;
-        }
-
-        // ================= GLOBAL EXPORTS FOR HTML HANDLERS =================
-        window.handleFamilyPassSubmit = handleFamilyPassSubmit;
-        window.relockSite = relockSite;
-        window.switchTab = switchTab;
-        window.toggleCoachMode = toggleCoachMode;
-        window.openCoachAuthModal = openCoachAuthModal;
-        window.closeCoachAuthModal = closeCoachAuthModal;
-        window.submitCoachPin = submitCoachPin;
-        window.openPlayerModal = openPlayerModal;
-        window.closePlayerModal = closePlayerModal;
-        window.savePlayerVideoUrl = savePlayerVideoUrl;
-        window.triggerFamilyPhotoUpload = triggerFamilyPhotoUpload;
-        window.processFamilyPhotoFile = processFamilyPhotoFile;
-        window.openFamilyPhotoLightbox = openFamilyPhotoLightbox;
-        window.closeFamilyPhotoLightbox = closeFamilyPhotoLightbox;
-        window.openEditFamilyModal = openEditFamilyModal;
-        window.closeEditFamilyModal = closeEditFamilyModal;
-        window.saveFamilyDetails = saveFamilyDetails;
-        window.toggleMatchTimer = toggleMatchTimer;
-        window.resetTimerPrompt = resetTimerPrompt;
-        window.openGoalModal = openGoalModal;
-        window.closeGoalModal = closeGoalModal;
-        window.confirmRockiesGoal = confirmRockiesGoal;
-        window.recordOpponentGoal = recordOpponentGoal;
-        window.openDefensiveModal = openDefensiveModal;
-        window.closeDefensiveModal = closeDefensiveModal;
-        window.confirmDefensiveStop = confirmDefensiveStop;
-        window.deleteMatchEvent = deleteMatchEvent;
-        window.setLockerRoomMOTM = setLockerRoomMOTM;
-        window.resetNewMatchConfirm = resetNewMatchConfirm;
-        window.filterSchedule = filterSchedule;
-        window.startMatchFromSchedule = startMatchFromSchedule;
-        window.openEditStandingsModal = openEditStandingsModal;
-        window.closeEditStandingsModal = closeEditStandingsModal;
-        window.saveEditedStandings = saveEditedStandings;
-        window.addStandingsTeam = addStandingsTeam;
-        window.triggerStandingsScreenshotUpload = triggerStandingsScreenshotUpload;
-        window.closeAiStandingsModal = closeAiStandingsModal;
-        window.processStandingsScreenshot = processStandingsScreenshot;
-        window.confirmApplyAiStandings = confirmApplyAiStandings;
-        window.openConfirmModal = openConfirmModal;
-        window.closeConfirmModal = closeConfirmModal;
-
-        // Auto initialization
-        window.addEventListener('DOMContentLoaded', () => {
-            checkAutoUnlock();
-            renderRoster();
-            renderMatchTracker();
-            renderSchedule();
-            renderStandings();
-            renderLeaderboard();
-        });
-    </script>
-</body>
-</html>
+            ['all', 'game', 'practice'].forEach(t => {
+                const btn = document.getElementById(`sched-filter-${t}`);
+                if (btn) {
+                    if (t === type) {
+                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-800 text-white font-bold";
+                    } else {
+                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:
