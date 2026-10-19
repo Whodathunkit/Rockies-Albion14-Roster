@@ -896,8 +896,8 @@
 62,Elnathan (Nathan) Udoh,Emmanuel,Dépéjú,Defense
 14,Haaris Nathoo,Rizwan,Rabea,GK
 22,Yazed (Zizou) Manasrah,,,Defense/Midfield
-35,Nyle Zachary,Hug,,Midfield
-52,Sam Campbell,Scot,Luba,Defense
+35,Nyle Zachary,,,Midfield
+52,Sam Campbell,,,Defense
 58,Harrison (Harry) Locke,Paul,Lauren,Midfield
 65,Nicholas (Nic) Lai,Andy,Bonnie,Defense
 70,Esteban Bazurto,,,Striker`;
@@ -1528,8 +1528,14 @@
 
         function setMatchMOTM(val) {
             if (!isCoachMode) { openCoachAuthModal(); return; }
-            matchState.motmJersey = val ? parseInt(val, 10) : null;
+            const jersey = val ? parseInt(val, 10) : null;
+            matchState.motmJersey = jersey;
+            // If match is finished, sync to the archived history record as well
+            if (matchState.isFinished && matchState.history && matchState.history.length > 0) {
+                matchState.history[0].motmJersey = jersey;
+            }
             renderMatchTracker();
+            renderMatchHistory();
             saveMatchToCloud(true);
         }
 
@@ -1538,7 +1544,10 @@
             (matchState.history || []).forEach(m => {
                 if (m.motmJersey === jersey) count++;
             });
-            if (matchState.motmJersey === jersey) count++;
+            // Only count current match if it is in-progress and not already archived in history
+            if (!matchState.isFinished && matchState.motmJersey === jersey) {
+                count++;
+            }
             return count;
         }
 
@@ -1752,8 +1761,14 @@
             const motmVal = document.getElementById('edit-match-motm')?.value;
             match.motmJersey = motmVal ? parseInt(motmVal, 10) : null;
 
+            // Keep current scoreboard MOTM in sync if editing the most recent match
+            if (matchState.history && matchState.history[0]?.id === match.id) {
+                matchState.motmJersey = match.motmJersey;
+            }
+
             closeEditMatchModal();
             renderMatchHistory();
+            renderMatchTracker();
             saveMatchToCloud(true);
         }
 
@@ -1917,6 +1932,7 @@
 
         let activeVideoUploadTarget = null; // 'player', 'goal-modal', 'defensive-modal', 'edit-event'
         let activeVideoUploadContextId = null;
+        let uploadWatchdogTimer = null;
 
         function triggerVideoUpload(targetType, contextId = null) {
             if (!isCloudActive || !storage) {
@@ -1934,6 +1950,7 @@
         }
 
         function cancelVideoUpload() {
+            clearTimeout(uploadWatchdogTimer);
             if (currentUploadTask) {
                 currentUploadTask.cancel();
                 currentUploadTask = null;
@@ -1954,7 +1971,7 @@
             if (uploadFilename) uploadFilename.textContent = file.name;
             if (uploadBar) uploadBar.style.width = '0%';
             if (uploadPercent) uploadPercent.textContent = '0%';
-            if (uploadStatus) uploadStatus.textContent = 'Uploading...';
+            if (uploadStatus) uploadStatus.textContent = 'Connecting to Cloud Storage...';
             if (uploadModal) uploadModal.classList.remove('hidden');
 
             const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
@@ -1963,20 +1980,50 @@
 
             currentUploadTask = uploadBytesResumable(videoRef, file);
 
+            // 20-second watchdog: If the upload is frozen at 0%, stop silent retries and diagnose
+            clearTimeout(uploadWatchdogTimer);
+            uploadWatchdogTimer = setTimeout(() => {
+                if (currentUploadTask && currentUploadTask.snapshot.bytesTransferred === 0) {
+                    currentUploadTask.cancel();
+                    if (uploadModal) uploadModal.classList.add('hidden');
+                    openConfirmModal(
+                        "Storage Not Initialized",
+                        "Upload timed out at 0%. Please verify in your Firebase Console that 'Storage' has been enabled under Build > Storage, and that Rules allow read/write.",
+                        () => {}
+                    );
+                }
+            }, 20000);
+
             currentUploadTask.on('state_changed',
                 (snapshot) => {
                     const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                     const pct = Math.round(progress);
+                    if (pct > 0) {
+                        clearTimeout(uploadWatchdogTimer);
+                    }
                     if (uploadBar) uploadBar.style.width = `${pct}%`;
                     if (uploadPercent) uploadPercent.textContent = `${pct}%`;
+                    if (uploadStatus) uploadStatus.textContent = `Uploading... ${pct}%`;
                 },
                 (error) => {
+                    clearTimeout(uploadWatchdogTimer);
                     console.error("Firebase Storage Upload Error:", error);
+                    let userMsg = "Video upload failed. Check your Firebase Storage test rules or connection.";
+                    
+                    if (error.code === 'storage/unauthorized') {
+                        userMsg = "Permission Denied: In Firebase Console > Storage > Rules, set 'allow read, write: if true;'.";
+                    } else if (error.code === 'storage/bucket-not-found') {
+                        userMsg = "Storage Bucket Not Found: Open Firebase Console > Build > Storage and click 'Get Started'.";
+                    } else if (error.code === 'storage/canceled') {
+                        return; // User intentionally canceled
+                    }
+                    
                     if (uploadStatus) uploadStatus.textContent = 'Upload failed.';
-                    openConfirmModal("Upload Error", "Video upload failed. Check your Firebase Storage test rules or connection.", () => {});
+                    openConfirmModal("Upload Issue", userMsg, () => {});
                     setTimeout(() => { if (uploadModal) uploadModal.classList.add('hidden'); }, 1500);
                 },
                 async () => {
+                    clearTimeout(uploadWatchdogTimer);
                     try {
                         const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
                         if (uploadStatus) uploadStatus.textContent = 'Complete! ✨';
