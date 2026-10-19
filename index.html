@@ -1146,6 +1146,51 @@
         </div>
     </div>
 
+    <!-- MODAL 11: EDIT PAST MATCH -->
+    <div id="edit-past-match-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[65] hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center space-x-2">
+                    <span>✏️</span><span>Edit Past Match</span>
+                </h3>
+                <button type="button" onclick="closeEditMatchModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <form onsubmit="saveEditedMatch(event)" class="mt-4 space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
+                    <input type="text" id="edit-match-opponent" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Date</label>
+                    <input type="text" id="edit-match-date" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-blue-300 mb-1">Rockies Score</label>
+                        <input type="number" id="edit-match-score-us" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-rose-300 mb-1">Opponent Score</label>
+                        <input type="number" id="edit-match-score-them" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-rose-500" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-amber-300 mb-1">Man of the Match</label>
+                    <select id="edit-match-motm" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-amber-500">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between pt-4 border-t border-zinc-800 mt-2">
+                    <button type="button" onclick="confirmDeletePastMatch()" class="px-3 py-2 rounded-xl bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-rose-300 font-bold transition">🗑️ Delete</button>
+                    <div class="flex space-x-2">
+                        <button type="button" onclick="closeEditMatchModal()" class="px-3 py-2 rounded-xl bg-zinc-800 text-gray-300 font-bold hover:bg-zinc-700 transition">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow transition">Save</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -2559,6 +2604,7 @@
                     </div>
                     <div class="text-right">
                         <span class="text-sm font-black text-white font-mono">${m.scoreUs} - ${m.scoreThem}</span>
+                        ${isCoachMode ? `<button onclick="openEditMatchModal(${m.id})" class="block w-full text-right mt-1.5 text-[10px] text-blue-400 hover:text-blue-300 font-bold underline transition">Edit Match</button>` : ''}
                     </div>
                 </div>
                 `;
@@ -3151,6 +3197,68 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             confirmActionCallback = null;
         }
 
+        // ================= EDIT PAST MATCH LOGIC =================
+        let currentEditMatchId = null;
+
+        function openEditMatchModal(id) {
+            const match = matchState.history.find(m => m.id === id);
+            if (!match) return;
+            currentEditMatchId = id;
+
+            document.getElementById('edit-match-opponent').value = match.opponent || '';
+            document.getElementById('edit-match-date').value = match.date || '';
+            document.getElementById('edit-match-score-us').value = match.scoreUs;
+            document.getElementById('edit-match-score-them').value = match.scoreThem;
+
+            const motmSelect = document.getElementById('edit-match-motm');
+            if (motmSelect) {
+                motmSelect.innerHTML = '<option value="">None</option>' + players.map(p => `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
+            }
+
+            document.getElementById('edit-past-match-modal').classList.remove('hidden');
+        }
+
+        function closeEditMatchModal() {
+            document.getElementById('edit-past-match-modal').classList.add('hidden');
+            currentEditMatchId = null;
+        }
+
+        function saveEditedMatch(e) {
+            e.preventDefault();
+            if (!currentEditMatchId) return;
+
+            const match = matchState.history.find(m => m.id === currentEditMatchId);
+            if (match) {
+                match.opponent = document.getElementById('edit-match-opponent').value.trim();
+                match.date = document.getElementById('edit-match-date').value.trim();
+                match.scoreUs = parseInt(document.getElementById('edit-match-score-us').value, 10) || 0;
+                match.scoreThem = parseInt(document.getElementById('edit-match-score-them').value, 10) || 0;
+
+                const motmVal = document.getElementById('edit-match-motm').value;
+                match.motmJersey = motmVal ? parseInt(motmVal, 10) : null;
+                const motmP = players.find(p => p.jersey === match.motmJersey);
+                match.motmName = motmP ? motmP.name : 'Unassigned';
+            }
+
+            closeEditMatchModal();
+            renderMatchTracker();
+            renderRoster();
+            renderLeaderboard();
+            savePersistentData();
+        }
+
+        function confirmDeletePastMatch() {
+            if (!currentEditMatchId) return;
+            openConfirmModal("Delete Match", "Are you sure you want to permanently delete this archived match? This will remove its stats.", () => {
+                matchState.history = matchState.history.filter(m => m.id !== currentEditMatchId);
+                closeEditMatchModal();
+                renderMatchTracker();
+                renderRoster();
+                renderLeaderboard();
+                savePersistentData();
+            });
+        }
+
         window.handleFamilyPassSubmit = handleFamilyPassSubmit;
         window.relockSite = relockSite;
         window.switchTab = switchTab;
@@ -3216,6 +3324,10 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.confirmApplyAiStandings = confirmApplyAiStandings;
         window.openConfirmModal = openConfirmModal;
         window.closeConfirmModal = closeConfirmModal;
+        window.openEditMatchModal = openEditMatchModal;
+        window.closeEditMatchModal = closeEditMatchModal;
+        window.saveEditedMatch = saveEditedMatch;
+        window.confirmDeletePastMatch = confirmDeletePastMatch;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistentData();
