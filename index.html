@@ -604,7 +604,7 @@
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
 
     <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
-    <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <h3 class="text-base font-extrabold text-white flex items-center space-x-2">
@@ -659,7 +659,11 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">6. Video Clip (From Device or Link)</label>
+                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">6. Time / Minute (Optional)</label>
+                    <input type="text" id="goal-time-input" placeholder="e.g. 14:22 or 2nd Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
+                </div>
+                <div>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">7. Video Clip (From Device or Link)</label>
                     <div class="space-y-1.5">
                         <button type="button" onclick="triggerVideoUpload('goal-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
                             <span>📱 Pick / Record Video from Phone</span>
@@ -676,7 +680,7 @@
     </div>
 
     <!-- MODAL 1B: OPPONENT GOAL MODAL -->
-    <div id="opponent-goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div id="opponent-goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-rose-500/40 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <h3 class="text-sm font-extrabold text-white flex items-center space-x-2">
@@ -693,259 +697,9 @@
                     <label class="block font-bold text-gray-300 mb-1">Note (Optional)</label>
                     <input type="text" id="opponent-goal-note-input" placeholder="e.g. Counter attack / deflection" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
-                <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
-                    <button type="button" onclick="closeOpponentGoalModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold shadow">Record Opp Goal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: DEFENSIVE BIG PLAY / CLEARANCE MODAL -->
-    <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-teal-500/40 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
-            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <div class="flex items-center space-x-2">
-                    <span class="text-xl">🛡️</span>
-                    <div>
-                        <h3 class="text-base font-extrabold text-white">Record Defensive Big Play</h3>
-                        <p class="text-[11px] text-teal-300">Goal-line clearances, blocks & key stops</p>
-                    </div>
-                </div>
-                <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
-            </div>
-            <form id="rockies-defense-form" onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-3.5 text-xs">
                 <div>
-                    <label class="block font-bold text-teal-300 uppercase tracking-wider mb-1">1. Defender or Goalkeeper (Required)</label>
-                    <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold"></select>
-                </div>
-                <div>
-                    <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">2. Defensive Action Type (Required)</label>
-                    <select id="defense-type-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold">
-                        <option value="Goal-Line Clearance 🧤">Goal-Line Clearance (Off the Line) 🧤</option>
-                        <option value="Crucial Last-Man Shot Block 🛑">Crucial Last-Man Shot Block 🛑</option>
-                        <option value="1-on-1 Breakaway Save (GK) 🦅">1-on-1 Breakaway Save (GK) 🦅</option>
-                        <option value="Flying Header Clearance 🛡️">Flying Header Clearance 🛡️</option>
-                        <option value="Crucial Box Tackle / Dispossession 🧱">Crucial Box Tackle / Dispossession 🧱</option>
-                        <option value="Breakaway Interception / Cutoff 🔐">Breakaway Interception / Cutoff 🔐</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Highlight Note</label>
-                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line with open net!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
-                </div>
-                <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">4. Video Clip (From Device or Link)</label>
-                    <div class="space-y-1.5">
-                        <button type="button" onclick="triggerVideoUpload('defensive-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
-                            <span>📱 Pick / Record Video from Phone</span>
-                        </button>
-                        <input type="text" id="defense-video-input" placeholder="Or paste link / videos/04-logan-clearance.mp4" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
-                    </div>
-                </div>
-                <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
-                    <button type="button" onclick="closeDefensiveModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold shadow">Save Defensive Play</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 1E: VIDEO UPLOAD PROGRESS MODAL -->
-    <div id="video-upload-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-sky-500/50 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
-            <div class="w-12 h-12 bg-sky-950 border border-sky-500/50 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3 shadow-inner">
-                ☁️
-            </div>
-            <h3 class="text-sm font-extrabold text-white">Uploading Video to Cloud</h3>
-            <p id="video-upload-filename" class="text-[11px] text-gray-400 mt-1 truncate">Processing file...</p>
-            <div class="w-full bg-zinc-800 rounded-full h-3 mt-4 overflow-hidden border border-zinc-700">
-                <div id="video-upload-bar" class="bg-sky-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
-            </div>
-            <div class="flex items-center justify-between text-[11px] font-bold text-gray-300 mt-2 px-1">
-                <span id="video-upload-status">Uploading...</span>
-                <span id="video-upload-percent" class="text-sky-400">0%</span>
-            </div>
-            <button id="video-upload-cancel-btn" onclick="cancelVideoUpload()" class="mt-4 px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-400 hover:text-white text-xs font-semibold">
-                Cancel Upload
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL 1D: VIDEO CLIP LIGHTBOX PLAYER -->
-    <div id="video-clip-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3">
-        <div class="bg-zinc-950 border border-white/20 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl relative my-auto">
-            <div class="flex items-center justify-between p-3.5 bg-zinc-900 border-b border-zinc-800">
-                <div>
-                    <h3 id="video-clip-title" class="text-xs sm:text-sm font-bold text-white truncate">Match Highlight Clip</h3>
-                    <p id="video-clip-subtitle" class="text-[10px] text-blue-300 font-semibold"></p>
-                </div>
-                <button onclick="closeVideoClipModal()" class="w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-lg flex items-center justify-center font-bold">&times;</button>
-            </div>
-            <div id="video-clip-media-container" class="bg-black flex items-center justify-center min-h-[220px] max-h-[65vh]">
-                <!-- Video tag injected dynamically -->
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 3: PLAYER CARD MODAL -->
-    <div id="player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
-            <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
-
-            <!-- Card Banner -->
-            <div id="modal-player-media-banner" class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30"></div>
-
-            <!-- Identity -->
-            <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div>
-                    <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
-                    <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
-                    <span id="modal-player-jersey">#0</span>
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="mt-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
-                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">Official Season Record</span>
-                </div>
-                <div class="grid grid-cols-4 gap-2 text-center">
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Goals</span>
-                        <div id="modal-stat-goals" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Assists</span>
-                        <div id="modal-stat-assists" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Stops</span>
-                        <div id="modal-stat-stops" class="text-xl font-black text-teal-300">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">MOTM</span>
-                        <div id="modal-stat-motm" class="text-xl font-black text-amber-400">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Family & Parents -->
-            <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm">👨‍👩‍👦</span>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Family & Parents</h4>
-                    </div>
-                    <div class="flex items-center space-x-1.5">
-                        <button onclick="triggerFamilyPhotoUpload()" class="px-2.5 py-1 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-bold text-blue-300 transition">
-                            📷 + Photo
-                        </button>
-                        <button onclick="openEditFamilyModal()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-300 transition">
-                            ✏️ Edit
-                        </button>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3.5">
-                    <div id="modal-family-photo-thumb" onclick="openFamilyPhotoLightbox()" class="w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-700 overflow-hidden flex items-center justify-center cursor-pointer hover:border-blue-400 transition flex-shrink-0">
-                        <span class="text-2xl">👨‍👩‍👦</span>
-                    </div>
-                    <div class="text-xs">
-                        <p class="text-zinc-400 font-semibold">Parents: <span id="modal-family-parents" class="text-white font-bold">Not listed</span></p>
-                        <p class="text-zinc-400 font-semibold mt-0.5">Siblings: <span id="modal-family-siblings" class="text-zinc-300 font-normal">None recorded</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Video Clip Upload and Link Controls -->
-            <div class="mt-4 pt-3 border-t border-zinc-800 space-y-2">
-                <div class="flex items-center justify-between">
-                    <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video / Highlight Clip</label>
-                    <button type="button" onclick="triggerVideoUpload('player-modal')" class="text-[11px] font-bold text-sky-400 hover:text-sky-300 underline">
-                        📱 Upload Video from Phone
-                    </button>
-                </div>
-                <div class="flex space-x-2">
-                    <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
-                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: FAMILY PHOTO LIGHTBOX -->
-    <div id="family-lightbox-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-4">
-        <div class="max-w-xl w-full text-center relative">
-            <button onclick="closeFamilyPhotoLightbox()" class="absolute -top-10 right-0 text-white text-3xl font-light hover:text-gray-300">&times;</button>
-            <div class="rounded-2xl overflow-hidden border border-zinc-700 bg-zinc-900 shadow-2xl">
-                <img id="family-lightbox-img" src="" alt="Family Photo" class="w-full max-h-[75vh] object-contain mx-auto" />
-                <div class="p-4 bg-zinc-950 text-left">
-                    <h4 id="family-lightbox-title" class="text-sm font-black text-white">Family Photo</h4>
-                    <p id="family-lightbox-sub" class="text-xs text-zinc-400 mt-0.5"></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 5: EDIT FAMILY DETAILS -->
-    <div id="edit-family-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[55] hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto">
-            <h3 class="text-sm font-black text-white uppercase tracking-wider mb-3">Edit Family Details</h3>
-            <form onsubmit="saveFamilyDetails(event)" class="space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-gray-300 mb-1">Parent Names</label>
-                    <input type="text" id="input-family-parents" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
-                </div>
-                <div>
-                    <label class="block font-bold text-gray-300 mb-1">Siblings (Optional)</label>
-                    <input type="text" id="input-family-siblings" placeholder="e.g. Lucas, Maya" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
-                </div>
-                <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeEditFamilyModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold">Save</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 6: COACH AUTH MODAL (PIN: 1414) -->
-    <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-6 text-center shadow-2xl">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
-                🔐
-            </div>
-            <h3 class="text-sm font-black text-white">Coach / Manager Access</h3>
-            <p class="text-xs text-zinc-400 mt-1 mb-4">Enter Coach PIN to unlock match controls and event edits.</p>
-            <form onsubmit="submitCoachPin(event)" class="space-y-3">
-                <input type="password" id="coach-pin-input" autofocus placeholder="4-Digit PIN" maxlength="6" class="w-full text-center px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-base font-bold tracking-widest">
-                <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-bold">Incorrect PIN.</p>
-                <div class="flex space-x-2 pt-1">
-                    <button type="button" onclick="closeCoachAuthModal()" class="flex-1 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow">Unlock</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 6B: FIREBASE CLOUD CONFIG MODAL -->
-    <div id="cloud-config-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-sky-600/40 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto text-xs">
-            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
-                <div class="flex items-center space-x-2">
-                    <span class="text-base">☁️</span>
-                    <h3 class="text-sm font-black text-white">Firebase Project Settings</h3>
-                </div>
-                <button onclick="closeCloudConfigModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
-            </div>
-            <p class="text-zinc-400 mb-3">Project: <strong class="text-white">rockies-albion-14</strong> (Blaze Plan). Storage Bucket: <code class="text-sky-300">rockies-albion-14.firebasestorage.app</code></p>
-            <form onsubmit="saveFirebaseCloudConfig(event)" class="space-y-3">
-                <div>
-                    <label class="block font-bold text-zinc-300 mb-1">Web API Key (Optional)</label>
-                    <input type="password" id="input-firebase-api-key" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-mono" />
-                    <p class="text-[10px] text-zinc-500 mt-1">If blank, local caching and auto-sync remain active.</p>
+                    <label class="block font-bold text-gray-300 mb-1">Time / Minute (Optional)</label>
+                    <input type="text" id="opponent-goal-time-input" placeholder="e.g. 24:10" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
                 <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
                     <button type="button" onclick="closeCloudConfigModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
@@ -955,9 +709,9 @@
         </div>
     </div>
 
-    <!-- MODAL 7: EDIT STANDINGS MODAL -->
-    <div id="edit-standings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[90vh] overflow-y-auto">
+    <!-- MODAL 2: DEFENSIVE BIG PLAY / CLEARANCE MODAL -->
+    <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-teal-500/40 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center space-x-2">
                     <span>✏️</span><span>Edit CMSA League Standings</span>
@@ -988,16 +742,16 @@
                         ✨
                     </div>
                     <div>
-                        <h3 class="text-sm font-extrabold text-white">Gemini Standings Scanner</h3>
-                        <p class="text-[10px] text-purple-300 font-semibold">CMSA Table Extraction</p>
-                    </div>
+                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Highlight Note</label>
+                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line with open net!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                 </div>
-                <button onclick="closeAiStandingsModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
-            </div>
-
-            <div id="ai-standings-loading" class="py-10 text-center space-y-4">
-                <div class="relative w-16 h-16 mx-auto">
-                    <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 animate-ping"></div>
+                <div>
+                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">4. Time / Minute (Optional)</label>
+                    <input type="text" id="defense-time-input" placeholder="e.g. 35:00 or 1st Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                </div>
+                <div>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">5. Video Clip (From Device or Link)</label>
+                    <div class="space-y-1.5">
                     <div class="w-16 h-16 rounded-full border-4 border-purple-500 border-t-transparent animate-spin flex items-center justify-center">
                         <span class="text-xl">📸</span>
                     </div>
@@ -1147,47 +901,65 @@
     </div>
 
     <!-- MODAL 11: EDIT PAST MATCH -->
-    <div id="edit-past-match-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[65] hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl my-auto">
+    <div id="edit-past-match-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[65] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[95vh] overflow-y-auto relative">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center space-x-2">
-                    <span>✏️</span><span>Edit Past Match</span>
+                <h3 class="text-sm sm:text-base font-black text-white uppercase tracking-wider flex items-center space-x-2">
+                    <span>✏️</span><span>Edit Match Record & Events</span>
                 </h3>
                 <button type="button" onclick="closeEditMatchModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
-            <form onsubmit="saveEditedMatch(event)" class="mt-4 space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
-                    <input type="text" id="edit-match-opponent" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
-                </div>
-                <div>
-                    <label class="block font-bold text-gray-300 mb-1">Date</label>
-                    <input type="text" id="edit-match-date" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
-                </div>
-                <div class="grid grid-cols-2 gap-3">
+            
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-3 text-xs">
                     <div>
-                        <label class="block font-bold text-blue-300 mb-1">Rockies Score</label>
-                        <input type="number" id="edit-match-score-us" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                        <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
+                        <input type="text" id="edit-match-opponent" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
                     </div>
                     <div>
-                        <label class="block font-bold text-rose-300 mb-1">Opponent Score</label>
-                        <input type="number" id="edit-match-score-them" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-rose-500" />
+                        <label class="block font-bold text-gray-300 mb-1">Date</label>
+                        <input type="text" id="edit-match-date" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-blue-300 mb-1">Rockies Score</label>
+                            <input type="number" id="edit-match-score-us" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-blue-500" />
+                        </div>
+                        <div>
+                            <label class="block font-bold text-rose-300 mb-1">Opponent Score</label>
+                            <input type="number" id="edit-match-score-them" min="0" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-rose-500" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-amber-300 mb-1">Man of the Match</label>
+                        <select id="edit-match-motm" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-amber-500">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div class="pt-4 mt-2">
+                        <button type="button" onclick="confirmDeletePastMatch()" class="w-full px-3 py-2 rounded-xl bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-rose-300 font-bold transition border border-rose-800/50">🗑️ Delete Entire Match</button>
                     </div>
                 </div>
-                <div>
-                    <label class="block font-bold text-amber-300 mb-1">Man of the Match</label>
-                    <select id="edit-match-motm" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white focus:outline-none focus:border-amber-500">
-                        <option value="">None</option>
-                    </select>
-                </div>
-                <div class="flex items-center justify-between pt-4 border-t border-zinc-800 mt-2">
-                    <button type="button" onclick="confirmDeletePastMatch()" class="px-3 py-2 rounded-xl bg-rose-950/40 text-rose-400 hover:bg-rose-900 hover:text-rose-300 font-bold transition">🗑️ Delete</button>
-                    <div class="flex space-x-2">
-                        <button type="button" onclick="closeEditMatchModal()" class="px-3 py-2 rounded-xl bg-zinc-800 text-gray-300 font-bold hover:bg-zinc-700 transition">Cancel</button>
-                        <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow transition">Save</button>
+
+                <div class="flex flex-col h-full max-h-[50vh] md:max-h-[60vh]">
+                    <div class="flex flex-wrap items-center justify-between mb-2 gap-2">
+                        <label class="block font-bold text-gray-300 text-xs">Match Play-by-Play</label>
+                        <div class="flex space-x-1">
+                            <button type="button" onclick="openGoalModal()" class="px-2 py-1 rounded bg-blue-900/60 hover:bg-blue-800 text-blue-200 text-[10px] font-bold border border-blue-500/30">+ Goal</button>
+                            <button type="button" onclick="openOpponentGoalModal()" class="px-2 py-1 rounded bg-rose-900/60 hover:bg-rose-800 text-rose-200 text-[10px] font-bold border border-rose-500/30">+ Opp Goal</button>
+                            <button type="button" onclick="openDefensiveModal()" class="px-2 py-1 rounded bg-teal-900/60 hover:bg-teal-800 text-teal-200 text-[10px] font-bold border border-teal-500/30">+ Stop</button>
+                        </div>
+                    </div>
+                    <div id="edit-match-timeline-list" class="flex-1 overflow-y-auto space-y-2 bg-zinc-950/50 p-2 rounded-xl border border-zinc-800">
+                        <!-- Events injected dynamically -->
                     </div>
                 </div>
-            </form>
+            </div>
+            
+            <div class="flex justify-end space-x-2 pt-4 border-t border-zinc-800 mt-4">
+                <button type="button" onclick="closeEditMatchModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-gray-300 font-bold hover:bg-zinc-700 transition text-xs">Cancel</button>
+                <button type="button" onclick="saveEditedMatch(event)" class="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow transition text-xs">💾 Save All Changes</button>
+            </div>
         </div>
     </div>
 
@@ -2303,6 +2075,8 @@
             if (tagInput) tagInput.value = '';
             const videoInput = document.getElementById('goal-video-input');
             if (videoInput) videoInput.value = '';
+            const timeInput = document.getElementById('goal-time-input');
+            if (timeInput) timeInput.value = '';
         }
 
         function setGoalTag(tag) {
@@ -2319,18 +2093,19 @@
             const finish = document.getElementById('goal-finish-select').value;
             const customTag = document.getElementById('goal-tag-input').value.trim();
             const video = document.getElementById('goal-video-input').value.trim();
+            const manualTime = document.getElementById('goal-time-input')?.value.trim();
 
             const scorer = players.find(p => p.jersey === scorerJersey);
             const assist = assistJersey ? players.find(p => p.jersey === assistJersey) : null;
 
-            matchState.scoreUs++;
-            matchState.stats.shotsUs = (matchState.stats.shotsUs || 0) + 1;
-            matchState.stats.sotUs = (matchState.stats.sotUs || 0) + 1;
+            const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
+            const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+            const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
 
-            matchState.events.unshift({
+            const newEvent = {
                 id: Date.now(),
                 type: 'goal',
-                time: formatTimer(matchState.timerSeconds),
+                time: timeString,
                 scorerJersey,
                 scorerName: scorer ? scorer.name : "Scorer",
                 assistJersey,
@@ -2339,13 +2114,28 @@
                 finish,
                 tag: customTag || finish,
                 video
-            });
+            };
+
+            if (currentEditMatchId) {
+                const match = matchState.history.find(m => m.id === currentEditMatchId);
+                if (match) {
+                    match.scoreUs++;
+                    match.events.unshift(newEvent);
+                    document.getElementById('edit-match-score-us').value = match.scoreUs;
+                    renderEditMatchEvents();
+                }
+            } else {
+                matchState.scoreUs++;
+                matchState.stats.shotsUs = (matchState.stats.shotsUs || 0) + 1;
+                matchState.stats.sotUs = (matchState.stats.sotUs || 0) + 1;
+                matchState.events.unshift(newEvent);
+                renderMatchTracker();
+                renderLeaderboard();
+            }
 
             resetGoalModalFields();
             document.getElementById('goal-modal').classList.add('hidden');
-            renderMatchTracker();
             renderRoster();
-            renderLeaderboard();
             savePersistentData();
         }
 
@@ -2359,27 +2149,45 @@
             document.getElementById('opponent-goal-modal').classList.add('hidden');
             const noteInput = document.getElementById('opponent-goal-note-input');
             if (noteInput) noteInput.value = '';
+            const timeInput = document.getElementById('opponent-goal-time-input');
+            if (timeInput) timeInput.value = '';
         }
 
         function confirmOpponentGoal(e) {
             e.preventDefault();
             const oppName = document.getElementById('opponent-goal-name-input').value.trim() || matchState.opponentName;
             const note = document.getElementById('opponent-goal-note-input').value.trim();
+            const manualTime = document.getElementById('opponent-goal-time-input')?.value.trim();
 
-            matchState.scoreThem++;
-            matchState.stats.shotsThem = (matchState.stats.shotsThem || 0) + 1;
-            matchState.stats.sotThem = (matchState.stats.sotThem || 0) + 1;
+            const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
+            const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+            const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
 
-            matchState.events.unshift({
+            const newEvent = {
                 id: Date.now(),
                 type: 'opp_goal',
-                time: formatTimer(matchState.timerSeconds),
+                time: timeString,
                 oppName,
                 note
-            });
+            };
+
+            if (currentEditMatchId) {
+                const match = matchState.history.find(m => m.id === currentEditMatchId);
+                if (match) {
+                    match.scoreThem++;
+                    match.events.unshift(newEvent);
+                    document.getElementById('edit-match-score-them').value = match.scoreThem;
+                    renderEditMatchEvents();
+                }
+            } else {
+                matchState.scoreThem++;
+                matchState.stats.shotsThem = (matchState.stats.shotsThem || 0) + 1;
+                matchState.stats.sotThem = (matchState.stats.sotThem || 0) + 1;
+                matchState.events.unshift(newEvent);
+                renderMatchTracker();
+            }
 
             closeOpponentGoalModal();
-            renderMatchTracker();
             savePersistentData();
         }
 
@@ -2405,6 +2213,8 @@
             if (noteInput) noteInput.value = '';
             const videoInput = document.getElementById('defense-video-input');
             if (videoInput) videoInput.value = '';
+            const timeInput = document.getElementById('defense-time-input');
+            if (timeInput) timeInput.value = '';
         }
 
         function confirmDefensiveStop(e) {
@@ -2413,25 +2223,40 @@
             const action = document.getElementById('defense-type-select').value;
             const note = document.getElementById('defense-note-input').value.trim();
             const video = document.getElementById('defense-video-input')?.value.trim() || '';
+            const manualTime = document.getElementById('defense-time-input')?.value.trim();
             const p = players.find(r => r.jersey === playerJersey);
 
-            matchState.stats.savesUs = (matchState.stats.savesUs || 0) + 1;
-            matchState.events.unshift({
+            const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
+            const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+            const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
+
+            const newEvent = {
                 id: Date.now(),
                 type: 'defense',
-                time: formatTimer(matchState.timerSeconds),
+                time: timeString,
                 playerJersey,
                 playerName: p ? p.name : "Defender",
                 action,
                 note,
                 video
-            });
+            };
+
+            if (currentEditMatchId) {
+                const match = matchState.history.find(m => m.id === currentEditMatchId);
+                if (match) {
+                    match.events.unshift(newEvent);
+                    renderEditMatchEvents();
+                }
+            } else {
+                matchState.stats.savesUs = (matchState.stats.savesUs || 0) + 1;
+                matchState.events.unshift(newEvent);
+                renderMatchTracker();
+                renderLeaderboard();
+            }
 
             resetDefensiveModalFields();
             document.getElementById('defensive-modal').classList.add('hidden');
-            renderMatchTracker();
             renderRoster();
-            renderLeaderboard();
             savePersistentData();
         }
 
@@ -3200,6 +3025,77 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         // ================= EDIT PAST MATCH LOGIC =================
         let currentEditMatchId = null;
 
+        function renderEditMatchEvents() {
+            const list = document.getElementById('edit-match-timeline-list');
+            if (!list || !currentEditMatchId) return;
+            const match = matchState.history.find(m => m.id === currentEditMatchId);
+            if (!match || !match.events || match.events.length === 0) {
+                list.innerHTML = `<p class="text-[10px] text-zinc-500 italic text-center py-4">No events logged.</p>`;
+                return;
+            }
+            
+            list.innerHTML = match.events.map(ev => {
+                let icon = '⚽';
+                let title = '';
+                let subtitle = '';
+                let colorClass = 'bg-zinc-900 border-zinc-800';
+                
+                if (ev.type === 'goal') {
+                    title = `#${ev.scorerJersey} ${ev.scorerName} (${ev.tag || 'Goal'})`;
+                    subtitle = ev.assistName ? `Ast: ${ev.assistName}` : 'Solo';
+                    colorClass = 'bg-blue-950/40 border-blue-500/30';
+                } else if (ev.type === 'opp_goal') {
+                    title = `Opponent Goal`;
+                    subtitle = ev.note || '';
+                    colorClass = 'bg-rose-950/40 border-rose-500/30';
+                } else if (ev.type === 'defense') {
+                    icon = '🛡️';
+                    title = `#${ev.playerJersey} ${ev.playerName}`;
+                    subtitle = ev.action;
+                    colorClass = 'bg-teal-950/30 border-teal-500/30';
+                }
+
+                return `
+                <div class="flex items-center justify-between p-2 rounded-lg border ${colorClass} text-xs">
+                    <div class="flex items-center space-x-2">
+                        <span>${icon}</span>
+                        <div>
+                            <p class="font-bold text-white text-[11px]">${title}</p>
+                            <p class="text-[9px] text-zinc-400">${subtitle}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-[9px] font-mono text-amber-400">${ev.time}</span>
+                        <button type="button" onclick="deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function deletePastMatchEvent(eventId) {
+            if (!currentEditMatchId) return;
+            const match = matchState.history.find(m => m.id === currentEditMatchId);
+            if (!match) return;
+            
+            match.events = match.events.filter(e => e.id !== eventId);
+            let us = 0, them = 0;
+            match.events.forEach(ev => {
+                if (ev.type === 'goal') us++;
+                if (ev.type === 'opp_goal') them++;
+            });
+            
+            document.getElementById('edit-match-score-us').value = us;
+            document.getElementById('edit-match-score-them').value = them;
+            match.scoreUs = us;
+            match.scoreThem = them;
+            
+            renderEditMatchEvents();
+            renderRoster();
+            renderLeaderboard();
+            savePersistentData();
+        }
+
         function openEditMatchModal(id) {
             const match = matchState.history.find(m => m.id === id);
             if (!match) return;
@@ -3215,6 +3111,8 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 motmSelect.innerHTML = '<option value="">None</option>' + players.map(p => `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
             }
 
+            renderEditMatchEvents();
+
             document.getElementById('edit-past-match-modal').classList.remove('hidden');
         }
 
@@ -3224,7 +3122,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         }
 
         function saveEditedMatch(e) {
-            e.preventDefault();
+            if (e) e.preventDefault();
             if (!currentEditMatchId) return;
 
             const match = matchState.history.find(m => m.id === currentEditMatchId);
@@ -3328,6 +3226,8 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.closeEditMatchModal = closeEditMatchModal;
         window.saveEditedMatch = saveEditedMatch;
         window.confirmDeletePastMatch = confirmDeletePastMatch;
+        window.deletePastMatchEvent = deletePastMatchEvent;
+        window.renderEditMatchEvents = renderEditMatchEvents;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistentData();
