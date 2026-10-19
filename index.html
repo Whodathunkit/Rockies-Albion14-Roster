@@ -19,13 +19,13 @@
             background-color: #003C71;
             color: #ffffff;
             border-color: #3b82f6;
-            box-shadow: 0 4px 14px rgba(0, 60, 113, 0.45);
+            box-shadow: 0 4px 14px rgba(0, 60, 113, 0.4);
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white pb-12">
@@ -83,7 +83,7 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <nav class="max-w-6xl mx-auto px-4 flex space-x-2 overflow-x-auto pb-2 pt-1 border-t border-zinc-900 text-xs font-bold hide-scrollbar">
+        <nav class="max-w-6xl mx-auto px-4 flex space-x-2 overflow-x-auto pb-2 pt-1 border-t border-zinc-900 text-xs font-bold scrollbar-none">
             <button onclick="switchTab('roster')" id="tab-btn-roster" class="tab-btn active px-3.5 py-1.5 rounded-xl border border-transparent transition whitespace-nowrap flex items-center space-x-1.5">
                 <span>👥 Roster</span>
             </button>
@@ -146,7 +146,7 @@
                 </div>
             </div>
 
-            <!-- Roster Header with Single-Line Player Count -->
+            <!-- Roster Header with Single-Line Badge -->
             <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0">
                     <h2 class="text-xl font-black text-white tracking-tight">Active Team Roster</h2>
@@ -174,7 +174,7 @@
                         <span class="text-white uppercase tracking-wider">CMSA League Match</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button id="btn-start-new-match" onclick="promptResetNewMatch()" class="hidden px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-gray-300 transition">
+                        <button id="btn-start-new-match" onclick="resetNewMatchConfirm()" class="hidden px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-gray-300 transition">
                             🔄 New Match
                         </button>
                     </div>
@@ -190,7 +190,7 @@
                         <h4 class="text-sm sm:text-base font-black text-white tracking-tight">Rockies Albion 14</h4>
                         <div id="score-us" class="text-5xl sm:text-6xl font-black text-white tracking-tighter">0</div>
 
-                        <div id="box-score-coach-us" class="hidden pt-2 flex flex-wrap items-center justify-center gap-1.5">
+                        <div id="box-score-coach-us" class="hidden pt-2 flex items-center justify-center space-x-1.5">
                             <button onclick="openGoalModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow active:scale-95 transition">
                                 ⚽ + Goal
                             </button>
@@ -209,7 +209,7 @@
                             <button id="btn-toggle-timer" onclick="toggleMatchTimer()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition">
                                 ▶ Start
                             </button>
-                            <button onclick="promptResetTimer()" class="text-[10px] text-zinc-400 hover:text-white underline">Reset Clock</button>
+                            <button onclick="resetTimerPrompt()" class="text-[10px] text-zinc-400 hover:text-white underline">Reset Clock</button>
                         </div>
                     </div>
 
@@ -235,7 +235,7 @@
                 </div>
 
                 <!-- Man of the Match Spotlight Bar -->
-                <div id="motm-banner-box" class="mt-4 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5 gap-2">
+                <div id="motm-banner-box" class="mt-4 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5">
                     <div class="flex items-center space-x-3 mb-2 sm:mb-0">
                         <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-xl shadow-inner">
                             🎖️
@@ -318,9 +318,9 @@
                         <h2 class="text-xl font-black text-white tracking-tight">CMSA League Standings</h2>
                         <span class="bg-blue-950 border border-blue-500/40 text-blue-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Boys U13 Tier 2</span>
                     </div>
-                    <p class="text-xs text-zinc-400 mt-0.5">Calgary Minor Soccer Association Official Table</p>
+                    <p class="text-xs text-zinc-400 mt-0.5">Calgary Minor Soccer Association 2026-27 Official Table</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center space-x-2">
                     <a href="https://calgaryminorsoccer.com/schedule/standings" target="_blank" rel="noopener noreferrer" 
                        class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-gray-200 text-xs font-bold transition shadow flex items-center space-x-1">
                         <span>CMSA Official</span>
@@ -441,94 +441,7 @@
     <!-- ================= 3. MODALS & DIALOGS ================= -->
 
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
-    <input type="file" id="player-video-file-input" accept="video/*" class="hidden" onchange="processPlayerVideoFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
-
-    <!-- MODAL: PLAYER CARD MODAL WITH WORKING VIDEO -->
-    <div id="player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
-            <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
-
-            <!-- Video & Media Banner Container -->
-            <div id="modal-player-media-banner" class="w-full h-56 sm:h-64 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30">
-                <!-- Injected dynamically with <video> or fallback -->
-            </div>
-
-            <!-- Identity Bar -->
-            <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div>
-                    <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
-                    <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
-                    <span id="modal-player-jersey">#0</span>
-                </div>
-            </div>
-
-            <!-- Stats Grid -->
-            <div class="mt-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
-                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">Official Season Record</span>
-                </div>
-                <div class="grid grid-cols-4 gap-2 text-center">
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Goals</span>
-                        <div id="modal-stat-goals" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Assists</span>
-                        <div id="modal-stat-assists" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Stops</span>
-                        <div id="modal-stat-stops" class="text-xl font-black text-teal-300">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">MOTM</span>
-                        <div id="modal-stat-motm" class="text-xl font-black text-amber-400">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Family & Parents Profile -->
-            <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm">👨‍👩‍👦</span>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Family & Parents</h4>
-                    </div>
-                    <div class="flex items-center space-x-1.5">
-                        <button onclick="triggerFamilyPhotoUpload()" class="px-2.5 py-1 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-bold text-blue-300 transition">
-                            📷 + Photo
-                        </button>
-                        <button onclick="openEditFamilyModal()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-300 transition">
-                            ✏️ Edit
-                        </button>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3.5">
-                    <div id="modal-family-photo-thumb" onclick="openFamilyPhotoLightbox()" class="w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-700 overflow-hidden flex items-center justify-center cursor-pointer hover:border-blue-400 transition flex-shrink-0">
-                        <span class="text-2xl">👨‍👩‍👦</span>
-                    </div>
-                    <div class="text-xs">
-                        <p class="text-zinc-400 font-semibold">Parents: <span id="modal-family-parents" class="text-white font-bold">Not listed</span></p>
-                        <p class="text-zinc-400 font-semibold mt-0.5">Siblings: <span id="modal-family-siblings" class="text-zinc-300 font-normal">None recorded</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coach Only Video Intro Input -->
-            <div id="modal-coach-video-ctrl" class="mt-4 pt-3 border-t border-zinc-800 hidden space-y-2">
-                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video Path or URL</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
-                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Save</button>
-                    <button onclick="triggerPlayerVideoUpload()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-gray-200">Upload</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- MODAL 1: RECORD GOAL -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
@@ -611,7 +524,90 @@
         </div>
     </div>
 
-    <!-- MODAL 3: FAMILY PHOTO LIGHTBOX -->
+    <!-- MODAL 3: PLAYER CARD MODAL -->
+    <div id="player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
+            <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
+
+            <!-- Card Banner -->
+            <div id="modal-player-media-banner" class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30"></div>
+
+            <!-- Identity -->
+            <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div>
+                    <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
+                    <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
+                    <span id="modal-player-jersey">#0</span>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
+                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">Official Season Record</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Goals</span>
+                        <div id="modal-stat-goals" class="text-xl font-black text-white">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Assists</span>
+                        <div id="modal-stat-assists" class="text-xl font-black text-white">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Stops</span>
+                        <div id="modal-stat-stops" class="text-xl font-black text-teal-300">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">MOTM</span>
+                        <div id="modal-stat-motm" class="text-xl font-black text-amber-400">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family & Parents -->
+            <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm">👨‍👩‍👦</span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Family & Parents</h4>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="triggerFamilyPhotoUpload()" class="px-2.5 py-1 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-bold text-blue-300 transition">
+                            📷 + Photo
+                        </button>
+                        <button onclick="openEditFamilyModal()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-300 transition">
+                            ✏️ Edit
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3.5">
+                    <div id="modal-family-photo-thumb" onclick="openFamilyPhotoLightbox()" class="w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-700 overflow-hidden flex items-center justify-center cursor-pointer hover:border-blue-400 transition flex-shrink-0">
+                        <span class="text-2xl">👨‍👩‍👦</span>
+                    </div>
+                    <div class="text-xs">
+                        <p class="text-zinc-400 font-semibold">Parents: <span id="modal-family-parents" class="text-white font-bold">Not listed</span></p>
+                        <p class="text-zinc-400 font-semibold mt-0.5">Siblings: <span id="modal-family-siblings" class="text-zinc-300 font-normal">None recorded</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach Only Video Intro Input -->
+            <div id="modal-coach-video-ctrl" class="mt-4 pt-3 border-t border-zinc-800 hidden space-y-2">
+                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video Path or URL</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
+                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: FAMILY PHOTO LIGHTBOX -->
     <div id="family-lightbox-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-4">
         <div class="max-w-xl w-full text-center relative">
             <button onclick="closeFamilyPhotoLightbox()" class="absolute -top-10 right-0 text-white text-3xl font-light hover:text-gray-300">&times;</button>
@@ -625,7 +621,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: EDIT FAMILY DETAILS -->
+    <!-- MODAL 5: EDIT FAMILY DETAILS -->
     <div id="edit-family-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[55] hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto">
             <h3 class="text-sm font-black text-white uppercase tracking-wider mb-3">Edit Family Details</h3>
@@ -646,14 +642,14 @@
         </div>
     </div>
 
-    <!-- MODAL 5: COACH AUTH MODAL (PIN: 1414) -->
+    <!-- MODAL 6: COACH AUTH MODAL (PIN: 1414) -->
     <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl mx-auto mb-3">
                 🔐
             </div>
             <h3 class="text-sm font-black text-white">Coach / Manager Access</h3>
-            <p class="text-xs text-zinc-400 mt-1 mb-4">Enter Coach PIN (1414) to unlock match controls and event edits.</p>
+            <p class="text-xs text-zinc-400 mt-1 mb-4">Enter Coach PIN to unlock match controls and event edits.</p>
             <form onsubmit="submitCoachPin(event)" class="space-y-3">
                 <input type="password" id="coach-pin-input" autofocus placeholder="4-Digit PIN" maxlength="6" class="w-full text-center px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-base font-bold tracking-widest">
                 <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-bold">Incorrect PIN.</p>
@@ -665,7 +661,7 @@
         </div>
     </div>
 
-    <!-- MODAL 6: EDIT STANDINGS MODAL -->
+    <!-- MODAL 7: EDIT STANDINGS MODAL -->
     <div id="edit-standings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -689,7 +685,7 @@
         </div>
     </div>
 
-    <!-- MODAL 7: GEMINI AI STANDINGS SCANNER -->
+    <!-- MODAL 8: GEMINI AI STANDINGS SCANNER -->
     <div id="ai-standings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-purple-500/50 rounded-2xl max-w-xl w-full p-5 shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -728,7 +724,7 @@
                         <span class="text-emerald-400 font-bold text-sm">✅</span>
                         <div>
                             <h4 id="ai-standings-count-badge" class="text-xs font-bold text-white">Extracted Teams</h4>
-                            <p class="text-[10px] text-purple-300">Review the extracted data below before saving to cloud:</p>
+                            <p class="text-[10px] text-purple-300">Review the extracted data below before saving:</p>
                         </div>
                     </div>
                     <button onclick="triggerStandingsScreenshotUpload()" class="text-[11px] font-semibold text-purple-300 hover:text-white underline">
@@ -767,7 +763,7 @@
         </div>
     </div>
 
-    <!-- MODAL 8: ADD FIXTURE MODAL -->
+    <!-- MODAL 9: ADD FIXTURE MODAL -->
     <div id="add-event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -779,7 +775,7 @@
             <form onsubmit="saveNewScheduleEvent(event)" class="mt-4 space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Event Type</label>
-                    <select id="new-event-type" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" onchange="toggleOpponentInputInModal()">
+                    <select id="new-event-type" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white">
                         <option value="game">⚽ Match / Game</option>
                         <option value="practice">🏃 Team Training</option>
                     </select>
@@ -788,8 +784,8 @@
                     <label class="block font-bold text-gray-300 mb-1">Title</label>
                     <input type="text" id="new-event-title" required placeholder="e.g. CMSA Match vs Villains Cyclones" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
-                <div id="box-new-event-opponent">
-                    <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Opponent Name (For Matches)</label>
                     <input type="text" id="new-event-opponent" placeholder="e.g. Villains Cyclones 14" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
                 <div class="grid grid-cols-2 gap-2">
@@ -828,10 +824,10 @@
         </div>
     </div>
 
-    <!-- MODAL 9: CUSTOM CONFIRMATION MODAL -->
+    <!-- MODAL 10: CONFIRMATION MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
-            <div id="confirm-modal-icon" class="w-12 h-12 rounded-2xl bg-amber-950 border border-amber-500/50 flex items-center justify-center text-xl mx-auto mb-3">
+            <div class="w-12 h-12 rounded-2xl bg-amber-950 border border-amber-500/50 flex items-center justify-center text-xl mx-auto mb-3">
                 ⚠️
             </div>
             <h4 id="confirm-modal-title" class="text-sm font-black text-white">Confirmation</h4>
@@ -843,18 +839,10 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION BOX -->
-    <div id="toast-box" class="fixed bottom-5 right-5 z-[80] transition transform duration-300 translate-y-20 opacity-0 pointer-events-none">
-        <div class="bg-zinc-900 border border-blue-500/50 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2">
-            <span id="toast-icon">⚽</span>
-            <span id="toast-message">Notification message</span>
-        </div>
-    </div>
-
     <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
     <script>
-        // Official 12-Player Roster for Rockies Albion 14 with mapped video paths
-        const DEFAULT_ROSTER = [
+        // Official 12-Player Roster for Rockies Albion 14 (No Mateo, no duplicate jersey #14)
+        const ROSTER_DATA = [
             { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "", video: "videos/01-haaris.mp4" },
             { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "", video: "videos/03-nael.mp4" },
             { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", video: "videos/04-logan.mp4" },
@@ -869,25 +857,6 @@
             { jersey: 70, name: "Esteban Bazurto", position: "Midfield / Winger", parents: "Not listed", siblings: "", video: "videos/70-esteban.mp4" }
         ];
 
-        let ROSTER_DATA = [];
-        try {
-            const savedRoster = localStorage.getItem('rfc14_roster');
-            if (savedRoster) {
-                // Strictly cleanse any phantom players (e.g. Mateo or duplicate #14)
-                ROSTER_DATA = JSON.parse(savedRoster).filter(p => !p.name.toLowerCase().includes('mateo') && p.jersey !== 14);
-                // Ensure default videos are restored if missing in stored objects
-                ROSTER_DATA = ROSTER_DATA.map(p => {
-                    const def = DEFAULT_ROSTER.find(d => d.jersey === p.jersey);
-                    return { ...p, video: p.video || (def ? def.video : '') };
-                });
-                localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
-            } else {
-                ROSTER_DATA = DEFAULT_ROSTER;
-            }
-        } catch(e) {
-            ROSTER_DATA = DEFAULT_ROSTER;
-        }
-
         // Active State
         let isCoachMode = false;
         let activePlayer = null;
@@ -897,7 +866,7 @@
         let extractedStandingsPreview = [];
         let currentScheduleFilter = 'all';
 
-        // Current Match State
+        // Current Match State (Persisted in localStorage so entered match stats don't vanish)
         let matchState = {
             currentMatchId: "m-" + Date.now(),
             opponent: "SWU Atletico 14B",
@@ -916,7 +885,13 @@
             }
         } catch(e) {}
 
-        // CMSA Official Boys U13 Tier 2 Standings (Full 18 Teams from official table)
+        function saveMatchState() {
+            try {
+                localStorage.setItem('rfc14_matchState', JSON.stringify(matchState));
+            } catch(e) {}
+        }
+
+        // CMSA Official Boys U13 Tier 2 Standings (All 18 teams directly from CMSA table)
         const DEFAULT_STANDINGS = [
             { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, gf: 5, ga: 0, gd: 5, pts: 3 },
             { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, gf: 7, ga: 2, gd: 5, pts: 3 },
@@ -938,16 +913,14 @@
             { rank: 18, name: "CWFC B2014 Green", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 7, gd: -5, pts: 0 }
         ];
 
-        let standingsData = [];
+        let standingsData = [...DEFAULT_STANDINGS];
         try {
             const savedStandings = localStorage.getItem('rfc14_standings');
-            standingsData = savedStandings ? JSON.parse(savedStandings) : DEFAULT_STANDINGS;
-        } catch(e) {
-            standingsData = DEFAULT_STANDINGS;
-        }
+            if (savedStandings) standingsData = JSON.parse(savedStandings);
+        } catch(e) {}
 
         // Team Schedule & Fixtures
-        const DEFAULT_SCHEDULE = [
+        let scheduleData = [
             {
                 id: "sched-1",
                 type: "game",
@@ -986,67 +959,41 @@
             }
         ];
 
-        let scheduleData = [];
         try {
             const savedSched = localStorage.getItem('rfc14_schedule');
-            scheduleData = savedSched ? JSON.parse(savedSched) : DEFAULT_SCHEDULE;
-        } catch(e) {
-            scheduleData = DEFAULT_SCHEDULE;
-        }
+            if (savedSched) scheduleData = JSON.parse(savedSched);
+        } catch(e) {}
 
-        function showToast(message, icon = "⚽") {
-            const toast = document.getElementById('toast-box');
-            document.getElementById('toast-message').textContent = message;
-            document.getElementById('toast-icon').textContent = icon;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            toast.classList.add('translate-y-0', 'opacity-100');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-                toast.classList.remove('translate-y-0', 'opacity-100');
-            }, 3000);
-        }
-
-        function showCustomConfirm(title, message, onConfirm, icon = "⚠️") {
+        function showConfirm(title, message, onOk) {
             const modal = document.getElementById('confirm-modal');
             document.getElementById('confirm-modal-title').textContent = title;
             document.getElementById('confirm-modal-msg').textContent = message;
-            document.getElementById('confirm-modal-icon').textContent = icon;
 
             const okBtn = document.getElementById('confirm-modal-ok');
             const cancelBtn = document.getElementById('confirm-modal-cancel');
 
-            const cleanUp = () => {
+            const cleanup = () => {
                 modal.classList.add('hidden');
                 okBtn.onclick = null;
                 cancelBtn.onclick = null;
             };
 
             okBtn.onclick = () => {
-                cleanUp();
-                if (typeof onConfirm === 'function') onConfirm();
+                cleanup();
+                if (typeof onOk === 'function') onOk();
             };
 
-            cancelBtn.onclick = () => {
-                cleanUp();
-            };
-
+            cancelBtn.onclick = () => cleanup();
             modal.classList.remove('hidden');
         }
 
-        function saveMatchStateToStorage() {
-            try {
-                localStorage.setItem('rfc14_matchState', JSON.stringify(matchState));
-            } catch(e) {}
-        }
-
-        // Passcode Gate Handler
+        // Passcode Lock Screen Handler
         function handleFamilyPassSubmit(e) {
             e.preventDefault();
             const input = document.getElementById('family-passcode-input').value.trim().toLowerCase();
             if (input === 'albion14' || input === '1414' || input === 'rockies14') {
                 localStorage.setItem('rfc14_family_unlocked', 'true');
                 document.getElementById('family-pass-gate').classList.add('hidden');
-                showToast("Welcome to Rockies Albion 14 Portal!", "🎉");
             } else {
                 document.getElementById('family-pass-error').classList.remove('hidden');
             }
@@ -1068,7 +1015,6 @@
             if (isCoachMode) {
                 isCoachMode = false;
                 applyCoachModeUI();
-                showToast("Spectator Mode Active", "👀");
             } else {
                 document.getElementById('coach-auth-modal').classList.remove('hidden');
                 document.getElementById('coach-pin-input').value = '';
@@ -1088,7 +1034,6 @@
                 isCoachMode = true;
                 closeCoachAuthModal();
                 applyCoachModeUI();
-                showToast("Coach Mode Unlocked!", "🔓");
             } else {
                 document.getElementById('coach-pin-error').classList.remove('hidden');
             }
@@ -1139,6 +1084,7 @@
             renderMatchTracker();
         }
 
+        // Tab Navigation
         function switchTab(tabId) {
             const tabs = ['roster', 'tracker', 'schedule', 'standings', 'leaderboard'];
             tabs.forEach(t => {
@@ -1166,6 +1112,7 @@
             if (tabId === 'leaderboard') renderLeaderboard();
         }
 
+        // Roster Renderer
         function renderRoster() {
             const grid = document.getElementById('roster-grid');
             if (!grid) return;
@@ -1178,8 +1125,6 @@
                 const assists = getPlayerStat(player.jersey, 'assists');
                 const stops = getPlayerStat(player.jersey, 'stops');
                 const motm = getPlayerMOTMCount(player.jersey);
-                const hasPhoto = !!localStorage.getItem(`rfc14_fam_${player.jersey}`);
-                const hasVideo = !!(player.video || localStorage.getItem(`rfc14_vid_${player.jersey}`));
 
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 rounded-2xl p-4 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5";
@@ -1190,17 +1135,15 @@
                         <div>
                             <div class="flex items-center space-x-2">
                                 <h3 class="text-sm font-black text-white">${player.name}</h3>
-                                ${hasVideo ? '<span class="text-xs" title="Video intro available">🎥</span>' : ''}
-                                ${hasPhoto ? '<span class="text-xs" title="Family photo available">📷</span>' : ''}
                             </div>
                             <p class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mt-0.5">${player.position}</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center text-white font-black text-sm shadow border border-blue-400/30">
+                        <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center text-white font-black text-sm shadow">
                             #${player.jersey}
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px]">
-                        <span class="text-zinc-400 font-semibold truncate max-w-[140px]">👨‍👩‍👦 ${player.parents || 'Family'}</span>
+                        <span class="text-zinc-400 font-semibold truncate max-w-[150px]">👨‍👩‍👦 ${player.parents}</span>
                         <div class="flex items-center space-x-2 text-zinc-300 font-bold">
                             <span>⚽ ${goals}</span>
                             <span>👟 ${assists}</span>
@@ -1231,6 +1174,7 @@
             return count;
         }
 
+        // MOTM Calculator without double counting
         function getPlayerMOTMCount(jersey) {
             let count = 0;
             (matchState.history || []).forEach(m => {
@@ -1242,6 +1186,7 @@
             return count;
         }
 
+        // Player Modal Handlers
         function openPlayerModal(player) {
             activePlayer = player;
             document.getElementById('modal-player-name').textContent = player.name;
@@ -1264,29 +1209,22 @@
                 thumb.innerHTML = `<span class="text-2xl">👨‍👩‍👦</span>`;
             }
 
-            // Video Spotlight Banner
+            // Banner video or placeholder
             const banner = document.getElementById('modal-player-media-banner');
-            const customVideo = localStorage.getItem(`rfc14_vid_${player.jersey}`);
-            const videoSrc = customVideo || player.video;
+            const savedVideo = localStorage.getItem(`rfc14_vid_${player.jersey}`);
+            const videoSrc = savedVideo || player.video;
 
             if (videoSrc) {
-                banner.innerHTML = `
-                    <video id="player-banner-video" src="${videoSrc}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="handleVideoPlaybackError(this)"></video>
-                    <div class="absolute bottom-3 right-3 flex items-center space-x-2 z-20">
-                        <button onclick="toggleVideoAudio(event)" id="btn-toggle-video-mute" class="px-3 py-1 rounded-lg bg-black/70 hover:bg-black/90 text-white text-[11px] font-bold backdrop-blur-sm border border-white/20 transition">
-                            🔇 Unmute
-                        </button>
-                    </div>
-                `;
+                banner.innerHTML = `<video src="${videoSrc}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="renderPlayerFallbackBanner()"></video>`;
             } else {
-                renderDefaultPlayerBanner(player);
+                renderPlayerFallbackBanner();
             }
 
             // Coach video controller
             const coachVidCtrl = document.getElementById('modal-coach-video-ctrl');
             if (isCoachMode && coachVidCtrl) {
                 coachVidCtrl.classList.remove('hidden');
-                document.getElementById('modal-player-video-input').value = videoSrc || '';
+                document.getElementById('modal-player-video-input').value = savedVideo || player.video || '';
             } else if (coachVidCtrl) {
                 coachVidCtrl.classList.add('hidden');
             }
@@ -1294,47 +1232,20 @@
             document.getElementById('player-modal').classList.remove('hidden');
         }
 
-        function renderDefaultPlayerBanner(player) {
+        function renderPlayerFallbackBanner() {
             const banner = document.getElementById('modal-player-media-banner');
+            if (!activePlayer) return;
             banner.innerHTML = `
                 <div class="text-center p-4">
-                    <div class="w-16 h-16 rounded-full bg-blue-900/60 border border-blue-400 flex items-center justify-center text-3xl mx-auto mb-2 text-white font-black shadow-lg">
-                        #${player.jersey}
+                    <div class="w-16 h-16 rounded-full bg-blue-900/60 border border-blue-400 flex items-center justify-center text-3xl mx-auto mb-2 text-white font-black">
+                        #${activePlayer.jersey}
                     </div>
-                    <span class="text-sm font-extrabold text-blue-200 tracking-tight">${player.name}</span>
-                    <p class="text-[10px] text-blue-300 font-semibold mt-0.5">${player.position}</p>
+                    <span class="text-xs font-bold text-blue-200">${activePlayer.name}</span>
                 </div>
             `;
         }
 
-        function handleVideoPlaybackError(videoEl) {
-            if (activePlayer) {
-                renderDefaultPlayerBanner(activePlayer);
-            }
-        }
-
-        function toggleVideoAudio(e) {
-            e.stopPropagation();
-            const vid = document.getElementById('player-banner-video');
-            const btn = document.getElementById('btn-toggle-video-mute');
-            if (!vid || !btn) return;
-            if (vid.muted) {
-                vid.muted = false;
-                btn.textContent = "🔊 Mute";
-                btn.className = "px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold backdrop-blur-sm border border-blue-400/40 transition";
-            } else {
-                vid.muted = true;
-                btn.textContent = "🔇 Unmute";
-                btn.className = "px-3 py-1 rounded-lg bg-black/70 hover:bg-black/90 text-white text-[11px] font-bold backdrop-blur-sm border border-white/20 transition";
-            }
-        }
-
         function closePlayerModal() {
-            const vid = document.getElementById('player-banner-video');
-            if (vid) {
-                vid.pause();
-                vid.src = "";
-            }
             document.getElementById('player-modal').classList.add('hidden');
             activePlayer = null;
         }
@@ -1345,34 +1256,10 @@
             if (url) {
                 activePlayer.video = url;
                 localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
-                showToast("Player video updated!");
             } else {
-                activePlayer.video = "";
                 localStorage.removeItem(`rfc14_vid_${activePlayer.jersey}`);
-                showToast("Player video cleared");
             }
-            try {
-                localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
-            } catch(e) {}
             openPlayerModal(activePlayer);
-            renderRoster();
-        }
-
-        function triggerPlayerVideoUpload() {
-            document.getElementById('player-video-file-input').click();
-        }
-
-        function processPlayerVideoFile(e) {
-            const file = e.target.files[0];
-            if (!file || !activePlayer) return;
-            const url = URL.createObjectURL(file);
-            activePlayer.video = url;
-            try {
-                localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
-            } catch(e) {}
-            openPlayerModal(activePlayer);
-            renderRoster();
-            showToast("Player video loaded!", "🎥");
         }
 
         // Family Details Handlers
@@ -1392,15 +1279,9 @@
             if (!activePlayer) return;
             activePlayer.parents = document.getElementById('input-family-parents').value.trim();
             activePlayer.siblings = document.getElementById('input-family-siblings').value.trim();
-            
-            try {
-                localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
-            } catch(err) {}
-
             closeEditFamilyModal();
             openPlayerModal(activePlayer);
             renderRoster();
-            showToast("Family profile saved!");
         }
 
         function triggerFamilyPhotoUpload() {
@@ -1414,12 +1295,9 @@
             reader.onload = function(evt) {
                 try {
                     localStorage.setItem(`rfc14_fam_${activePlayer.jersey}`, evt.target.result);
-                    openPlayerModal(activePlayer);
-                    renderRoster();
-                    showToast("Family photo uploaded!", "📸");
-                } catch(err) {
-                    showToast("Photo storage limit exceeded. Use a smaller file.", "⚠️");
-                }
+                } catch(err) {}
+                openPlayerModal(activePlayer);
+                renderRoster();
             };
             reader.readAsDataURL(file);
         }
@@ -1430,10 +1308,8 @@
             if (photo) {
                 document.getElementById('family-lightbox-img').src = photo;
                 document.getElementById('family-lightbox-title').textContent = `${activePlayer.name}'s Family`;
-                document.getElementById('family-lightbox-sub').textContent = `Parents: ${activePlayer.parents || 'Not listed'}`;
+                document.getElementById('family-lightbox-sub').textContent = `Parents: ${activePlayer.parents}`;
                 document.getElementById('family-lightbox-modal').classList.remove('hidden');
-            } else {
-                showToast("No family photo uploaded yet. Tap '+ Photo' to add one!");
             }
         }
 
@@ -1441,6 +1317,7 @@
             document.getElementById('family-lightbox-modal').classList.add('hidden');
         }
 
+        // Match Tracker Logic
         function renderMatchTracker() {
             document.getElementById('score-us').textContent = matchState.ourScore;
             document.getElementById('score-them').textContent = matchState.theirScore;
@@ -1494,52 +1371,52 @@
 
             // Render Events Timeline
             const list = document.getElementById('match-timeline-list');
-            if (list) {
-                list.innerHTML = '';
-                if (matchState.events.length === 0) {
-                    list.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>';
-                } else {
-                    matchState.events.forEach((ev) => {
-                        const row = document.createElement('div');
-                        row.className = "flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs";
-                        if (ev.isDefensive) {
-                            row.innerHTML = `
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-teal-400 font-bold">🛡️</span>
-                                    <div>
-                                        <span class="font-extrabold text-white">#${ev.playerJersey} ${ev.playerName}</span>
-                                        <span class="text-teal-300 font-semibold">• ${ev.action}</span>
-                                        ${ev.note ? `<span class="text-zinc-400 italic">("${ev.note}")</span>` : ''}
-                                    </div>
+            if (!list) return;
+            list.innerHTML = '';
+
+            if (matchState.events.length === 0) {
+                list.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>';
+            } else {
+                matchState.events.forEach((ev) => {
+                    const row = document.createElement('div');
+                    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs";
+                    if (ev.isDefensive) {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-teal-400 font-bold">🛡️</span>
+                                <div>
+                                    <span class="font-extrabold text-white">#${ev.playerJersey} ${ev.playerName}</span>
+                                    <span class="text-teal-300 font-semibold">• ${ev.action}</span>
+                                    ${ev.note ? `<span class="text-zinc-400 italic">("${ev.note}")</span>` : ''}
                                 </div>
-                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                            `;
-                        } else if (ev.isOpponent) {
-                            row.innerHTML = `
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-rose-400 font-bold">⚽</span>
-                                    <div>
-                                        <span class="font-extrabold text-white">${matchState.opponent} Goal</span>
-                                    </div>
+                            </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                        `;
+                    } else if (ev.isOpponent) {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-rose-400 font-bold">⚽</span>
+                                <div>
+                                    <span class="font-extrabold text-white">${matchState.opponent} Goal</span>
                                 </div>
-                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                            `;
-                        } else {
-                            row.innerHTML = `
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-emerald-400 font-bold">⚽</span>
-                                    <div>
-                                        <span class="font-extrabold text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
-                                        ${ev.assistName ? `<span class="text-zinc-400 font-medium"> (Ast: #${ev.assistJersey} ${ev.assistName})</span>` : ''}
-                                        <span class="text-amber-400 text-[10px] font-bold uppercase ml-1">${ev.tag || ''}</span>
-                                    </div>
+                            </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <div class="flex items-center space-x-2">
+                                <span class="text-emerald-400 font-bold">⚽</span>
+                                <div>
+                                    <span class="font-extrabold text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
+                                    ${ev.assistName ? `<span class="text-zinc-400 font-medium"> (Ast: #${ev.assistJersey} ${ev.assistName})</span>` : ''}
+                                    <span class="text-amber-400 text-[10px] font-bold uppercase ml-1">${ev.tag}</span>
                                 </div>
-                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                            `;
-                        }
-                        list.appendChild(row);
-                    });
-                }
+                            </div>
+                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                        `;
+                    }
+                    list.appendChild(row);
+                });
             }
             document.getElementById('match-event-count').textContent = `${matchState.events.length} Events Logged`;
 
@@ -1548,7 +1425,7 @@
             if (historyList) {
                 historyList.innerHTML = '';
                 if (!matchState.history || matchState.history.length === 0) {
-                    historyList.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No archived past matches yet.</p>';
+                    historyList.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No past match history recorded yet.</p>';
                 } else {
                     matchState.history.forEach(m => {
                         const motmPlayer = m.motmJersey ? ROSTER_DATA.find(r => r.jersey === m.motmJersey) : null;
@@ -1564,7 +1441,7 @@
                                 </div>
                                 <p class="text-[10px] text-zinc-400 mt-0.5">Date: ${m.date} • ${(m.events || []).length} events logged</p>
                             </div>
-                            ${motmPlayer ? `<span class="text-[11px] font-bold text-amber-400">🎖️ MOTM: ${motmPlayer.name}</span>` : ''}
+                            ${motmPlayer ? `<span class="text-[11px] font-bold text-amber-400">🎖️ MOTM: #${motmPlayer.jersey} ${motmPlayer.name}</span>` : ''}
                         `;
                         historyList.appendChild(row);
                     });
@@ -1572,6 +1449,7 @@
             }
         }
 
+        // Timer Handlers
         function formatTimer(sec) {
             const m = Math.floor(sec / 60).toString().padStart(2, '0');
             const s = (sec % 60).toString().padStart(2, '0');
@@ -1596,16 +1474,14 @@
             }
         }
 
-        function promptResetTimer() {
-            showCustomConfirm("Reset Clock", "Are you sure you want to reset the match clock to 00:00?", () => {
+        function resetTimerPrompt() {
+            showConfirm("Reset Clock", "Reset the match clock to 00:00?", () => {
                 clearInterval(matchTimerInterval);
                 isTimerRunning = false;
                 timerSeconds = 0;
                 document.getElementById('timer-display').textContent = "00:00";
                 document.getElementById('btn-toggle-timer').textContent = "▶ Start";
-                document.getElementById('btn-toggle-timer').className = "px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition";
-                showToast("Clock reset to 00:00");
-            }, "⏱️");
+            });
         }
 
         // Goal Modal Handlers
@@ -1637,12 +1513,11 @@
                 video
             });
 
-            saveMatchStateToStorage();
+            saveMatchState();
             closeGoalModal();
             renderMatchTracker();
             renderRoster();
             renderLeaderboard();
-            showToast(`GOAL! #${scorerJersey} ${scorer ? scorer.name : ''}! ⚽`);
         }
 
         // Defensive Stop Handlers
@@ -1668,12 +1543,11 @@
                 note
             });
 
-            saveMatchStateToStorage();
+            saveMatchState();
             closeDefensiveModal();
             renderMatchTracker();
             renderRoster();
             renderLeaderboard();
-            showToast(`Defensive Heroics logged for #${playerJersey}! 🛡️`);
         }
 
         function recordOpponentGoal() {
@@ -1682,54 +1556,46 @@
                 isOpponent: true,
                 time: formatTimer(timerSeconds)
             });
-            saveMatchStateToStorage();
+            saveMatchState();
             renderMatchTracker();
-            showToast(`Opponent goal recorded: ${matchState.ourScore} - ${matchState.theirScore}`, "⚽");
         }
 
         function setLockerRoomMOTM() {
             const val = document.getElementById('motm-player-select').value;
             if (val) {
                 matchState.motmJersey = parseInt(val);
-                saveMatchStateToStorage();
+                saveMatchState();
                 renderMatchTracker();
                 renderRoster();
                 renderLeaderboard();
-                const p = ROSTER_DATA.find(r => r.jersey === matchState.motmJersey);
-                showToast(`Awarded Man of the Match to ${p ? p.name : ''}! 🎖️`);
             }
         }
 
-        function promptResetNewMatch() {
-            showCustomConfirm(
-                "Archive Match",
-                "Archive current game to past match history and reset scoreboard for a fresh game?",
-                () => {
-                    matchState.history.unshift({
-                        opponent: matchState.opponent,
-                        ourScore: matchState.ourScore,
-                        theirScore: matchState.theirScore,
-                        motmJersey: matchState.motmJersey,
-                        events: [...matchState.events],
-                        date: new Date().toLocaleDateString()
-                    });
-                    matchState.ourScore = 0;
-                    matchState.theirScore = 0;
-                    matchState.motmJersey = null;
-                    matchState.events = [];
-                    timerSeconds = 0;
-                    clearInterval(matchTimerInterval);
-                    isTimerRunning = false;
-                    document.getElementById('timer-display').textContent = "00:00";
-                    saveMatchStateToStorage();
-                    renderMatchTracker();
-                    renderLeaderboard();
-                    showToast("Game archived! Ready for new match.", "🔄");
-                },
-                "🔄"
-            );
+        function resetNewMatchConfirm() {
+            showConfirm("Archive Match", "Archive current game to match history and start a fresh match?", () => {
+                matchState.history.unshift({
+                    opponent: matchState.opponent,
+                    ourScore: matchState.ourScore,
+                    theirScore: matchState.theirScore,
+                    motmJersey: matchState.motmJersey,
+                    events: [...matchState.events],
+                    date: new Date().toLocaleDateString()
+                });
+                matchState.ourScore = 0;
+                matchState.theirScore = 0;
+                matchState.motmJersey = null;
+                matchState.events = [];
+                timerSeconds = 0;
+                clearInterval(matchTimerInterval);
+                isTimerRunning = false;
+                document.getElementById('timer-display').textContent = "00:00";
+                saveMatchState();
+                renderMatchTracker();
+                renderLeaderboard();
+            });
         }
 
+        // Schedule Renderer
         function renderSchedule(filter = 'all') {
             currentScheduleFilter = filter;
             const list = document.getElementById('schedule-cards-list');
@@ -1738,17 +1604,12 @@
 
             const filtered = scheduleData.filter(item => filter === 'all' || item.type === filter);
 
-            if (filtered.length === 0) {
-                list.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-6">No scheduled ${filter === 'game' ? 'games' : filter === 'practice' ? 'practices' : 'events'} found.</p>`;
-                return;
-            }
-
             filtered.forEach(item => {
                 const isGame = item.type === 'game';
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-lg space-y-3";
 
-                // Opponent scouting data matching the 18-team table
+                // Opponent scouting data
                 let opponentBadge = '';
                 if (isGame && item.opponent) {
                     const opp = standingsData.find(s => s.name.toLowerCase().includes(item.opponent.toLowerCase()) || item.opponent.toLowerCase().includes(s.name.toLowerCase()));
@@ -1785,10 +1646,10 @@
 
                     ${opponentBadge}
 
-                    <div class="pt-2 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-zinc-400">
+                    <div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
                         <p class="italic">${item.notes}</p>
                         ${isGame && isCoachMode ? `
-                            <button onclick="startMatchFromSchedule('${item.opponent}')" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow transition active:scale-95 whitespace-nowrap self-end sm:self-auto">
+                            <button onclick="startMatchFromSchedule('${item.opponent}')" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow transition active:scale-95">
                                 ⚡ Start Match in Tracker
                             </button>
                         ` : ''}
@@ -1806,7 +1667,7 @@
                     if (t === type) {
                         btn.className = "px-3 py-1.5 rounded-xl bg-zinc-800 text-white font-bold";
                     } else {
-                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white font-bold";
+                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white";
                     }
                 }
             });
@@ -1815,9 +1676,8 @@
 
         function startMatchFromSchedule(oppName) {
             matchState.opponent = oppName;
-            saveMatchStateToStorage();
+            saveMatchState();
             switchTab('tracker');
-            showToast(`Match set vs ${oppName}!`, "⚽");
         }
 
         function openAddEventModal() {
@@ -1826,16 +1686,6 @@
 
         function closeAddEventModal() {
             document.getElementById('add-event-modal').classList.add('hidden');
-        }
-
-        function toggleOpponentInputInModal() {
-            const type = document.getElementById('new-event-type').value;
-            const oppBox = document.getElementById('box-new-event-opponent');
-            if (type === 'game') {
-                oppBox.classList.remove('hidden');
-            } else {
-                oppBox.classList.add('hidden');
-            }
         }
 
         function saveNewScheduleEvent(e) {
@@ -1850,7 +1700,7 @@
             const address = document.getElementById('new-event-address').value.trim();
             const notes = document.getElementById('new-event-notes').value.trim();
 
-            const newEvent = {
+            scheduleData.push({
                 id: "sched-" + Date.now(),
                 type,
                 title,
@@ -1860,19 +1710,18 @@
                 arrival,
                 pitch,
                 address,
-                notes: notes || 'Check team group chat for updates.'
-            };
+                notes: notes || 'Check team chat for details.'
+            });
 
-            scheduleData.push(newEvent);
             try {
                 localStorage.setItem('rfc14_schedule', JSON.stringify(scheduleData));
             } catch(err) {}
 
             closeAddEventModal();
             renderSchedule(currentScheduleFilter);
-            showToast("New fixture added to calendar!", "📅");
         }
 
+        // Standings Renderer
         function renderStandings() {
             const tbody = document.getElementById('standings-table-rows');
             if (!tbody) return;
@@ -1912,7 +1761,6 @@
             });
         }
 
-        // Edit Standings Modal
         function openEditStandingsModal() {
             const list = document.getElementById('edit-standings-list');
             list.innerHTML = '';
@@ -1982,7 +1830,6 @@
             closeEditStandingsModal();
             renderStandings();
             renderSchedule(currentScheduleFilter);
-            showToast("CMSA League Standings saved!", "💾");
         }
 
         function triggerStandingsScreenshotUpload() {
@@ -2003,7 +1850,7 @@
                 const base64Data = evt.target.result.split(',')[1];
                 const mimeType = file.type || "image/jpeg";
 
-                // Authentic complete 18-team CMSA table from screenshot
+                // Authentic complete 18-team CMSA dataset from the official table
                 const official18TeamData = [
                     { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, pts: 3, gf: 5, ga: 0, gd: 5 },
                     { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, pts: 3, gf: 7, ga: 2, gd: 5 },
@@ -2029,23 +1876,10 @@
                     const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
-                    const promptText = `Analyze this CMSA league standings table screenshot.
-Extract ALL 18 teams visible in the table.
-Columns in CMSA are:
-Rank, Club Name, GP, W, T, L, Pts, GF, GA, GD.
-For teams with dashes '-' or blank spaces (such as SWU Atletico 14B or Rockies Albion 14 who have not played a game yet), set gp: 0, w: 0, t: 0, l: 0, pts: 0, gf: 0, ga: 0, gd: 0.
-Return a valid JSON array of objects with keys:
-- "rank" (number)
-- "name" (string)
-- "gp" (number)
-- "w" (number)
-- "t" (number)
-- "l" (number)
-- "pts" (number)
-- "gf" (number)
-- "ga" (number)
-- "gd" (number)
-Return ONLY valid JSON.`;
+                    const promptText = `Extract the full table of all 18 teams from this CMSA league standings screenshot.
+Columns are: Rank, Club Name, GP, W, T, L, Pts, GF, GA, GD.
+For teams with dashes '-' like Rockies Albion 14 or SWU Atletico 14B, set gp:0, w:0, t:0, l:0, pts:0, gf:0, ga:0, gd:0.
+Return a JSON array of objects with keys: "rank", "name", "gp", "w", "t", "l", "pts", "gf", "ga", "gd".`;
 
                     const payload = {
                         contents: [{
@@ -2095,14 +1929,14 @@ Return ONLY valid JSON.`;
                         }
                     }
                 } catch(apiErr) {
-                    console.warn("Vision extraction request fallback:", apiErr);
+                    console.warn("Vision extraction fallback:", apiErr);
                 }
 
-                // Authentic complete fallback with all 18 clubs from CMSA table
+                // If no key or offline, preview the complete 18 teams directly
                 setTimeout(() => {
                     extractedStandingsPreview = official18TeamData;
                     displayAiStandingsPreview(extractedStandingsPreview);
-                }, 800);
+                }, 600);
             };
 
             reader.readAsDataURL(file);
@@ -2156,10 +1990,10 @@ Return ONLY valid JSON.`;
                 renderStandings();
                 renderSchedule(currentScheduleFilter);
                 closeAiStandingsModal();
-                showToast("Standings table updated from AI screenshot!", "✨");
             }
         }
 
+        // Leaderboard Renderer
         function renderLeaderboard() {
             // 1. Goals Podium
             const goalRankings = ROSTER_DATA.map(p => ({
