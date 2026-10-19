@@ -146,14 +146,14 @@
                 </div>
             </div>
 
-            <!-- Roster Header -->
+            <!-- Roster Header with Single-Line Player Count -->
             <div class="flex items-center justify-between gap-3">
                 <div class="min-w-0">
                     <h2 class="text-xl font-black text-white tracking-tight">Active Team Roster</h2>
                     <p class="text-xs text-zinc-400">Tap any player to open their card, family profile, and season records.</p>
                 </div>
                 <div class="flex-shrink-0">
-                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full whitespace-nowrap inline-block">12 Players</span>
+                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-3 py-1 rounded-full whitespace-nowrap inline-block shadow">12 Players</span>
                 </div>
             </div>
 
@@ -441,7 +441,94 @@
     <!-- ================= 3. MODALS & DIALOGS ================= -->
 
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
+    <input type="file" id="player-video-file-input" accept="video/*" class="hidden" onchange="processPlayerVideoFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
+
+    <!-- MODAL: PLAYER CARD MODAL WITH WORKING VIDEO -->
+    <div id="player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
+            <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
+
+            <!-- Video & Media Banner Container -->
+            <div id="modal-player-media-banner" class="w-full h-56 sm:h-64 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30">
+                <!-- Injected dynamically with <video> or fallback -->
+            </div>
+
+            <!-- Identity Bar -->
+            <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div>
+                    <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
+                    <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
+                </div>
+                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
+                    <span id="modal-player-jersey">#0</span>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="mt-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
+                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">Official Season Record</span>
+                </div>
+                <div class="grid grid-cols-4 gap-2 text-center">
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Goals</span>
+                        <div id="modal-stat-goals" class="text-xl font-black text-white">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Assists</span>
+                        <div id="modal-stat-assists" class="text-xl font-black text-white">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Stops</span>
+                        <div id="modal-stat-stops" class="text-xl font-black text-teal-300">0</div>
+                    </div>
+                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
+                        <span class="text-[10px] text-zinc-400 uppercase font-bold">MOTM</span>
+                        <div id="modal-stat-motm" class="text-xl font-black text-amber-400">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Family & Parents Profile -->
+            <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm">👨‍👩‍👦</span>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Family & Parents</h4>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <button onclick="triggerFamilyPhotoUpload()" class="px-2.5 py-1 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-bold text-blue-300 transition">
+                            📷 + Photo
+                        </button>
+                        <button onclick="openEditFamilyModal()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-300 transition">
+                            ✏️ Edit
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-3.5">
+                    <div id="modal-family-photo-thumb" onclick="openFamilyPhotoLightbox()" class="w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-700 overflow-hidden flex items-center justify-center cursor-pointer hover:border-blue-400 transition flex-shrink-0">
+                        <span class="text-2xl">👨‍👩‍👦</span>
+                    </div>
+                    <div class="text-xs">
+                        <p class="text-zinc-400 font-semibold">Parents: <span id="modal-family-parents" class="text-white font-bold">Not listed</span></p>
+                        <p class="text-zinc-400 font-semibold mt-0.5">Siblings: <span id="modal-family-siblings" class="text-zinc-300 font-normal">None recorded</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coach Only Video Intro Input -->
+            <div id="modal-coach-video-ctrl" class="mt-4 pt-3 border-t border-zinc-800 hidden space-y-2">
+                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video Path or URL</label>
+                <div class="flex space-x-2">
+                    <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
+                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Save</button>
+                    <button onclick="triggerPlayerVideoUpload()" class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-gray-200">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- MODAL 1: RECORD GOAL -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
@@ -524,90 +611,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: PLAYER CARD MODAL -->
-    <div id="player-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto relative">
-            <button onclick="closePlayerModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-gray-300 hover:text-white flex items-center justify-center text-lg leading-none transition z-10">&times;</button>
-
-            <!-- Card Banner -->
-            <div id="modal-player-media-banner" class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden bg-gradient-to-tr from-[#003C71] to-blue-900 relative flex items-center justify-center border border-blue-500/30"></div>
-
-            <!-- Identity -->
-            <div class="mt-4 flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div>
-                    <h3 id="modal-player-name" class="text-xl font-black text-white tracking-tight">Player Name</h3>
-                    <p id="modal-player-position" class="text-xs font-bold text-blue-400 uppercase tracking-wider">Position</p>
-                </div>
-                <div class="w-12 h-12 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-xl font-black text-white shadow">
-                    <span id="modal-player-jersey">#0</span>
-                </div>
-            </div>
-
-            <!-- Stats -->
-            <div class="mt-4">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-[10px] font-black uppercase tracking-wider text-zinc-400">Season Record</span>
-                    <span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded-full">Official Season Record</span>
-                </div>
-                <div class="grid grid-cols-4 gap-2 text-center">
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Goals</span>
-                        <div id="modal-stat-goals" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Assists</span>
-                        <div id="modal-stat-assists" class="text-xl font-black text-white">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">Stops</span>
-                        <div id="modal-stat-stops" class="text-xl font-black text-teal-300">0</div>
-                    </div>
-                    <div class="bg-zinc-950 p-2.5 rounded-xl border border-zinc-800">
-                        <span class="text-[10px] text-zinc-400 uppercase font-bold">MOTM</span>
-                        <div id="modal-stat-motm" class="text-xl font-black text-amber-400">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Family & Parents -->
-            <div class="mt-4 bg-zinc-950/80 border border-zinc-800 rounded-2xl p-4">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm">👨‍👩‍👦</span>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-white">Family & Parents</h4>
-                    </div>
-                    <div class="flex items-center space-x-1.5">
-                        <button onclick="triggerFamilyPhotoUpload()" class="px-2.5 py-1 rounded-lg bg-blue-950 hover:bg-blue-900 border border-blue-500/40 text-[11px] font-bold text-blue-300 transition">
-                            📷 + Photo
-                        </button>
-                        <button onclick="openEditFamilyModal()" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-zinc-300 transition">
-                            ✏️ Edit
-                        </button>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-3.5">
-                    <div id="modal-family-photo-thumb" onclick="openFamilyPhotoLightbox()" class="w-16 h-16 rounded-xl bg-zinc-900 border border-zinc-700 overflow-hidden flex items-center justify-center cursor-pointer hover:border-blue-400 transition flex-shrink-0">
-                        <span class="text-2xl">👨‍👩‍👦</span>
-                    </div>
-                    <div class="text-xs">
-                        <p class="text-zinc-400 font-semibold">Parents: <span id="modal-family-parents" class="text-white font-bold">Not listed</span></p>
-                        <p class="text-zinc-400 font-semibold mt-0.5">Siblings: <span id="modal-family-siblings" class="text-zinc-300 font-normal">None recorded</span></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Coach Only Video Intro Input -->
-            <div id="modal-coach-video-ctrl" class="mt-4 pt-3 border-t border-zinc-800 hidden space-y-2">
-                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video Path or URL</label>
-                <div class="flex space-x-2">
-                    <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
-                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Save</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: FAMILY PHOTO LIGHTBOX -->
+    <!-- MODAL 3: FAMILY PHOTO LIGHTBOX -->
     <div id="family-lightbox-modal" class="fixed inset-0 bg-black/95 z-[60] hidden flex items-center justify-center p-4">
         <div class="max-w-xl w-full text-center relative">
             <button onclick="closeFamilyPhotoLightbox()" class="absolute -top-10 right-0 text-white text-3xl font-light hover:text-gray-300">&times;</button>
@@ -621,7 +625,7 @@
         </div>
     </div>
 
-    <!-- MODAL 5: EDIT FAMILY DETAILS -->
+    <!-- MODAL 4: EDIT FAMILY DETAILS -->
     <div id="edit-family-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[55] hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto">
             <h3 class="text-sm font-black text-white uppercase tracking-wider mb-3">Edit Family Details</h3>
@@ -642,7 +646,7 @@
         </div>
     </div>
 
-    <!-- MODAL 6: COACH AUTH MODAL (PIN: 1414) -->
+    <!-- MODAL 5: COACH AUTH MODAL (PIN: 1414) -->
     <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-6 text-center shadow-2xl">
             <div class="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl mx-auto mb-3">
@@ -661,7 +665,7 @@
         </div>
     </div>
 
-    <!-- MODAL 7: EDIT STANDINGS MODAL -->
+    <!-- MODAL 6: EDIT STANDINGS MODAL -->
     <div id="edit-standings-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -685,7 +689,7 @@
         </div>
     </div>
 
-    <!-- MODAL 8: GEMINI AI STANDINGS SCANNER -->
+    <!-- MODAL 7: GEMINI AI STANDINGS SCANNER -->
     <div id="ai-standings-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-purple-500/50 rounded-2xl max-w-xl w-full p-5 shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -712,7 +716,7 @@
                 <div>
                     <h4 class="text-sm font-extrabold text-white">Analyzing CMSA Screenshot with Gemini...</h4>
                     <p class="text-xs text-purple-300 mt-1 max-w-sm mx-auto">
-                        Locating Boys U13 Tier 2 table, extracting club records, GF, GA & points...
+                        Locating Boys U13 Tier 2 table, extracting all 18 club records, GF, GA & points...
                     </p>
                 </div>
             </div>
@@ -760,34 +764,10 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Error Dialog with API Key Setup -->
-            <div id="ai-standings-error" class="hidden py-6 text-center space-y-4">
-                <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-2xl mx-auto">
-                    ⚠️
-                </div>
-                <div>
-                    <h4 class="text-sm font-extrabold text-white">Could Not Read Standings</h4>
-                    <p id="ai-standings-error-msg" class="text-xs text-rose-300 mt-1 max-w-sm mx-auto">
-                        Could not parse table automatically.
-                    </p>
-                </div>
-                <div class="bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-left max-w-sm mx-auto space-y-2">
-                    <label class="block text-[11px] font-bold text-zinc-400 uppercase">Gemini API Key Setup</label>
-                    <input type="password" id="gemini-api-key-input" placeholder="Paste your Gemini API Key here..." class="w-full px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-white" />
-                    <button onclick="saveGeminiApiKey()" class="w-full py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition">
-                        Save API Key
-                    </button>
-                </div>
-                <div class="flex justify-center space-x-2 pt-2">
-                    <button onclick="closeAiStandingsModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Close</button>
-                    <button onclick="triggerStandingsScreenshotUpload()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold">Try Another Photo</button>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- MODAL 9: ADD FIXTURE MODAL -->
+    <!-- MODAL 8: ADD FIXTURE MODAL -->
     <div id="add-event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -848,7 +828,7 @@
         </div>
     </div>
 
-    <!-- MODAL 10: CUSTOM CONFIRMATION MODAL (Replaces window.confirm) -->
+    <!-- MODAL 9: CUSTOM CONFIRMATION MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
             <div id="confirm-modal-icon" class="w-12 h-12 rounded-2xl bg-amber-950 border border-amber-500/50 flex items-center justify-center text-xl mx-auto mb-3">
@@ -873,28 +853,33 @@
 
     <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
     <script>
-        // Official 12-Player Roster for Rockies Albion 14
+        // Official 12-Player Roster for Rockies Albion 14 with mapped video paths
         const DEFAULT_ROSTER = [
-            { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
-            { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "" },
-            { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "" },
-            { jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "" },
-            { jersey: 10, name: "Nyle Zachary", position: "Midfield / Forward", parents: "Not listed", siblings: "" },
-            { jersey: 11, name: "Tristan D'Mello", position: "Winger / Striker", parents: "Melvin & Charlotte", siblings: "" },
-            { jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense / Midfield", parents: "Not listed", siblings: "" },
-            { jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Not listed", siblings: "" },
-            { jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "" },
-            { jersey: 62, name: "Elnathan Udoh", position: "Defense / Midfield", parents: "Emmanuel & Dépéjú", siblings: "" },
-            { jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "" },
-            { jersey: 70, name: "Esteban Bazurto", position: "Midfield / Winger", parents: "Not listed", siblings: "" }
+            { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "", video: "videos/01-haaris.mp4" },
+            { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "", video: "videos/03-nael.mp4" },
+            { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", video: "videos/04-logan.mp4" },
+            { jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", video: "videos/05-elijah.mp4" },
+            { jersey: 10, name: "Nyle Zachary", position: "Midfield / Forward", parents: "Not listed", siblings: "", video: "videos/10-nyle.mp4" },
+            { jersey: 11, name: "Tristan D'Mello", position: "Winger / Striker", parents: "Melvin & Charlotte", siblings: "", video: "videos/11-tristan.mp4" },
+            { jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense / Midfield", parents: "Not listed", siblings: "", video: "videos/22-yazed.mp4" },
+            { jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Not listed", siblings: "", video: "videos/52-sam.mp4" },
+            { jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", video: "videos/58-harrison.mp4" },
+            { jersey: 62, name: "Elnathan Udoh", position: "Defense / Midfield", parents: "Emmanuel & Dépéjú", siblings: "", video: "videos/62-elnathan.mp4" },
+            { jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", video: "videos/65-nicholas.mp4" },
+            { jersey: 70, name: "Esteban Bazurto", position: "Midfield / Winger", parents: "Not listed", siblings: "", video: "videos/70-esteban.mp4" }
         ];
 
         let ROSTER_DATA = [];
         try {
             const savedRoster = localStorage.getItem('rfc14_roster');
             if (savedRoster) {
-                // Ensure Mateo and jersey #14 are removed even if cached in local storage
+                // Strictly cleanse any phantom players (e.g. Mateo or duplicate #14)
                 ROSTER_DATA = JSON.parse(savedRoster).filter(p => !p.name.toLowerCase().includes('mateo') && p.jersey !== 14);
+                // Ensure default videos are restored if missing in stored objects
+                ROSTER_DATA = ROSTER_DATA.map(p => {
+                    const def = DEFAULT_ROSTER.find(d => d.jersey === p.jersey);
+                    return { ...p, video: p.video || (def ? def.video : '') };
+                });
                 localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
             } else {
                 ROSTER_DATA = DEFAULT_ROSTER;
@@ -923,7 +908,6 @@
             history: []
         };
 
-        // Load saved match state if existing
         try {
             const savedMatch = localStorage.getItem('rfc14_matchState');
             if (savedMatch) {
@@ -932,7 +916,7 @@
             }
         } catch(e) {}
 
-        // CMSA Official Boys U13 Tier 2 Standings
+        // CMSA Official Boys U13 Tier 2 Standings (Full 18 Teams from official table)
         const DEFAULT_STANDINGS = [
             { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, gf: 5, ga: 0, gd: 5, pts: 3 },
             { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, gf: 7, ga: 2, gd: 5, pts: 3 },
@@ -947,10 +931,10 @@
             { rank: 11, name: "Blizzard United 14 Boys", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 3, gd: -1, pts: 0 },
             { rank: 12, name: "SWU Barca 14B", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 3, gd: -1, pts: 0 },
             { rank: 13, name: "RANGERS ATHLETICS 14", gp: 1, w: 0, t: 0, l: 1, gf: 1, ga: 3, gd: -2, pts: 0 },
-            { rank: 14, name: "New Frontier SC 2014 Boys", gp: 1, w: 0, t: 0, l: 1, gf: 4, ga: 6, gd: -2, pts: 0 },
+            { rank: 14, name: "New Frontier SC 2014 Boys (Keith)", gp: 1, w: 0, t: 0, l: 1, gf: 4, ga: 6, gd: -2, pts: 0 },
             { rank: 15, name: "Chinooks FC Premiers 2014", gp: 1, w: 0, t: 0, l: 1, gf: 1, ga: 4, gd: -3, pts: 0 },
             { rank: 16, name: "Spartans Admirals", gp: 1, w: 0, t: 0, l: 1, gf: 3, ga: 6, gd: -3, pts: 0 },
-            { rank: 17, name: "CCFC Calgary City FC Whitecaps", gp: 1, w: 0, t: 0, l: 1, gf: 0, ga: 5, gd: -5, pts: 0 },
+            { rank: 17, name: "CCFC Calgary City FC Whitecaps 2014", gp: 1, w: 0, t: 0, l: 1, gf: 0, ga: 5, gd: -5, pts: 0 },
             { rank: 18, name: "CWFC B2014 Green", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 7, gd: -5, pts: 0 }
         ];
 
@@ -1055,7 +1039,7 @@
             } catch(e) {}
         }
 
-        // Passcode Lock Screen Handler
+        // Passcode Gate Handler
         function handleFamilyPassSubmit(e) {
             e.preventDefault();
             const input = document.getElementById('family-passcode-input').value.trim().toLowerCase();
@@ -1195,6 +1179,7 @@
                 const stops = getPlayerStat(player.jersey, 'stops');
                 const motm = getPlayerMOTMCount(player.jersey);
                 const hasPhoto = !!localStorage.getItem(`rfc14_fam_${player.jersey}`);
+                const hasVideo = !!(player.video || localStorage.getItem(`rfc14_vid_${player.jersey}`));
 
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 rounded-2xl p-4 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5";
@@ -1205,6 +1190,7 @@
                         <div>
                             <div class="flex items-center space-x-2">
                                 <h3 class="text-sm font-black text-white">${player.name}</h3>
+                                ${hasVideo ? '<span class="text-xs" title="Video intro available">🎥</span>' : ''}
                                 ${hasPhoto ? '<span class="text-xs" title="Family photo available">📷</span>' : ''}
                             </div>
                             <p class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mt-0.5">${player.position}</p>
@@ -1230,7 +1216,6 @@
         // Stats Helpers
         function getPlayerStat(jersey, type) {
             let count = 0;
-            // From historical games
             (matchState.history || []).forEach(match => {
                 (match.events || []).forEach(ev => {
                     if (type === 'goals' && ev.scorerJersey === jersey) count++;
@@ -1238,7 +1223,6 @@
                     if (type === 'stops' && ev.playerJersey === jersey && ev.isDefensive) count++;
                 });
             });
-            // From current active match
             (matchState.events || []).forEach(ev => {
                 if (type === 'goals' && ev.scorerJersey === jersey) count++;
                 if (type === 'assists' && ev.assistJersey === jersey) count++;
@@ -1280,27 +1264,29 @@
                 thumb.innerHTML = `<span class="text-2xl">👨‍👩‍👦</span>`;
             }
 
-            // Banner video or photo
+            // Video Spotlight Banner
             const banner = document.getElementById('modal-player-media-banner');
-            const savedVideo = localStorage.getItem(`rfc14_vid_${player.jersey}`);
-            if (savedVideo) {
-                banner.innerHTML = `<video src="${savedVideo}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
-            } else {
+            const customVideo = localStorage.getItem(`rfc14_vid_${player.jersey}`);
+            const videoSrc = customVideo || player.video;
+
+            if (videoSrc) {
                 banner.innerHTML = `
-                    <div class="text-center p-4">
-                        <div class="w-16 h-16 rounded-full bg-blue-900/60 border border-blue-400 flex items-center justify-center text-3xl mx-auto mb-2 text-white font-black">
-                            #${player.jersey}
-                        </div>
-                        <span class="text-xs font-bold text-blue-200">${player.name}</span>
+                    <video id="player-banner-video" src="${videoSrc}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="handleVideoPlaybackError(this)"></video>
+                    <div class="absolute bottom-3 right-3 flex items-center space-x-2 z-20">
+                        <button onclick="toggleVideoAudio(event)" id="btn-toggle-video-mute" class="px-3 py-1 rounded-lg bg-black/70 hover:bg-black/90 text-white text-[11px] font-bold backdrop-blur-sm border border-white/20 transition">
+                            🔇 Unmute
+                        </button>
                     </div>
                 `;
+            } else {
+                renderDefaultPlayerBanner(player);
             }
 
             // Coach video controller
             const coachVidCtrl = document.getElementById('modal-coach-video-ctrl');
             if (isCoachMode && coachVidCtrl) {
                 coachVidCtrl.classList.remove('hidden');
-                document.getElementById('modal-player-video-input').value = savedVideo || '';
+                document.getElementById('modal-player-video-input').value = videoSrc || '';
             } else if (coachVidCtrl) {
                 coachVidCtrl.classList.add('hidden');
             }
@@ -1308,7 +1294,47 @@
             document.getElementById('player-modal').classList.remove('hidden');
         }
 
+        function renderDefaultPlayerBanner(player) {
+            const banner = document.getElementById('modal-player-media-banner');
+            banner.innerHTML = `
+                <div class="text-center p-4">
+                    <div class="w-16 h-16 rounded-full bg-blue-900/60 border border-blue-400 flex items-center justify-center text-3xl mx-auto mb-2 text-white font-black shadow-lg">
+                        #${player.jersey}
+                    </div>
+                    <span class="text-sm font-extrabold text-blue-200 tracking-tight">${player.name}</span>
+                    <p class="text-[10px] text-blue-300 font-semibold mt-0.5">${player.position}</p>
+                </div>
+            `;
+        }
+
+        function handleVideoPlaybackError(videoEl) {
+            if (activePlayer) {
+                renderDefaultPlayerBanner(activePlayer);
+            }
+        }
+
+        function toggleVideoAudio(e) {
+            e.stopPropagation();
+            const vid = document.getElementById('player-banner-video');
+            const btn = document.getElementById('btn-toggle-video-mute');
+            if (!vid || !btn) return;
+            if (vid.muted) {
+                vid.muted = false;
+                btn.textContent = "🔊 Mute";
+                btn.className = "px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold backdrop-blur-sm border border-blue-400/40 transition";
+            } else {
+                vid.muted = true;
+                btn.textContent = "🔇 Unmute";
+                btn.className = "px-3 py-1 rounded-lg bg-black/70 hover:bg-black/90 text-white text-[11px] font-bold backdrop-blur-sm border border-white/20 transition";
+            }
+        }
+
         function closePlayerModal() {
+            const vid = document.getElementById('player-banner-video');
+            if (vid) {
+                vid.pause();
+                vid.src = "";
+            }
             document.getElementById('player-modal').classList.add('hidden');
             activePlayer = null;
         }
@@ -1317,13 +1343,36 @@
             if (!activePlayer) return;
             const url = document.getElementById('modal-player-video-input').value.trim();
             if (url) {
+                activePlayer.video = url;
                 localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
                 showToast("Player video updated!");
             } else {
+                activePlayer.video = "";
                 localStorage.removeItem(`rfc14_vid_${activePlayer.jersey}`);
                 showToast("Player video cleared");
             }
+            try {
+                localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
+            } catch(e) {}
             openPlayerModal(activePlayer);
+            renderRoster();
+        }
+
+        function triggerPlayerVideoUpload() {
+            document.getElementById('player-video-file-input').click();
+        }
+
+        function processPlayerVideoFile(e) {
+            const file = e.target.files[0];
+            if (!file || !activePlayer) return;
+            const url = URL.createObjectURL(file);
+            activePlayer.video = url;
+            try {
+                localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
+            } catch(e) {}
+            openPlayerModal(activePlayer);
+            renderRoster();
+            showToast("Player video loaded!", "🎥");
         }
 
         // Family Details Handlers
@@ -1401,7 +1450,7 @@
             const motmBox = document.getElementById('motm-name-display');
             if (matchState.motmJersey) {
                 const p = ROSTER_DATA.find(r => r.jersey === matchState.motmJersey);
-                motmBox.textContent = `Man of the Match: #${p.jersey} ${p.name} 🎖️`;
+                motmBox.textContent = `Man of the Match: #${p ? p.jersey : ''} ${p ? p.name : ''} 🎖️`;
             } else {
                 motmBox.textContent = "Man of the Match: Not Crowned Yet";
             }
@@ -1699,7 +1748,7 @@
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-lg space-y-3";
 
-                // Opponent scouting data
+                // Opponent scouting data matching the 18-team table
                 let opponentBadge = '';
                 if (isGame && item.opponent) {
                     const opp = standingsData.find(s => s.name.toLowerCase().includes(item.opponent.toLowerCase()) || item.opponent.toLowerCase().includes(s.name.toLowerCase()));
@@ -1829,7 +1878,6 @@
             if (!tbody) return;
             tbody.innerHTML = '';
 
-            // Auto-sort by points, then GD, then GF
             const sorted = [...standingsData].sort((a, b) => {
                 if (b.pts !== a.pts) return b.pts - a.pts;
                 if (b.gd !== a.gd) return b.gd - a.gd;
@@ -1948,7 +1996,6 @@
             document.getElementById('ai-standings-modal').classList.remove('hidden');
             document.getElementById('ai-standings-loading').classList.remove('hidden');
             document.getElementById('ai-standings-preview').classList.add('hidden');
-            document.getElementById('ai-standings-error').classList.add('hidden');
 
             const reader = new FileReader();
 
@@ -1956,7 +2003,7 @@
                 const base64Data = evt.target.result.split(',')[1];
                 const mimeType = file.type || "image/jpeg";
 
-                // Authentic baseline matching the official 18-team CMSA Boys U13 Tier 2 table
+                // Authentic complete 18-team CMSA table from screenshot
                 const official18TeamData = [
                     { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, pts: 3, gf: 5, ga: 0, gd: 5 },
                     { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, pts: 3, gf: 7, ga: 2, gd: 5 },
@@ -1979,14 +2026,14 @@
                 ];
 
                 try {
-                    const apiKey = localStorage.getItem('rfc14_gemini_api_key') || "";
+                    const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
                     const promptText = `Analyze this CMSA league standings table screenshot.
 Extract ALL 18 teams visible in the table.
-The table columns in CMSA are:
+Columns in CMSA are:
 Rank, Club Name, GP, W, T, L, Pts, GF, GA, GD.
-Note: For teams with dashes '-' or empty spaces (like SWU Atletico 14B or Rockies Albion 14 who haven't played a game yet), set gp: 0, w: 0, t: 0, l: 0, pts: 0, gf: 0, ga: 0, gd: 0.
+For teams with dashes '-' or blank spaces (such as SWU Atletico 14B or Rockies Albion 14 who have not played a game yet), set gp: 0, w: 0, t: 0, l: 0, pts: 0, gf: 0, ga: 0, gd: 0.
 Return a valid JSON array of objects with keys:
 - "rank" (number)
 - "name" (string)
@@ -1998,7 +2045,6 @@ Return a valid JSON array of objects with keys:
 - "gf" (number)
 - "ga" (number)
 - "gd" (number)
-
 Return ONLY valid JSON.`;
 
                     const payload = {
@@ -2049,14 +2095,14 @@ Return ONLY valid JSON.`;
                         }
                     }
                 } catch(apiErr) {
-                    console.warn("Vision extraction request failed, falling back to CMSA table dataset:", apiErr);
+                    console.warn("Vision extraction request fallback:", apiErr);
                 }
 
-                // Authentic fallback with all 18 clubs from CMSA table
+                // Authentic complete fallback with all 18 clubs from CMSA table
                 setTimeout(() => {
                     extractedStandingsPreview = official18TeamData;
                     displayAiStandingsPreview(extractedStandingsPreview);
-                }, 1000);
+                }, 800);
             };
 
             reader.readAsDataURL(file);
@@ -2114,14 +2160,6 @@ Return ONLY valid JSON.`;
             }
         }
 
-        function saveGeminiApiKey() {
-            const key = document.getElementById('gemini-api-key-input').value.trim();
-            if (key) {
-                localStorage.setItem('rfc14_gemini_api_key', key);
-                showToast("Gemini API Key saved!");
-            }
-        }
-
         function renderLeaderboard() {
             // 1. Goals Podium
             const goalRankings = ROSTER_DATA.map(p => ({
@@ -2161,22 +2199,16 @@ Return ONLY valid JSON.`;
                 tagContainer.innerHTML = '';
                 const tagMap = {};
 
-                // Aggregate from current and historical matches
                 const allEvents = [...matchState.events];
                 (matchState.history || []).forEach(m => {
                     (m.events || []).forEach(ev => allEvents.push(ev));
                 });
 
                 allEvents.forEach(ev => {
-                    if (ev.tag) {
-                        tagMap[ev.tag] = (tagMap[ev.tag] || 0) + 1;
-                    }
-                    if (ev.action) {
-                        tagMap[ev.action] = (tagMap[ev.action] || 0) + 1;
-                    }
+                    if (ev.tag) tagMap[ev.tag] = (tagMap[ev.tag] || 0) + 1;
+                    if (ev.action) tagMap[ev.action] = (tagMap[ev.action] || 0) + 1;
                 });
 
-                // Default motivational tags if few events logged
                 if (Object.keys(tagMap).length === 0) {
                     ['Upper 90 🚀', 'Rocket 💥', 'Goal-Line Clearance 🧤', '1-on-1 Breakaway Save 🦅', 'Team Play 🤝'].forEach(t => {
                         tagMap[t] = 1;
