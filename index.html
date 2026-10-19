@@ -152,6 +152,9 @@
                     <button id="tab-tracker" onclick="switchTab('tracker')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
                         ⏱️ Live Tracker
                     </button>
+                    <button id="tab-schedule" onclick="switchTab('schedule')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
+                        📅 Schedule
+                    </button>
                     <button id="tab-leaderboard" onclick="switchTab('leaderboard')" class="flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white">
                         🏆 Leaderboard
                     </button>
@@ -369,6 +372,45 @@
         <section id="view-leaderboard" class="hidden space-y-4">
             <div id="leaderboard-content" class="space-y-4">
                 <!-- Injected via JavaScript -->
+            </div>
+        </section>
+
+        <!-- VIEW 4: TEAM SCHEDULE & FIXTURES -->
+        <section id="view-schedule" class="hidden space-y-4">
+            <div class="bg-gradient-to-r from-zinc-900 via-blue-950/30 to-zinc-900 border border-blue-600/30 rounded-2xl p-4 sm:p-5 shadow-xl">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xl">📅</span>
+                            <h2 class="text-base sm:text-lg font-extrabold text-white">Team Schedule & Fixtures</h2>
+                        </div>
+                        <p class="text-xs text-blue-300 font-semibold mt-0.5">Upcoming matches, practices, and pitch locations</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button id="btn-add-event" onclick="openAddEventModal()" class="hidden px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow active:scale-95 flex items-center space-x-1.5">
+                            <span>➕ Add Fixture</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Event Filter Chips -->
+                <div class="flex items-center space-x-1.5 mt-3 pt-1">
+                    <button onclick="setScheduleFilter('all')" id="sched-filter-all" class="px-3 py-1 rounded-lg text-xs font-bold bg-white text-[#003C71] shadow">
+                        All Events
+                    </button>
+                    <button onclick="setScheduleFilter('game')" id="sched-filter-game" class="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-300 hover:text-white">
+                        ⚽ Games
+                    </button>
+                    <button onclick="setScheduleFilter('practice')" id="sched-filter-practice" class="px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-300 hover:text-white">
+                        🏃 Practices
+                    </button>
+                </div>
+            </div>
+
+            <!-- Schedule List Container -->
+            <div id="schedule-list" class="space-y-3">
+                <!-- Injected via renderSchedule() -->
             </div>
         </section>
 
@@ -812,6 +854,85 @@
         </div>
     </div>
 
+    <!-- MODAL 6: ADD / EDIT SCHEDULE EVENT -->
+    <div id="event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-blue-600/40 rounded-2xl max-w-md w-full p-5 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                <div class="flex items-center space-x-2">
+                    <span id="event-modal-icon" class="text-xl">⚽</span>
+                    <div>
+                        <h3 id="event-modal-title" class="text-sm font-extrabold text-white">Add Schedule Event</h3>
+                        <p class="text-[10px] text-blue-300 font-semibold">Practice, League Match or Tournament</p>
+                    </div>
+                </div>
+                <button onclick="closeEventModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+
+            <input type="hidden" id="event-modal-id" />
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Event Type *</label>
+                    <select id="event-input-type" onchange="handleEventTypeChange(this.value)" class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs sm:text-sm font-semibold focus:border-blue-500">
+                        <option value="game">⚽ Match / Game</option>
+                        <option value="practice">🏃 Team Practice</option>
+                    </select>
+                </div>
+
+                <div id="event-field-opponent">
+                    <label class="block text-[11px] font-bold text-blue-300 uppercase tracking-wider mb-1">Opponent Team *</label>
+                    <input id="event-input-opponent" type="text" placeholder="e.g. Calgary Blizzard SC, Villains FC..." 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 font-semibold placeholder-zinc-500" />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Date *</label>
+                        <input id="event-input-date" type="text" placeholder="e.g. Saturday, Oct 24" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 placeholder-zinc-500" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Kick-off / Time *</label>
+                        <input id="event-input-time" type="text" placeholder="e.g. 10:30 AM" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 placeholder-zinc-500" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Location / Pitch *</label>
+                    <input id="event-input-location" type="text" placeholder="e.g. Calgary West Soccer Centre - Field 2" 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 placeholder-zinc-500" />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-amber-300 uppercase tracking-wider mb-1">Arrival Window</label>
+                        <input id="event-input-arrival" type="text" placeholder="e.g. Arrive at 9:45 AM (45 min prior)" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-amber-500 placeholder-zinc-500" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-emerald-300 uppercase tracking-wider mb-1">Jersey / Kit Color</label>
+                        <input id="event-input-kit" type="text" placeholder="e.g. Royal Blue (Bring both)" 
+                               class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-emerald-500 placeholder-zinc-500" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Coach Notes / Instructions</label>
+                    <input id="event-input-notes" type="text" placeholder="e.g. Bring water and shin guards. Focus on set pieces." 
+                           class="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-white text-xs focus:border-blue-500 placeholder-zinc-500" />
+                </div>
+            </div>
+
+            <div class="mt-5 flex justify-end space-x-2 pt-3 border-t border-zinc-800">
+                <button type="button" onclick="closeEventModal()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">Cancel</button>
+                <button type="button" onclick="saveScheduleEvent()" class="px-4 py-2 rounded-lg bg-[#003C71] hover:bg-blue-600 text-white text-xs font-bold shadow">
+                    💾 Save Fixture
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -910,6 +1031,44 @@
             4: 'videos/04-logan.mp4'
         };
 
+        // Schedule events data model
+        let scheduleEvents = [
+            {
+                id: 17294001,
+                type: 'game',
+                opponent: 'Calgary Blizzard SC',
+                date: 'Saturday, Oct 24, 2026',
+                time: '11:00 AM',
+                arrival: 'Arrive 45 mins prior (10:15 AM)',
+                location: 'Calgary West Soccer Centre - Field 1',
+                kit: 'Royal Blue Home Kit (Bring Alternate)',
+                notes: 'League Match. Proper warm-ups & hydration.'
+            },
+            {
+                id: 17294002,
+                type: 'practice',
+                opponent: '',
+                date: 'Tuesday, Oct 27, 2026',
+                time: '6:00 PM - 7:30 PM',
+                arrival: 'Arrive 10 mins prior',
+                location: 'Rockies Indoor Training Facility',
+                kit: 'Training Jersey',
+                notes: 'Passing drills, defensive shape & transition play.'
+            },
+            {
+                id: 17294003,
+                type: 'game',
+                opponent: 'Villains FC',
+                date: 'Sunday, Nov 1, 2026',
+                time: '1:30 PM',
+                arrival: 'Arrive 45 mins prior (12:45 PM)',
+                location: 'Subway Soccer South - Field 3',
+                kit: 'Royal Blue Jersey',
+                notes: 'Regular season league fixture.'
+            }
+        ];
+        let currentScheduleFilter = 'all';
+
         // Match state with precise anchor timer
         let matchState = {
             usScore: 0,
@@ -995,6 +1154,7 @@
             const themViewerBox = document.getElementById('box-them-viewer-action');
             const resetStatsBtn = document.getElementById('btn-reset-stats');
             const startNewMatchBtn = document.getElementById('btn-start-new-match');
+            const addEventBtn = document.getElementById('btn-add-event');
 
             if (isCoachMode) {
                 if (toggleIcon) toggleIcon.textContent = '🔓';
@@ -1008,6 +1168,7 @@
                 if (themViewerBox) themViewerBox.classList.add('hidden');
                 if (resetStatsBtn) resetStatsBtn.classList.remove('hidden');
                 if (startNewMatchBtn) startNewMatchBtn.classList.remove('hidden');
+                if (addEventBtn) addEventBtn.classList.remove('hidden');
             } else {
                 if (toggleIcon) toggleIcon.textContent = '🔒';
                 if (toggleLabel) toggleLabel.textContent = 'Spectator Mode';
@@ -1020,8 +1181,10 @@
                 if (themViewerBox) themViewerBox.classList.remove('hidden');
                 if (resetStatsBtn) resetStatsBtn.classList.add('hidden');
                 if (startNewMatchBtn) startNewMatchBtn.classList.add('hidden');
+                if (addEventBtn) addEventBtn.classList.add('hidden');
             }
 
+            renderSchedule();
             if (activeModalJersey) openPlayerCard(activeModalJersey);
         }
 
@@ -1889,6 +2052,22 @@
                     console.warn("Firestore stats read error:", err);
                 });
 
+                // Listen for Team Schedule & Fixtures
+                const scheduleDocRef = doc(db, 'schedule', 'team_fixtures');
+                onSnapshot(scheduleDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (Array.isArray(data.events)) {
+                            scheduleEvents = data.events;
+                            renderSchedule();
+                        }
+                    } else if (isCloudActive) {
+                        saveScheduleToCloud();
+                    }
+                }, (err) => {
+                    console.warn("Firestore schedule read error:", err);
+                });
+
             } catch (err) {
                 console.error("Firebase sync init failed:", err);
                 if (badgeDot && badgeText) {
@@ -1930,22 +2109,12 @@
             }
         }
 
-        let activeVideoUploadTarget = null; // 'player', 'goal-modal', 'defensive-modal', 'edit-event'
-        let activeVideoUploadContextId = null;
-        let uploadWatchdogTimer = null;
-
-        function triggerVideoUpload(targetType, contextId = null) {
-            if (!isCloudActive || !storage) {
-                openConfirmModal("Cloud Offline", "Firebase Cloud Storage is not connected. Check internet connection.", () => {});
-                return;
-            }
-            activeVideoUploadTarget = targetType;
-            activeVideoUploadContextId = contextId;
-
-            const fileInput = document.getElementById('video-upload-file-input');
-            if (fileInput) {
-                fileInput.value = '';
-                fileInput.click();
+        async function saveScheduleToCloud() {
+            if (!isCloudActive || !db) return;
+            try {
+                await setDoc(doc(db, 'schedule', 'team_fixtures'), { events: scheduleEvents });
+            } catch (err) {
+                console.warn("Error saving schedule to cloud:", err);
             }
         }
 
@@ -2511,12 +2680,14 @@
             const rosterView = document.getElementById('view-roster');
             const trackerView = document.getElementById('view-tracker');
             const leaderboardView = document.getElementById('view-leaderboard');
+            const scheduleView = document.getElementById('view-schedule');
             const tabRoster = document.getElementById('tab-roster');
             const tabTracker = document.getElementById('tab-tracker');
             const tabLeaderboard = document.getElementById('tab-leaderboard');
+            const tabSchedule = document.getElementById('tab-schedule');
 
-            [rosterView, trackerView, leaderboardView].forEach(v => v?.classList.add('hidden'));
-            [tabRoster, tabTracker, tabLeaderboard].forEach(t => {
+            [rosterView, trackerView, leaderboardView, scheduleView].forEach(v => v?.classList.add('hidden'));
+            [tabRoster, tabTracker, tabLeaderboard, tabSchedule].forEach(t => {
                 if (t) t.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-gray-200 hover:text-white';
             });
 
@@ -2530,239 +2701,308 @@
                 leaderboardView?.classList.remove('hidden');
                 if (tabLeaderboard) tabLeaderboard.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
                 renderLeaderboard();
+            } else if (tab === 'schedule') {
+                scheduleView?.classList.remove('hidden');
+                if (tabSchedule) tabSchedule.className = 'flex-1 sm:flex-none px-3.5 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-[#003C71] shadow';
+                renderSchedule();
             }
         }
 
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboard-content');
-            if (!container) return;
-
-            const enriched = rosterPlayers.map(p => {
-                const s = playerStats[p.jersey] || { goals: 0, assists: 0, defensivePlays: 0 };
-                return {
-                    jersey: p.jersey,
-                    name: p.name,
-                    position: p.position || 'Player',
-                    goals: s.goals || 0,
-                    assists: s.assists || 0,
-                    defensivePlays: s.defensivePlays || 0,
-                    points: (s.goals || 0) + (s.assists || 0)
-                };
-            });
-
-            const topScorers = [...enriched].sort((a, b) => b.goals - a.goals || a.jersey - b.jersey);
-            const topAssists = [...enriched].sort((a, b) => b.assists - a.assists || a.jersey - b.jersey);
-            const topDefenders = [...enriched].sort((a, b) => b.defensivePlays - a.defensivePlays || a.jersey - b.jersey);
-            const topPoints = [...enriched].sort((a, b) => b.points - a.points || b.goals - a.goals);
-
-            const motmRankings = rosterPlayers.map(p => ({
-                ...p,
-                awards: getPlayerMOTMCount(p.jersey)
-            })).sort((a, b) => b.awards - a.awards || a.jersey - b.jersey);
-
-            const cleanSheets = (matchState.history || []).filter(m => (m.themScore ?? 1) === 0).length;
-            const goalkeepers = rosterPlayers.filter(p => (p.position || '').toUpperCase().includes('GK'));
-            const defenders = rosterPlayers.filter(p => (p.position || '').toUpperCase().includes('DEFENSE'));
-
-            const highlightEvents = [];
-            (matchState.events || []).forEach(e => {
-                if (e.specialNote || e.videoUrl) {
-                    highlightEvents.push({ 
-                        title: e.text, 
-                        note: e.specialNote, 
-                        actionType: e.actionType || e.playType || 'Highlight',
-                        videoUrl: e.videoUrl 
-                    });
+        function setScheduleFilter(filter) {
+            currentScheduleFilter = filter;
+            ['all', 'game', 'practice'].forEach(f => {
+                const btn = document.getElementById(`sched-filter-${f}`);
+                if (btn) {
+                    if (f === filter) {
+                        btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-white text-[#003C71] shadow';
+                    } else {
+                        btn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-zinc-800 text-gray-300 hover:text-white';
+                    }
                 }
             });
-            (matchState.history || []).forEach(m => {
-                (m.events || []).forEach(e => {
-                    if (e.specialNote && e.scorerJersey) {
-                        const pl = rosterPlayers.find(p => p.jersey === e.scorerJersey);
-                        if (pl) highlightEvents.push({ player: pl.name, jersey: pl.jersey, note: e.specialNote, playType: e.playType });
-                    }
-                });
-            });
+            renderSchedule();
+        }
 
-            const renderPodiumRow = (player, index, statVal, statLabel, accentClass) => {
-                const medals = ['🥇', '🥈', '🥉'];
-                const badge = medals[index] || `#${index + 1}`;
-                return `
-                    <div onclick="openPlayerCard(${player.jersey})" 
-                         class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-800/60 hover:bg-zinc-800 transition cursor-pointer border border-zinc-700/60">
-                        <div class="flex items-center space-x-3 min-w-0">
-                            <span class="text-sm font-black w-6 text-center text-gray-300">${badge}</span>
-                            <div class="w-7 h-7 rounded-full bg-[#003C71] flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
-                                #${player.jersey}
-                            </div>
-                            <div class="min-w-0">
-                                <h4 class="text-xs font-bold text-white truncate">${player.name}</h4>
-                                <span class="text-[10px] text-gray-400 uppercase">${player.position}</span>
-                            </div>
-                        </div>
-                        <div class="text-right flex-shrink-0 pl-2">
-                            <span class="text-base font-black ${accentClass}">${statVal}</span>
-                            <span class="text-[10px] text-gray-400 block font-semibold">${statLabel}</span>
-                        </div>
+        function renderSchedule() {
+            const listEl = document.getElementById('schedule-list');
+            if (!listEl) return;
+
+            let filtered = scheduleEvents;
+            if (currentScheduleFilter !== 'all') {
+                filtered = scheduleEvents.filter(e => e.type === currentScheduleFilter);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center text-gray-400 space-y-2">
+                        <span class="text-3xl block">📆</span>
+                        <p class="text-xs font-semibold">No fixtures found for this filter.</p>
+                        ${isCoachMode ? `<button onclick="openAddEventModal()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold mt-2">➕ Add First Fixture</button>` : ''}
                     </div>
                 `;
-            };
+                return;
+            }
 
-            container.innerHTML = `
-                <!-- Golden Boot & Playmaker Side-by-Side -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Golden Boot -->
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
-                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+            listEl.innerHTML = filtered.map(ev => {
+                const isGame = ev.type === 'game';
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || 'Calgary')}`;
+
+                let badge = isGame 
+                    ? `<span class="inline-flex items-center space-x-1 bg-blue-950 border border-blue-500/50 text-blue-300 px-2 py-0.5 rounded-full text-[10px] font-bold"><span>⚽</span><span>MATCH / GAME</span></span>`
+                    : `<span class="inline-flex items-center space-x-1 bg-emerald-950 border border-emerald-500/50 text-emerald-300 px-2 py-0.5 rounded-full text-[10px] font-bold"><span>🏃</span><span>PRACTICE</span></span>`;
+
+                return `
+                <div class="bg-zinc-900 border ${isGame ? 'border-blue-600/40' : 'border-emerald-600/40'} rounded-2xl p-4 sm:p-5 shadow-xl transition hover:border-white/30 relative">
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-3 border-b border-zinc-800">
+                        <div class="space-y-1">
                             <div class="flex items-center space-x-2">
-                                <span class="text-xl">⚽</span>
-                                <div>
-                                    <h3 class="text-sm font-extrabold text-white">Golden Boot</h3>
-                                    <p class="text-[10px] text-blue-300 font-semibold uppercase tracking-wider">Top Goal Scorers</p>
+                                ${badge}
+                                <span class="text-xs font-bold text-gray-300">${ev.date}</span>
+                            </div>
+                            <h3 class="text-base sm:text-lg font-black text-white">
+                                ${isGame ? `Rockies Albion 14 <span class="text-blue-400 font-normal">vs</span> ${ev.opponent || 'Opponent'}` : `Team Practice`}
+                            </h3>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-1.5 self-start">
+                            ${isGame ? `
+                            <button onclick="startMatchFromSchedule(${ev.id})" 
+                                    class="px-3 py-1.5 rounded-xl font-extrabold text-xs bg-gradient-to-r from-[#003C71] to-blue-600 hover:from-blue-700 hover:to-blue-500 text-white shadow-lg shadow-blue-950/60 transition active:scale-95 flex items-center space-x-1.5"
+                                    title="Pre-fills opponent name in the Live Match Tracker">
+                                <span>⚡</span>
+                                <span>Start Match in Tracker</span>
+                            </button>
+                            ` : ''}
+
+                            ${isCoachMode ? `
+                            <button onclick="openEditEventModal(${ev.id})" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-gray-300 transition">
+                                ✏️ Edit
+                            </button>
+                            <button onclick="deleteScheduleEvent(${ev.id})" class="px-2.5 py-1.5 rounded-xl bg-rose-950/60 hover:bg-rose-900 border border-rose-800/60 text-xs font-semibold text-rose-300 transition">
+                                🗑️
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-3 text-xs">
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-1.5 text-gray-300">
+                                <span class="text-amber-400 font-bold">⏰ Time:</span>
+                                <span class="font-bold text-white">${ev.time}</span>
+                            </div>
+                            ${ev.arrival ? `
+                            <div class="flex items-center space-x-1.5 text-gray-400 text-[11px]">
+                                <span class="text-amber-300 font-semibold">📍 Arrival:</span>
+                                <span>${ev.arrival}</span>
+                            </div>` : ''}
+                        </div>
+
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-between text-gray-300">
+                                <div class="flex items-center space-x-1.5 truncate pr-1">
+                                    <span class="text-emerald-400 font-bold">📍 Pitch:</span>
+                                    <span class="font-semibold text-white truncate">${ev.location}</span>
                                 </div>
+                                <a href="${mapsUrl}" target="_blank" rel="noopener noreferrer" 
+                                   class="inline-flex items-center space-x-1 text-[11px] font-bold text-sky-400 hover:text-sky-300 flex-shrink-0 bg-sky-950/70 border border-sky-600/40 px-2 py-0.5 rounded-lg">
+                                    <span>Maps</span>
+                                    <span>↗</span>
+                                </a>
                             </div>
-                            <span class="text-[10px] bg-blue-950 border border-blue-600/40 text-blue-300 px-2 py-0.5 rounded-full font-bold">Goals</span>
-                        </div>
-                        <div class="space-y-2">
-                            ${topScorers.slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.goals, 'Goals', 'text-blue-400')).join('')}
+
+                            ${ev.kit ? `
+                            <div class="flex items-center space-x-1.5 text-gray-400 text-[11px]">
+                                <span class="text-blue-300 font-semibold">👕 Kit:</span>
+                                <span>${ev.kit}</span>
+                            </div>` : ''}
                         </div>
                     </div>
 
-                    <!-- Playmaker Award -->
-                    <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
-                        <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xl">👟</span>
-                                <div>
-                                    <h3 class="text-sm font-extrabold text-white">The Playmaker Award</h3>
-                                    <p class="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">Top Assist Providers</p>
-                                </div>
-                            </div>
-                            <span class="text-[10px] bg-emerald-950 border border-emerald-600/40 text-emerald-300 px-2 py-0.5 rounded-full font-bold">Assists</span>
-                        </div>
-                        <div class="space-y-2">
-                            ${topAssists.slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.assists, 'Assists', 'text-emerald-400')).join('')}
-                        </div>
-                    </div>
+                    ${ev.notes ? `
+                    <div class="mt-2.5 pt-2 border-t border-zinc-800/80 text-[11px] text-gray-400 flex items-start space-x-1.5">
+                        <span class="text-blue-400 font-bold">📋 Note:</span>
+                        <span>${ev.notes}</span>
+                    </div>` : ''}
                 </div>
+                `;
+            }).join('');
+        }
 
-                <!-- Combined MVP Points (Goals + Assists) -->
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
-                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xl">⭐</span>
-                            <div>
-                                <h3 class="text-sm font-extrabold text-white">Total Impact (G + A)</h3>
-                                <p class="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">Combined Points Leaders</p>
-                            </div>
-                        </div>
-                        <span class="text-[10px] bg-amber-950 border border-amber-600/40 text-amber-300 px-2 py-0.5 rounded-full font-bold">Pts</span>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        ${topPoints.slice(0, 6).map((p, i) => renderPodiumRow(p, i, p.points, 'Points', 'text-amber-400')).join('')}
-                    </div>
-                </div>
+        function startMatchFromSchedule(eventId) {
+            const ev = scheduleEvents.find(e => e.id === eventId);
+            if (!ev || ev.type !== 'game') return;
 
-                <!-- Man of the Match Honors -->
-                <div class="bg-gradient-to-r from-zinc-900 via-amber-950/30 to-zinc-900 border border-amber-500/40 rounded-2xl p-4 shadow-xl">
-                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xl">🎖️</span>
-                            <div>
-                                <h3 class="text-sm font-extrabold text-white">Man of the Match Honors</h3>
-                                <p class="text-[10px] text-amber-300 font-semibold uppercase tracking-wider">Locker Room Post-Game Awards</p>
-                            </div>
-                        </div>
-                        <span class="text-[10px] bg-amber-950 border border-amber-600/40 text-amber-300 px-2 py-0.5 rounded-full font-bold">Awards</span>
-                    </div>
-                    <div class="space-y-2">
-                        ${motmRankings.filter(p => p.awards > 0).length === 0 
-                            ? `<p class="text-xs text-gray-500 italic py-2 text-center">No Man of the Match awards handed out yet. Pick one in the locker room!</p>`
-                            : motmRankings.filter(p => p.awards > 0).slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.awards, 'Awards', 'text-amber-400')).join('')
-                        }
-                    </div>
-                </div>
+            if (!isCoachMode) {
+                openCoachAuthModal();
+                return;
+            }
 
-                <!-- Defensive Wall & Heroics (Clearances, Blocks & Clean Sheets) -->
-                <div class="bg-gradient-to-r from-zinc-900 via-emerald-950/30 to-zinc-900 border border-emerald-600/40 rounded-2xl p-4 shadow-xl">
-                    <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xl">🛡️</span>
-                            <div>
-                                <h3 class="text-sm font-extrabold text-white">Defensive Heroics & Clearances</h3>
-                                <p class="text-[10px] text-emerald-300 font-semibold uppercase tracking-wider">Goal-line Clearances, Blocks & Big Stops</p>
-                            </div>
-                        </div>
-                        <div class="inline-flex items-center space-x-1.5 bg-emerald-900/60 border border-emerald-500/50 px-2.5 py-1 rounded-full text-xs font-bold text-white">
-                            <span>🛡️ ${cleanSheets}</span>
-                            <span class="text-[10px] text-emerald-200 uppercase font-medium">Shutouts</span>
-                        </div>
-                    </div>
+            const targetOpponent = ev.opponent || 'Opponent';
 
-                    <div class="space-y-2 mb-4">
-                        ${topDefenders.filter(d => d.defensivePlays > 0).length === 0
-                            ? `<p class="text-xs text-gray-500 italic py-2 text-center">No defensive stops recorded yet. Log goal-line clearances or big blocks during the game!</p>`
-                            : topDefenders.filter(d => d.defensivePlays > 0).slice(0, 5).map((p, i) => renderPodiumRow(p, i, p.defensivePlays, 'Stops / Clearances', 'text-emerald-400')).join('')
-                        }
-                    </div>
+            // If a match is currently in progress, confirm before overwriting
+            if (matchState.events && matchState.events.length > 0 && !matchState.isFinished) {
+                openConfirmModal(
+                    `Start Match vs ${targetOpponent}?`,
+                    `A match is currently active with ${matchState.events.length} events logged. Do you want to reset the scoreboard and load ${targetOpponent} for kick-off?`,
+                    () => {
+                        executeLoadScheduledMatch(targetOpponent);
+                    }
+                );
+            } else {
+                executeLoadScheduledMatch(targetOpponent);
+            }
+        }
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs pt-3 border-t border-zinc-800">
-                        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
-                            <span class="text-[10px] font-bold text-emerald-300 uppercase block mb-1.5">🧤 Goalkeepers</span>
-                            <div class="space-y-1.5">
-                                ${goalkeepers.map(g => `
-                                    <div onclick="openPlayerCard(${g.jersey})" class="flex items-center justify-between p-1.5 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 cursor-pointer">
-                                        <span class="font-bold text-white">#${g.jersey} ${g.name}</span>
-                                        <span class="text-[10px] font-semibold text-emerald-400">GK</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
+        function executeLoadScheduledMatch(targetOpponent) {
+            matchState.opponentName = targetOpponent;
+            matchState.usScore = 0;
+            matchState.themScore = 0;
+            matchState.period = '1st Half';
+            matchState.baseSeconds = 0;
+            matchState.timerStartedAt = null;
+            matchState.isRunning = false;
+            matchState.isFinished = false;
+            matchState.events = [];
+            matchState.motmJersey = null;
 
-                        <div class="bg-zinc-900/80 border border-zinc-800 rounded-xl p-3">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase block mb-1.5">🛡️ Backline Stalwarts</span>
-                            <div class="flex flex-wrap gap-1.5">
-                                ${defenders.map(d => `
-                                    <button onclick="openPlayerCard(${d.jersey})" class="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg text-[11px] font-semibold text-gray-200">
-                                        #${d.jersey} ${d.name.split(' ')[0]}
-                                    </button>
-                                `).join('')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            const oppInput = document.getElementById('opponent-input');
+            if (oppInput) oppInput.value = targetOpponent;
 
-                <!-- Highlight Reel -->
-                ${highlightEvents.length > 0 ? `
-                <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 shadow-xl">
-                    <div class="flex items-center space-x-2 pb-2 mb-3 border-b border-zinc-800">
-                        <span class="text-xl">✨</span>
-                        <div>
-                            <h3 class="text-sm font-extrabold text-white">Highlight Reel</h3>
-                            <p class="text-[10px] text-rose-300 font-semibold uppercase tracking-wider">Iconic Plays, Clearances & Video Clips</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        ${highlightEvents.slice(0, 6).map(h => `
-                            <div class="p-2.5 rounded-xl bg-zinc-800/60 border border-rose-900/40 flex items-center justify-between">
-                                <div class="min-w-0 pr-2">
-                                    <span class="text-xs font-bold text-white truncate block">${h.title}</span>
-                                    <span class="text-[10px] text-gray-400 block">${h.actionType}</span>
-                                </div>
-                                <div class="flex items-center space-x-1.5 flex-shrink-0">
-                                    ${h.note ? `<span class="text-[11px] font-bold text-rose-300 bg-rose-950/80 border border-rose-700/60 px-2 py-0.5 rounded-lg italic truncate max-w-[110px]">"${h.note}"</span>` : ''}
-                                    ${h.videoUrl ? `
-                                    <button onclick="openVideoClipModal('${h.videoUrl}', '${h.title.replace(/'/g, "\\'")}', '${h.actionType}')" 
-                                            class="px-2 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-bold text-[10px]">
-                                        ▶ Clip
-                                    </button>
-                                    ` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>` : ''}
-            `;
+            updateClockUI();
+            renderMatchTracker();
+            saveMatchToCloud();
+
+            // Switch to tracker tab
+            switchTab('tracker');
+        }
+
+        function handleEventTypeChange(val) {
+            const oppField = document.getElementById('event-field-opponent');
+            if (oppField) {
+                if (val === 'game') oppField.classList.remove('hidden');
+                else oppField.classList.add('hidden');
+            }
+        }
+
+        function openAddEventModal() {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            document.getElementById('event-modal-id').value = '';
+            document.getElementById('event-modal-title').textContent = 'Add Schedule Event';
+            document.getElementById('event-modal-icon').textContent = '⚽';
+            document.getElementById('event-input-type').value = 'game';
+            document.getElementById('event-input-opponent').value = '';
+            document.getElementById('event-input-date').value = '';
+            document.getElementById('event-input-time').value = '';
+            document.getElementById('event-input-location').value = '';
+            document.getElementById('event-input-arrival').value = '';
+            document.getElementById('event-input-kit').value = '';
+            document.getElementById('event-input-notes').value = '';
+
+            handleEventTypeChange('game');
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function openEditEventModal(eventId) {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const ev = scheduleEvents.find(e => e.id === eventId);
+            if (!ev) return;
+
+            document.getElementById('event-modal-id').value = ev.id;
+            document.getElementById('event-modal-title').textContent = 'Edit Schedule Fixture';
+            document.getElementById('event-modal-icon').textContent = ev.type === 'game' ? '⚽' : '🏃';
+            document.getElementById('event-input-type').value = ev.type;
+            document.getElementById('event-input-opponent').value = ev.opponent || '';
+            document.getElementById('event-input-date').value = ev.date || '';
+            document.getElementById('event-input-time').value = ev.time || '';
+            document.getElementById('event-input-location').value = ev.location || '';
+            document.getElementById('event-input-arrival').value = ev.arrival || '';
+            document.getElementById('event-input-kit').value = ev.kit || '';
+            document.getElementById('event-input-notes').value = ev.notes || '';
+
+            handleEventTypeChange(ev.type);
+            document.getElementById('event-modal').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+        }
+
+        function saveScheduleEvent() {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            const idVal = document.getElementById('event-modal-id').value;
+            const type = document.getElementById('event-input-type').value;
+            const opponent = document.getElementById('event-input-opponent').value.trim();
+            const date = document.getElementById('event-input-date').value.trim();
+            const time = document.getElementById('event-input-time').value.trim();
+            const location = document.getElementById('event-input-location').value.trim();
+            const arrival = document.getElementById('event-input-arrival').value.trim();
+            const kit = document.getElementById('event-input-kit').value.trim();
+            const notes = document.getElementById('event-input-notes').value.trim();
+
+            if (!date || !time) {
+                openConfirmModal("Missing Details", "Please enter at least a date and time for this fixture.", () => {});
+                return;
+            }
+
+            if (type === 'game' && !opponent) {
+                openConfirmModal("Opponent Required", "Please enter the opponent team name for the match.", () => {});
+                return;
+            }
+
+            if (idVal) {
+                // Editing existing event
+                const evId = parseInt(idVal, 10);
+                const ev = scheduleEvents.find(e => e.id === evId);
+                if (ev) {
+                    ev.type = type;
+                    ev.opponent = opponent;
+                    ev.date = date;
+                    ev.time = time;
+                    ev.location = location;
+                    ev.arrival = arrival;
+                    ev.kit = kit;
+                    ev.notes = notes;
+                }
+            } else {
+                // Adding new event
+                scheduleEvents.push({
+                    id: Date.now(),
+                    type,
+                    opponent,
+                    date,
+                    time,
+                    location,
+                    arrival,
+                    kit,
+                    notes
+                });
+            }
+
+            closeEventModal();
+            renderSchedule();
+            saveScheduleToCloud();
+        }
+
+        function deleteScheduleEvent(eventId) {
+            if (!isCoachMode) { openCoachAuthModal(); return; }
+
+            openConfirmModal(
+                "Delete Fixture?",
+                "Are you sure you want to remove this event from the team schedule?",
+                () => {
+                    const idx = scheduleEvents.findIndex(e => e.id === eventId);
+                    if (idx !== -1) {
+                        scheduleEvents.splice(idx, 1);
+                        renderSchedule();
+                        saveScheduleToCloud();
+                    }
+                }
+            );
         }
 
         // Window Exports for inline HTML onclick handlers
@@ -2774,6 +3014,14 @@
         window.saveEditedEvent = saveEditedEvent;
         window.openVideoClipModal = openVideoClipModal;
         window.closeVideoClipModal = closeVideoClipModal;
+
+        window.setScheduleFilter = setScheduleFilter;
+        window.startMatchFromSchedule = startMatchFromSchedule;
+        window.openAddEventModal = openAddEventModal;
+        window.closeEventModal = closeEventModal;
+        window.saveScheduleEvent = saveScheduleEvent;
+        window.deleteScheduleEvent = deleteScheduleEvent;
+        window.handleEventTypeChange = handleEventTypeChange;
 
         window.triggerVideoUpload = triggerVideoUpload;
         window.cancelVideoUpload = cancelVideoUpload;
@@ -2838,6 +3086,7 @@
             displayRoster();
             renderMatchTracker();
             renderMatchHistory();
+            renderSchedule();
             updateClockUI();
             updateCoachUI();
             initFirebaseSync();
