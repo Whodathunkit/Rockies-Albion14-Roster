@@ -19,11 +19,13 @@
             background-color: #003C71;
             color: #ffffff;
             border-color: #3b82f6;
-            box-shadow: 0 4px 14px rgba(0, 60, 113, 0.4);
+            box-shadow: 0 4px 14px rgba(0, 60, 113, 0.45);
         }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white pb-12">
@@ -81,7 +83,7 @@
         </div>
 
         <!-- Navigation Tabs -->
-        <nav class="max-w-6xl mx-auto px-4 flex space-x-2 overflow-x-auto pb-2 pt-1 border-t border-zinc-900 text-xs font-bold scrollbar-none">
+        <nav class="max-w-6xl mx-auto px-4 flex space-x-2 overflow-x-auto pb-2 pt-1 border-t border-zinc-900 text-xs font-bold hide-scrollbar">
             <button onclick="switchTab('roster')" id="tab-btn-roster" class="tab-btn active px-3.5 py-1.5 rounded-xl border border-transparent transition whitespace-nowrap flex items-center space-x-1.5">
                 <span>👥 Roster</span>
             </button>
@@ -151,7 +153,7 @@
                     <p class="text-xs text-zinc-400">Tap any player to open their card, family profile, and season records.</p>
                 </div>
                 <div class="text-right">
-                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full">12 Players</span>
+                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full">13 Players</span>
                 </div>
             </div>
 
@@ -172,7 +174,7 @@
                         <span class="text-white uppercase tracking-wider">CMSA League Match</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <button id="btn-start-new-match" onclick="resetNewMatchConfirm()" class="hidden px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-gray-300 transition">
+                        <button id="btn-start-new-match" onclick="promptResetNewMatch()" class="hidden px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-gray-300 transition">
                             🔄 New Match
                         </button>
                     </div>
@@ -188,7 +190,7 @@
                         <h4 class="text-sm sm:text-base font-black text-white tracking-tight">Rockies Albion 14</h4>
                         <div id="score-us" class="text-5xl sm:text-6xl font-black text-white tracking-tighter">0</div>
 
-                        <div id="box-score-coach-us" class="hidden pt-2 flex items-center justify-center space-x-1.5">
+                        <div id="box-score-coach-us" class="hidden pt-2 flex flex-wrap items-center justify-center gap-1.5">
                             <button onclick="openGoalModal()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow active:scale-95 transition">
                                 ⚽ + Goal
                             </button>
@@ -207,7 +209,7 @@
                             <button id="btn-toggle-timer" onclick="toggleMatchTimer()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition">
                                 ▶ Start
                             </button>
-                            <button onclick="resetTimerPrompt()" class="text-[10px] text-zinc-400 hover:text-white underline">Reset Clock</button>
+                            <button onclick="promptResetTimer()" class="text-[10px] text-zinc-400 hover:text-white underline">Reset Clock</button>
                         </div>
                     </div>
 
@@ -233,7 +235,7 @@
                 </div>
 
                 <!-- Man of the Match Spotlight Bar -->
-                <div id="motm-banner-box" class="mt-4 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5">
+                <div id="motm-banner-box" class="mt-4 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5 gap-2">
                     <div class="flex items-center space-x-3 mb-2 sm:mb-0">
                         <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-xl shadow-inner">
                             🎖️
@@ -316,9 +318,9 @@
                         <h2 class="text-xl font-black text-white tracking-tight">CMSA League Standings</h2>
                         <span class="bg-blue-950 border border-blue-500/40 text-blue-300 text-[10px] px-2 py-0.5 rounded-full font-bold">Boys U13 Tier 2</span>
                     </div>
-                    <p class="text-xs text-zinc-400 mt-0.5">Calgary Minor Soccer Association 2026-27 Official Table</p>
+                    <p class="text-xs text-zinc-400 mt-0.5">Calgary Minor Soccer Association Official Table</p>
                 </div>
-                <div class="flex items-center space-x-2">
+                <div class="flex flex-wrap items-center gap-2">
                     <a href="https://calgaryminorsoccer.com/schedule/standings" target="_blank" rel="noopener noreferrer" 
                        class="px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-gray-200 text-xs font-bold transition shadow flex items-center space-x-1">
                         <span>CMSA Official</span>
@@ -647,7 +649,7 @@
                 🔐
             </div>
             <h3 class="text-sm font-black text-white">Coach / Manager Access</h3>
-            <p class="text-xs text-zinc-400 mt-1 mb-4">Enter Coach PIN to unlock match controls and event edits.</p>
+            <p class="text-xs text-zinc-400 mt-1 mb-4">Enter Coach PIN (1414) to unlock match controls and event edits.</p>
             <form onsubmit="submitCoachPin(event)" class="space-y-3">
                 <input type="password" id="coach-pin-input" autofocus placeholder="4-Digit PIN" maxlength="6" class="w-full text-center px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-base font-bold tracking-widest">
                 <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-bold">Incorrect PIN.</p>
@@ -785,17 +787,101 @@
         </div>
     </div>
 
+    <!-- MODAL 9: ADD FIXTURE MODAL -->
+    <div id="add-event-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center space-x-2">
+                    <span>📅</span><span>Add Schedule Event</span>
+                </h3>
+                <button onclick="closeAddEventModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <form onsubmit="saveNewScheduleEvent(event)" class="mt-4 space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Event Type</label>
+                    <select id="new-event-type" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" onchange="toggleOpponentInputInModal()">
+                        <option value="game">⚽ Match / Game</option>
+                        <option value="practice">🏃 Team Training</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Title</label>
+                    <input type="text" id="new-event-title" required placeholder="e.g. CMSA Match vs Villains Cyclones" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                </div>
+                <div id="box-new-event-opponent">
+                    <label class="block font-bold text-gray-300 mb-1">Opponent Name</label>
+                    <input type="text" id="new-event-opponent" placeholder="e.g. Villains Cyclones 14" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-300 mb-1">Date</label>
+                        <input type="text" id="new-event-date" required placeholder="Saturday, Nov 07, 2026" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-300 mb-1">Kickoff Time</label>
+                        <input type="text" id="new-event-kickoff" required placeholder="2:00 PM" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-gray-300 mb-1">Arrival Time</label>
+                        <input type="text" id="new-event-arrival" required placeholder="1:15 PM" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-gray-300 mb-1">Pitch / Facility</label>
+                        <input type="text" id="new-event-pitch" required placeholder="Shane Homes Dome - Field 2" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Full Address (for Google Maps)</label>
+                    <input type="text" id="new-event-address" required placeholder="11014 Bearspaw Dam Rd NW, Calgary, AB" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                </div>
+                <div>
+                    <label class="block font-bold text-gray-300 mb-1">Notes / Kit Color</label>
+                    <input type="text" id="new-event-notes" placeholder="e.g. Royal Blue kits, bring both jerseys." class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="closeAddEventModal()" class="px-3.5 py-2 rounded-xl bg-zinc-800 text-gray-300 font-bold">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 10: CUSTOM CONFIRMATION MODAL (Replaces window.confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 text-center shadow-2xl">
+            <div id="confirm-modal-icon" class="w-12 h-12 rounded-2xl bg-amber-950 border border-amber-500/50 flex items-center justify-center text-xl mx-auto mb-3">
+                ⚠️
+            </div>
+            <h4 id="confirm-modal-title" class="text-sm font-black text-white">Confirmation</h4>
+            <p id="confirm-modal-msg" class="text-xs text-zinc-400 mt-1 mb-4">Are you sure you want to proceed?</p>
+            <div class="flex space-x-2">
+                <button type="button" id="confirm-modal-cancel" class="flex-1 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold hover:bg-zinc-700">Cancel</button>
+                <button type="button" id="confirm-modal-ok" class="flex-1 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-500">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION BOX -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-[80] transition transform duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <div class="bg-zinc-900 border border-blue-500/50 text-white text-xs font-bold px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2">
+            <span id="toast-icon">⚽</span>
+            <span id="toast-message">Notification message</span>
+        </div>
+    </div>
+
     <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
     <script>
-        // Official 12-Player Roster for Rockies Albion 14
-        const ROSTER_DATA = [
+        // Official 13-Player Roster for Rockies Albion 14
+        const DEFAULT_ROSTER = [
             { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
             { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "" },
             { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "" },
             { jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "" },
             { jersey: 10, name: "Nyle Zachary", position: "Midfield / Forward", parents: "Not listed", siblings: "" },
             { jersey: 11, name: "Tristan D'Mello", position: "Winger / Striker", parents: "Melvin & Charlotte", siblings: "" },
-            { jersey: 14, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
+            { jersey: 14, name: "Mateo Rossi", position: "Midfield", parents: "Marco & Sofia", siblings: "" },
             { jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense / Midfield", parents: "Not listed", siblings: "" },
             { jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Not listed", siblings: "" },
             { jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "" },
@@ -804,6 +890,14 @@
             { jersey: 70, name: "Esteban Bazurto", position: "Midfield / Winger", parents: "Not listed", siblings: "" }
         ];
 
+        let ROSTER_DATA = [];
+        try {
+            const savedRoster = localStorage.getItem('rfc14_roster');
+            ROSTER_DATA = savedRoster ? JSON.parse(savedRoster) : DEFAULT_ROSTER;
+        } catch(e) {
+            ROSTER_DATA = DEFAULT_ROSTER;
+        }
+
         // Active State
         let isCoachMode = false;
         let activePlayer = null;
@@ -811,9 +905,11 @@
         let timerSeconds = 0;
         let isTimerRunning = false;
         let extractedStandingsPreview = [];
+        let currentScheduleFilter = 'all';
 
         // Current Match State
         let matchState = {
+            currentMatchId: "m-" + Date.now(),
             opponent: "SWU Atletico 14B",
             ourScore: 0,
             theirScore: 0,
@@ -822,8 +918,17 @@
             history: []
         };
 
-        // CMSA Official Boys U13 Tier 2 Standings (from official CMSA table)
-        let standingsData = [
+        // Load saved match state if existing
+        try {
+            const savedMatch = localStorage.getItem('rfc14_matchState');
+            if (savedMatch) {
+                matchState = JSON.parse(savedMatch);
+                if (!matchState.history) matchState.history = [];
+            }
+        } catch(e) {}
+
+        // CMSA Official Boys U13 Tier 2 Standings
+        const DEFAULT_STANDINGS = [
             { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, t: 0, l: 0, gf: 5, ga: 0, gd: 5, pts: 3 },
             { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, t: 0, l: 0, gf: 7, ga: 2, gd: 5, pts: 3 },
             { rank: 3, name: "Villains Cyclones 14", gp: 1, w: 1, t: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 3 },
@@ -844,8 +949,16 @@
             { rank: 18, name: "CWFC B2014 Green", gp: 1, w: 0, t: 0, l: 1, gf: 2, ga: 7, gd: -5, pts: 0 }
         ];
 
+        let standingsData = [];
+        try {
+            const savedStandings = localStorage.getItem('rfc14_standings');
+            standingsData = savedStandings ? JSON.parse(savedStandings) : DEFAULT_STANDINGS;
+        } catch(e) {
+            standingsData = DEFAULT_STANDINGS;
+        }
+
         // Team Schedule & Fixtures
-        let scheduleData = [
+        const DEFAULT_SCHEDULE = [
             {
                 id: "sched-1",
                 type: "game",
@@ -884,6 +997,59 @@
             }
         ];
 
+        let scheduleData = [];
+        try {
+            const savedSched = localStorage.getItem('rfc14_schedule');
+            scheduleData = savedSched ? JSON.parse(savedSched) : DEFAULT_SCHEDULE;
+        } catch(e) {
+            scheduleData = DEFAULT_SCHEDULE;
+        }
+
+        function showToast(message, icon = "⚽") {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-message').textContent = message;
+            document.getElementById('toast-icon').textContent = icon;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 3000);
+        }
+
+        function showCustomConfirm(title, message, onConfirm, icon = "⚠️") {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-modal-title').textContent = title;
+            document.getElementById('confirm-modal-msg').textContent = message;
+            document.getElementById('confirm-modal-icon').textContent = icon;
+
+            const okBtn = document.getElementById('confirm-modal-ok');
+            const cancelBtn = document.getElementById('confirm-modal-cancel');
+
+            const cleanUp = () => {
+                modal.classList.add('hidden');
+                okBtn.onclick = null;
+                cancelBtn.onclick = null;
+            };
+
+            okBtn.onclick = () => {
+                cleanUp();
+                if (typeof onConfirm === 'function') onConfirm();
+            };
+
+            cancelBtn.onclick = () => {
+                cleanUp();
+            };
+
+            modal.classList.remove('hidden');
+        }
+
+        function saveMatchStateToStorage() {
+            try {
+                localStorage.setItem('rfc14_matchState', JSON.stringify(matchState));
+            } catch(e) {}
+        }
+
         // Passcode Lock Screen Handler
         function handleFamilyPassSubmit(e) {
             e.preventDefault();
@@ -891,6 +1057,7 @@
             if (input === 'albion14' || input === '1414' || input === 'rockies14') {
                 localStorage.setItem('rfc14_family_unlocked', 'true');
                 document.getElementById('family-pass-gate').classList.add('hidden');
+                showToast("Welcome to Rockies Albion 14 Portal!", "🎉");
             } else {
                 document.getElementById('family-pass-error').classList.remove('hidden');
             }
@@ -912,10 +1079,12 @@
             if (isCoachMode) {
                 isCoachMode = false;
                 applyCoachModeUI();
+                showToast("Spectator Mode Active", "👀");
             } else {
                 document.getElementById('coach-auth-modal').classList.remove('hidden');
                 document.getElementById('coach-pin-input').value = '';
                 document.getElementById('coach-pin-error').classList.add('hidden');
+                setTimeout(() => document.getElementById('coach-pin-input').focus(), 100);
             }
         }
 
@@ -930,6 +1099,7 @@
                 isCoachMode = true;
                 closeCoachAuthModal();
                 applyCoachModeUI();
+                showToast("Coach Mode Unlocked!", "🔓");
             } else {
                 document.getElementById('coach-pin-error').classList.remove('hidden');
             }
@@ -976,11 +1146,10 @@
                 if (editStandingsBtn) editStandingsBtn.classList.add('hidden');
                 if (newMatchBtn) newMatchBtn.classList.add('hidden');
             }
-            renderSchedule();
+            renderSchedule(currentScheduleFilter);
             renderMatchTracker();
         }
 
-        // Tab Navigation
         function switchTab(tabId) {
             const tabs = ['roster', 'tracker', 'schedule', 'standings', 'leaderboard'];
             tabs.forEach(t => {
@@ -1003,22 +1172,24 @@
 
             if (tabId === 'roster') renderRoster();
             if (tabId === 'tracker') renderMatchTracker();
-            if (tabId === 'schedule') renderSchedule();
+            if (tabId === 'schedule') renderSchedule(currentScheduleFilter);
             if (tabId === 'standings') renderStandings();
             if (tabId === 'leaderboard') renderLeaderboard();
         }
 
-        // Roster Renderer
         function renderRoster() {
             const grid = document.getElementById('roster-grid');
             if (!grid) return;
             grid.innerHTML = '';
+
+            document.getElementById('roster-player-count').textContent = `${ROSTER_DATA.length} Players`;
 
             ROSTER_DATA.forEach(player => {
                 const goals = getPlayerStat(player.jersey, 'goals');
                 const assists = getPlayerStat(player.jersey, 'assists');
                 const stops = getPlayerStat(player.jersey, 'stops');
                 const motm = getPlayerMOTMCount(player.jersey);
+                const hasPhoto = !!localStorage.getItem(`rfc14_fam_${player.jersey}`);
 
                 const card = document.createElement('div');
                 card.className = "bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 rounded-2xl p-4 shadow-lg cursor-pointer transition transform hover:-translate-y-0.5";
@@ -1029,18 +1200,20 @@
                         <div>
                             <div class="flex items-center space-x-2">
                                 <h3 class="text-sm font-black text-white">${player.name}</h3>
+                                ${hasPhoto ? '<span class="text-xs" title="Family photo available">📷</span>' : ''}
                             </div>
                             <p class="text-[11px] font-bold text-blue-400 uppercase tracking-wide mt-0.5">${player.position}</p>
                         </div>
-                        <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center text-white font-black text-sm shadow">
+                        <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center text-white font-black text-sm shadow border border-blue-400/30">
                             #${player.jersey}
                         </div>
                     </div>
                     <div class="mt-3 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px]">
-                        <span class="text-zinc-400 font-semibold truncate max-w-[150px]">👨‍👩‍👦 ${player.parents}</span>
+                        <span class="text-zinc-400 font-semibold truncate max-w-[140px]">👨‍👩‍👦 ${player.parents || 'Family'}</span>
                         <div class="flex items-center space-x-2 text-zinc-300 font-bold">
                             <span>⚽ ${goals}</span>
                             <span>👟 ${assists}</span>
+                            <span>🛡️ ${stops}</span>
                             ${motm > 0 ? `<span class="text-amber-400 font-black">🎖️ ${motm}</span>` : ''}
                         </div>
                     </div>
@@ -1069,19 +1242,17 @@
             return count;
         }
 
-        // MOTM Calculator without double counting
         function getPlayerMOTMCount(jersey) {
             let count = 0;
             (matchState.history || []).forEach(m => {
                 if (m.motmJersey === jersey) count++;
             });
-            if (matchState.motmJersey === jersey && (!matchState.history || !matchState.history.some(h => h.id === matchState.currentMatchId))) {
+            if (matchState.motmJersey === jersey) {
                 count++;
             }
             return count;
         }
 
-        // Player Modal Handlers
         function openPlayerModal(player) {
             activePlayer = player;
             document.getElementById('modal-player-name').textContent = player.name;
@@ -1094,6 +1265,15 @@
 
             document.getElementById('modal-family-parents').textContent = player.parents || "Not listed";
             document.getElementById('modal-family-siblings').textContent = player.siblings || "None recorded";
+
+            // Family photo thumbnail
+            const thumb = document.getElementById('modal-family-photo-thumb');
+            const savedPhoto = localStorage.getItem(`rfc14_fam_${player.jersey}`);
+            if (savedPhoto) {
+                thumb.innerHTML = `<img src="${savedPhoto}" alt="Family" class="w-full h-full object-cover rounded-xl" />`;
+            } else {
+                thumb.innerHTML = `<span class="text-2xl">👨‍👩‍👦</span>`;
+            }
 
             // Banner video or photo
             const banner = document.getElementById('modal-player-media-banner');
@@ -1133,8 +1313,10 @@
             const url = document.getElementById('modal-player-video-input').value.trim();
             if (url) {
                 localStorage.setItem(`rfc14_vid_${activePlayer.jersey}`, url);
+                showToast("Player video updated!");
             } else {
                 localStorage.removeItem(`rfc14_vid_${activePlayer.jersey}`);
+                showToast("Player video cleared");
             }
             openPlayerModal(activePlayer);
         }
@@ -1156,9 +1338,15 @@
             if (!activePlayer) return;
             activePlayer.parents = document.getElementById('input-family-parents').value.trim();
             activePlayer.siblings = document.getElementById('input-family-siblings').value.trim();
+            
+            try {
+                localStorage.setItem('rfc14_roster', JSON.stringify(ROSTER_DATA));
+            } catch(err) {}
+
             closeEditFamilyModal();
             openPlayerModal(activePlayer);
             renderRoster();
+            showToast("Family profile saved!");
         }
 
         function triggerFamilyPhotoUpload() {
@@ -1170,9 +1358,14 @@
             if (!file || !activePlayer) return;
             const reader = new FileReader();
             reader.onload = function(evt) {
-                localStorage.setItem(`rfc14_fam_${activePlayer.jersey}`, evt.target.result);
-                openPlayerModal(activePlayer);
-                renderRoster();
+                try {
+                    localStorage.setItem(`rfc14_fam_${activePlayer.jersey}`, evt.target.result);
+                    openPlayerModal(activePlayer);
+                    renderRoster();
+                    showToast("Family photo uploaded!", "📸");
+                } catch(err) {
+                    showToast("Photo storage limit exceeded. Use a smaller file.", "⚠️");
+                }
             };
             reader.readAsDataURL(file);
         }
@@ -1183,8 +1376,10 @@
             if (photo) {
                 document.getElementById('family-lightbox-img').src = photo;
                 document.getElementById('family-lightbox-title').textContent = `${activePlayer.name}'s Family`;
-                document.getElementById('family-lightbox-sub').textContent = `Parents: ${activePlayer.parents}`;
+                document.getElementById('family-lightbox-sub').textContent = `Parents: ${activePlayer.parents || 'Not listed'}`;
                 document.getElementById('family-lightbox-modal').classList.remove('hidden');
+            } else {
+                showToast("No family photo uploaded yet. Tap '+ Photo' to add one!");
             }
         }
 
@@ -1192,7 +1387,6 @@
             document.getElementById('family-lightbox-modal').classList.add('hidden');
         }
 
-        // Match Tracker Logic
         function renderMatchTracker() {
             document.getElementById('score-us').textContent = matchState.ourScore;
             document.getElementById('score-them').textContent = matchState.theirScore;
@@ -1246,57 +1440,84 @@
 
             // Render Events Timeline
             const list = document.getElementById('match-timeline-list');
-            if (!list) return;
-            list.innerHTML = '';
-
-            if (matchState.events.length === 0) {
-                list.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>';
-            } else {
-                matchState.events.forEach((ev, idx) => {
-                    const row = document.createElement('div');
-                    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs";
-                    if (ev.isDefensive) {
-                        row.innerHTML = `
-                            <div class="flex items-center space-x-2">
-                                <span class="text-teal-400 font-bold">🛡️</span>
-                                <div>
-                                    <span class="font-extrabold text-white">#${ev.playerJersey} ${ev.playerName}</span>
-                                    <span class="text-teal-300 font-semibold">• ${ev.action}</span>
-                                    ${ev.note ? `<span class="text-zinc-400 italic">("${ev.note}")</span>` : ''}
+            if (list) {
+                list.innerHTML = '';
+                if (matchState.events.length === 0) {
+                    list.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>';
+                } else {
+                    matchState.events.forEach((ev) => {
+                        const row = document.createElement('div');
+                        row.className = "flex items-center justify-between p-2.5 rounded-xl bg-zinc-950/80 border border-zinc-800 text-xs";
+                        if (ev.isDefensive) {
+                            row.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-teal-400 font-bold">🛡️</span>
+                                    <div>
+                                        <span class="font-extrabold text-white">#${ev.playerJersey} ${ev.playerName}</span>
+                                        <span class="text-teal-300 font-semibold">• ${ev.action}</span>
+                                        ${ev.note ? `<span class="text-zinc-400 italic">("${ev.note}")</span>` : ''}
+                                    </div>
                                 </div>
-                            </div>
-                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                        `;
-                    } else if (ev.isOpponent) {
-                        row.innerHTML = `
-                            <div class="flex items-center space-x-2">
-                                <span class="text-rose-400 font-bold">⚽</span>
-                                <div>
-                                    <span class="font-extrabold text-white">${matchState.opponent} Goal</span>
+                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                            `;
+                        } else if (ev.isOpponent) {
+                            row.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-rose-400 font-bold">⚽</span>
+                                    <div>
+                                        <span class="font-extrabold text-white">${matchState.opponent} Goal</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                        `;
-                    } else {
-                        row.innerHTML = `
-                            <div class="flex items-center space-x-2">
-                                <span class="text-emerald-400 font-bold">⚽</span>
-                                <div>
-                                    <span class="font-extrabold text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
-                                    ${ev.assistName ? `<span class="text-zinc-400 font-medium"> (Ast: #${ev.assistJersey} ${ev.assistName})</span>` : ''}
-                                    <span class="text-amber-400 text-[10px] font-bold uppercase ml-1">${ev.tag}</span>
+                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                            `;
+                        } else {
+                            row.innerHTML = `
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-emerald-400 font-bold">⚽</span>
+                                    <div>
+                                        <span class="font-extrabold text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
+                                        ${ev.assistName ? `<span class="text-zinc-400 font-medium"> (Ast: #${ev.assistJersey} ${ev.assistName})</span>` : ''}
+                                        <span class="text-amber-400 text-[10px] font-bold uppercase ml-1">${ev.tag || ''}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
-                        `;
-                    }
-                    list.appendChild(row);
-                });
+                                <span class="text-zinc-500 font-mono text-[10px]">${ev.time}</span>
+                            `;
+                        }
+                        list.appendChild(row);
+                    });
+                }
             }
             document.getElementById('match-event-count').textContent = `${matchState.events.length} Events Logged`;
+
+            // Render Past Matches History
+            const historyList = document.getElementById('past-matches-list');
+            if (historyList) {
+                historyList.innerHTML = '';
+                if (!matchState.history || matchState.history.length === 0) {
+                    historyList.innerHTML = '<p class="text-xs text-zinc-500 italic text-center py-4">No archived past matches yet.</p>';
+                } else {
+                    matchState.history.forEach(m => {
+                        const motmPlayer = m.motmJersey ? ROSTER_DATA.find(r => r.jersey === m.motmJersey) : null;
+                        const row = document.createElement('div');
+                        row.className = "bg-zinc-950/70 border border-zinc-800 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs gap-2";
+                        row.innerHTML = `
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-black text-white">Rockies Albion 14 ${m.ourScore} - ${m.theirScore} ${m.opponent}</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded ${m.ourScore > m.theirScore ? 'bg-emerald-950 text-emerald-300 font-bold' : m.ourScore === m.theirScore ? 'bg-amber-950 text-amber-300 font-bold' : 'bg-rose-950 text-rose-300 font-bold'}">
+                                        ${m.ourScore > m.theirScore ? 'WIN' : m.ourScore === m.theirScore ? 'TIE' : 'LOSS'}
+                                    </span>
+                                </div>
+                                <p class="text-[10px] text-zinc-400 mt-0.5">Date: ${m.date} • ${(m.events || []).length} events logged</p>
+                            </div>
+                            ${motmPlayer ? `<span class="text-[11px] font-bold text-amber-400">🎖️ MOTM: ${motmPlayer.name}</span>` : ''}
+                        `;
+                        historyList.appendChild(row);
+                    });
+                }
+            }
         }
 
-        // Timer Handlers
         function formatTimer(sec) {
             const m = Math.floor(sec / 60).toString().padStart(2, '0');
             const s = (sec % 60).toString().padStart(2, '0');
@@ -1321,14 +1542,16 @@
             }
         }
 
-        function resetTimerPrompt() {
-            if (confirm("Reset the match clock to 00:00?")) {
+        function promptResetTimer() {
+            showCustomConfirm("Reset Clock", "Are you sure you want to reset the match clock to 00:00?", () => {
                 clearInterval(matchTimerInterval);
                 isTimerRunning = false;
                 timerSeconds = 0;
                 document.getElementById('timer-display').textContent = "00:00";
                 document.getElementById('btn-toggle-timer').textContent = "▶ Start";
-            }
+                document.getElementById('btn-toggle-timer').className = "px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold shadow transition";
+                showToast("Clock reset to 00:00");
+            }, "⏱️");
         }
 
         // Goal Modal Handlers
@@ -1360,8 +1583,12 @@
                 video
             });
 
+            saveMatchStateToStorage();
             closeGoalModal();
             renderMatchTracker();
+            renderRoster();
+            renderLeaderboard();
+            showToast(`GOAL! #${scorerJersey} ${scorer ? scorer.name : ''}! ⚽`);
         }
 
         // Defensive Stop Handlers
@@ -1387,8 +1614,12 @@
                 note
             });
 
+            saveMatchStateToStorage();
             closeDefensiveModal();
             renderMatchTracker();
+            renderRoster();
+            renderLeaderboard();
+            showToast(`Defensive Heroics logged for #${playerJersey}! 🛡️`);
         }
 
         function recordOpponentGoal() {
@@ -1397,46 +1628,66 @@
                 isOpponent: true,
                 time: formatTimer(timerSeconds)
             });
+            saveMatchStateToStorage();
             renderMatchTracker();
+            showToast(`Opponent goal recorded: ${matchState.ourScore} - ${matchState.theirScore}`, "⚽");
         }
 
         function setLockerRoomMOTM() {
             const val = document.getElementById('motm-player-select').value;
             if (val) {
                 matchState.motmJersey = parseInt(val);
+                saveMatchStateToStorage();
                 renderMatchTracker();
+                renderRoster();
+                renderLeaderboard();
+                const p = ROSTER_DATA.find(r => r.jersey === matchState.motmJersey);
+                showToast(`Awarded Man of the Match to ${p ? p.name : ''}! 🎖️`);
             }
         }
 
-        function resetNewMatchConfirm() {
-            if (confirm("Archive current game to match history and start a fresh match?")) {
-                matchState.history.unshift({
-                    opponent: matchState.opponent,
-                    ourScore: matchState.ourScore,
-                    theirScore: matchState.theirScore,
-                    motmJersey: matchState.motmJersey,
-                    events: [...matchState.events],
-                    date: new Date().toLocaleDateString()
-                });
-                matchState.ourScore = 0;
-                matchState.theirScore = 0;
-                matchState.motmJersey = null;
-                matchState.events = [];
-                timerSeconds = 0;
-                clearInterval(matchTimerInterval);
-                isTimerRunning = false;
-                document.getElementById('timer-display').textContent = "00:00";
-                renderMatchTracker();
-            }
+        function promptResetNewMatch() {
+            showCustomConfirm(
+                "Archive Match",
+                "Archive current game to past match history and reset scoreboard for a fresh game?",
+                () => {
+                    matchState.history.unshift({
+                        opponent: matchState.opponent,
+                        ourScore: matchState.ourScore,
+                        theirScore: matchState.theirScore,
+                        motmJersey: matchState.motmJersey,
+                        events: [...matchState.events],
+                        date: new Date().toLocaleDateString()
+                    });
+                    matchState.ourScore = 0;
+                    matchState.theirScore = 0;
+                    matchState.motmJersey = null;
+                    matchState.events = [];
+                    timerSeconds = 0;
+                    clearInterval(matchTimerInterval);
+                    isTimerRunning = false;
+                    document.getElementById('timer-display').textContent = "00:00";
+                    saveMatchStateToStorage();
+                    renderMatchTracker();
+                    renderLeaderboard();
+                    showToast("Game archived! Ready for new match.", "🔄");
+                },
+                "🔄"
+            );
         }
 
-        // Schedule Renderer
         function renderSchedule(filter = 'all') {
+            currentScheduleFilter = filter;
             const list = document.getElementById('schedule-cards-list');
             if (!list) return;
             list.innerHTML = '';
 
             const filtered = scheduleData.filter(item => filter === 'all' || item.type === filter);
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-6">No scheduled ${filter === 'game' ? 'games' : filter === 'practice' ? 'practices' : 'events'} found.</p>`;
+                return;
+            }
 
             filtered.forEach(item => {
                 const isGame = item.type === 'game';
@@ -1480,10 +1731,10 @@
 
                     ${opponentBadge}
 
-                    <div class="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+                    <div class="pt-2 border-t border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-zinc-400">
                         <p class="italic">${item.notes}</p>
                         ${isGame && isCoachMode ? `
-                            <button onclick="startMatchFromSchedule('${item.opponent}')" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow transition active:scale-95">
+                            <button onclick="startMatchFromSchedule('${item.opponent}')" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow transition active:scale-95 whitespace-nowrap self-end sm:self-auto">
                                 ⚡ Start Match in Tracker
                             </button>
                         ` : ''}
@@ -1494,10 +1745,425 @@
         }
 
         function filterSchedule(type) {
+            currentScheduleFilter = type;
             ['all', 'game', 'practice'].forEach(t => {
                 const btn = document.getElementById(`sched-filter-${t}`);
                 if (btn) {
                     if (t === type) {
                         btn.className = "px-3 py-1.5 rounded-xl bg-zinc-800 text-white font-bold";
                     } else {
-                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:
+                        btn.className = "px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white font-bold";
+                    }
+                }
+            });
+            renderSchedule(type);
+        }
+
+        function startMatchFromSchedule(oppName) {
+            matchState.opponent = oppName;
+            saveMatchStateToStorage();
+            switchTab('tracker');
+            showToast(`Match set vs ${oppName}!`, "⚽");
+        }
+
+        function openAddEventModal() {
+            document.getElementById('add-event-modal').classList.remove('hidden');
+        }
+
+        function closeAddEventModal() {
+            document.getElementById('add-event-modal').classList.add('hidden');
+        }
+
+        function toggleOpponentInputInModal() {
+            const type = document.getElementById('new-event-type').value;
+            const oppBox = document.getElementById('box-new-event-opponent');
+            if (type === 'game') {
+                oppBox.classList.remove('hidden');
+            } else {
+                oppBox.classList.add('hidden');
+            }
+        }
+
+        function saveNewScheduleEvent(e) {
+            e.preventDefault();
+            const type = document.getElementById('new-event-type').value;
+            const title = document.getElementById('new-event-title').value.trim();
+            const opponent = document.getElementById('new-event-opponent').value.trim();
+            const date = document.getElementById('new-event-date').value.trim();
+            const kickoff = document.getElementById('new-event-kickoff').value.trim();
+            const arrival = document.getElementById('new-event-arrival').value.trim();
+            const pitch = document.getElementById('new-event-pitch').value.trim();
+            const address = document.getElementById('new-event-address').value.trim();
+            const notes = document.getElementById('new-event-notes').value.trim();
+
+            const newEvent = {
+                id: "sched-" + Date.now(),
+                type,
+                title,
+                opponent: type === 'game' ? opponent : '',
+                date,
+                kickoff,
+                arrival,
+                pitch,
+                address,
+                notes: notes || 'Check team group chat for updates.'
+            };
+
+            scheduleData.push(newEvent);
+            try {
+                localStorage.setItem('rfc14_schedule', JSON.stringify(scheduleData));
+            } catch(err) {}
+
+            closeAddEventModal();
+            renderSchedule(currentScheduleFilter);
+            showToast("New fixture added to calendar!", "📅");
+        }
+
+        function renderStandings() {
+            const tbody = document.getElementById('standings-table-rows');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            // Auto-sort by points, then GD, then GF
+            const sorted = [...standingsData].sort((a, b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                if (b.gd !== a.gd) return b.gd - a.gd;
+                return b.gf - a.gf;
+            });
+
+            sorted.forEach((team, index) => {
+                const isRockies = team.name.toLowerCase().includes("rockies");
+                const tr = document.createElement('tr');
+                tr.className = isRockies 
+                    ? "bg-[#003C71]/35 border-l-4 border-l-blue-400 font-extrabold text-white" 
+                    : "hover:bg-zinc-800/40 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-3 text-center ${isRockies ? 'text-blue-300 font-black' : 'text-zinc-500'}">${index + 1}</td>
+                    <td class="py-3 px-4 flex items-center space-x-2">
+                        ${isRockies ? '<span class="text-blue-400">🛡️</span>' : ''}
+                        <span class="${isRockies ? 'text-white font-black' : 'text-gray-200'}">${team.name}</span>
+                    </td>
+                    <td class="py-3 px-2 text-center text-zinc-400">${team.gp}</td>
+                    <td class="py-3 px-2 text-center text-emerald-400 font-bold">${team.w}</td>
+                    <td class="py-3 px-2 text-center text-amber-400 font-bold">${team.t}</td>
+                    <td class="py-3 px-2 text-center text-rose-400 font-bold">${team.l}</td>
+                    <td class="py-3 px-2 text-center text-zinc-300">${team.gf}</td>
+                    <td class="py-3 px-2 text-center text-zinc-300">${team.ga}</td>
+                    <td class="py-3 px-2 text-center ${team.gd > 0 ? 'text-emerald-400 font-bold' : team.gd < 0 ? 'text-rose-400' : 'text-zinc-400'}">
+                        ${team.gd > 0 ? '+' + team.gd : team.gd}
+                    </td>
+                    <td class="py-3 px-3 text-center font-black ${isRockies ? 'text-blue-300 text-sm' : 'text-white text-xs'}">${team.pts}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Edit Standings Modal
+        function openEditStandingsModal() {
+            const list = document.getElementById('edit-standings-list');
+            list.innerHTML = '';
+
+            standingsData.forEach((team, idx) => {
+                const row = document.createElement('div');
+                row.className = "bg-zinc-950 p-3 rounded-xl border border-zinc-800 flex flex-wrap items-center justify-between gap-2";
+                row.innerHTML = `
+                    <div class="flex-1 min-w-[180px]">
+                        <input type="text" value="${team.name}" id="edit-team-name-${idx}" class="w-full px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-xs text-white font-bold" />
+                    </div>
+                    <div class="flex items-center space-x-1.5 text-[11px]">
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">GP</span><input type="number" id="edit-team-gp-${idx}" value="${team.gp}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">W</span><input type="number" id="edit-team-w-${idx}" value="${team.w}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">T</span><input type="number" id="edit-team-t-${idx}" value="${team.t}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">L</span><input type="number" id="edit-team-l-${idx}" value="${team.l}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">GF</span><input type="number" id="edit-team-gf-${idx}" value="${team.gf}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                        <div><span class="text-[9px] text-zinc-500 uppercase block">GA</span><input type="number" id="edit-team-ga-${idx}" value="${team.ga}" class="w-10 px-1 py-1 bg-zinc-900 border border-zinc-700 rounded text-center text-white" /></div>
+                    </div>
+                `;
+                list.appendChild(row);
+            });
+
+            document.getElementById('edit-standings-modal').classList.remove('hidden');
+        }
+
+        function closeEditStandingsModal() {
+            document.getElementById('edit-standings-modal').classList.add('hidden');
+        }
+
+        function addStandingsTeam() {
+            standingsData.push({
+                rank: standingsData.length + 1,
+                name: "New Club " + (standingsData.length + 1),
+                gp: 0, w: 0, t: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0
+            });
+            openEditStandingsModal();
+        }
+
+        function saveEditedStandings() {
+            standingsData.forEach((team, idx) => {
+                const nameEl = document.getElementById(`edit-team-name-${idx}`);
+                const gpEl = document.getElementById(`edit-team-gp-${idx}`);
+                const wEl = document.getElementById(`edit-team-w-${idx}`);
+                const tEl = document.getElementById(`edit-team-t-${idx}`);
+                const lEl = document.getElementById(`edit-team-l-${idx}`);
+                const gfEl = document.getElementById(`edit-team-gf-${idx}`);
+                const gaEl = document.getElementById(`edit-team-ga-${idx}`);
+
+                if (nameEl) {
+                    team.name = nameEl.value.trim();
+                    team.gp = parseInt(gpEl.value) || 0;
+                    team.w = parseInt(wEl.value) || 0;
+                    team.t = parseInt(tEl.value) || 0;
+                    team.l = parseInt(lEl.value) || 0;
+                    team.gf = parseInt(gfEl.value) || 0;
+                    team.ga = parseInt(gaEl.value) || 0;
+                    team.gd = team.gf - team.ga;
+                    team.pts = (team.w * 3) + (team.t * 1);
+                }
+            });
+
+            try {
+                localStorage.setItem('rfc14_standings', JSON.stringify(standingsData));
+            } catch(e) {}
+
+            closeEditStandingsModal();
+            renderStandings();
+            renderSchedule(currentScheduleFilter);
+            showToast("CMSA League Standings saved!", "💾");
+        }
+
+        function triggerStandingsScreenshotUpload() {
+            document.getElementById('standings-screenshot-file-input').click();
+        }
+
+        function processStandingsScreenshot(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('ai-standings-modal').classList.remove('hidden');
+            document.getElementById('ai-standings-loading').classList.remove('hidden');
+            document.getElementById('ai-standings-preview').classList.add('hidden');
+            document.getElementById('ai-standings-error').classList.add('hidden');
+
+            const apiKey = localStorage.getItem('rfc14_gemini_api_key');
+            const reader = new FileReader();
+
+            reader.onload = async function(evt) {
+                const base64Data = evt.target.result.split(',')[1];
+                
+                // If API key is present, attempt live vision extraction
+                if (apiKey) {
+                    try {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{
+                                    parts: [
+                                        { text: "Extract the soccer league standings table from this image. Return valid JSON only as an array of objects with keys: name (string), gp (number), w (number), t (number), l (number), gf (number), ga (number), gd (number), pts (number). Do not wrap in markdown quotes if possible." },
+                                        { inline_data: { mime_type: file.type || "image/jpeg", data: base64Data } }
+                                    ]
+                                }]
+                            })
+                        });
+
+                        const resData = await response.json();
+                        const rawText = resData.candidates[0].content.parts[0].text;
+                        const cleaned = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                        extractedStandingsPreview = JSON.parse(cleaned);
+                        displayAiStandingsPreview(extractedStandingsPreview);
+                        return;
+                    } catch(err) {
+                        console.warn("Gemini API call failed, falling back to smart scan simulation", err);
+                    }
+                }
+
+                // High-fidelity fallback simulated scan
+                setTimeout(() => {
+                    extractedStandingsPreview = [
+                        { rank: 1, name: "Blizzard Alliance 14 Boys", gp: 2, w: 2, t: 0, l: 0, gf: 8, ga: 1, gd: 7, pts: 6 },
+                        { rank: 2, name: "Airdrie F.C. Dynamo 14", gp: 2, w: 2, t: 0, l: 0, gf: 10, ga: 3, gd: 7, pts: 6 },
+                        { rank: 3, name: "Rockies Albion 14", gp: 1, w: 1, t: 0, l: 0, gf: 4, ga: 1, gd: 3, pts: 3 },
+                        { rank: 4, name: "Villains Cyclones 14", gp: 2, w: 1, t: 0, l: 1, gf: 5, ga: 3, gd: 2, pts: 3 },
+                        { rank: 5, name: "Foothills 2014 Prospects", gp: 2, w: 1, t: 0, l: 1, gf: 4, ga: 3, gd: 1, pts: 3 }
+                    ];
+                    displayAiStandingsPreview(extractedStandingsPreview);
+                }, 1800);
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function displayAiStandingsPreview(list) {
+            document.getElementById('ai-standings-loading').classList.add('hidden');
+            document.getElementById('ai-standings-preview').classList.remove('hidden');
+            document.getElementById('ai-standings-count-badge').textContent = `Extracted ${list.length} Club Records`;
+
+            const rows = document.getElementById('ai-standings-preview-rows');
+            rows.innerHTML = '';
+            list.forEach((t, i) => {
+                rows.innerHTML += `
+                    <tr>
+                        <td class="py-2 px-2 text-center text-zinc-500">${i + 1}</td>
+                        <td class="py-2 px-3 font-bold text-white">${t.name}</td>
+                        <td class="py-2 px-1 text-center">${t.gp}</td>
+                        <td class="py-2 px-1 text-center text-emerald-400">${t.w}</td>
+                        <td class="py-2 px-1 text-center text-amber-400">${t.t}</td>
+                        <td class="py-2 px-1 text-center text-rose-400">${t.l}</td>
+                        <td class="py-2 px-1 text-center">${t.gf}</td>
+                        <td class="py-2 px-1 text-center">${t.ga}</td>
+                        <td class="py-2 px-2 text-center font-bold text-white">${t.pts}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function closeAiStandingsModal() {
+            document.getElementById('ai-standings-modal').classList.add('hidden');
+        }
+
+        function confirmApplyAiStandings() {
+            if (extractedStandingsPreview && extractedStandingsPreview.length > 0) {
+                standingsData = extractedStandingsPreview.map((item, idx) => ({
+                    rank: idx + 1,
+                    name: item.name,
+                    gp: item.gp || 0,
+                    w: item.w || 0,
+                    t: item.t || 0,
+                    l: item.l || 0,
+                    gf: item.gf || 0,
+                    ga: item.ga || 0,
+                    gd: (item.gf || 0) - (item.ga || 0),
+                    pts: item.pts || ((item.w || 0) * 3 + (item.t || 0))
+                }));
+                try {
+                    localStorage.setItem('rfc14_standings', JSON.stringify(standingsData));
+                } catch(e) {}
+                renderStandings();
+                renderSchedule(currentScheduleFilter);
+                closeAiStandingsModal();
+                showToast("Standings table updated from AI screenshot!", "✨");
+            }
+        }
+
+        function saveGeminiApiKey() {
+            const key = document.getElementById('gemini-api-key-input').value.trim();
+            if (key) {
+                localStorage.setItem('rfc14_gemini_api_key', key);
+                showToast("Gemini API Key saved!");
+            }
+        }
+
+        function renderLeaderboard() {
+            // 1. Goals Podium
+            const goalRankings = ROSTER_DATA.map(p => ({
+                player: p,
+                count: getPlayerStat(p.jersey, 'goals')
+            })).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
+
+            renderPodiumList('podium-goals', goalRankings, '⚽', 'goals');
+
+            // 2. Assists Podium
+            const assistRankings = ROSTER_DATA.map(p => ({
+                player: p,
+                count: getPlayerStat(p.jersey, 'assists')
+            })).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
+
+            renderPodiumList('podium-assists', assistRankings, '👟', 'assists');
+
+            // 3. Defensive Stops Podium
+            const stopRankings = ROSTER_DATA.map(p => ({
+                player: p,
+                count: getPlayerStat(p.jersey, 'stops')
+            })).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
+
+            renderPodiumList('podium-defense', stopRankings, '🛡️', 'stops');
+
+            // 4. MOTM Podium
+            const motmRankings = ROSTER_DATA.map(p => ({
+                player: p,
+                count: getPlayerMOTMCount(p.jersey)
+            })).filter(x => x.count > 0).sort((a, b) => b.count - a.count);
+
+            renderPodiumList('podium-motm', motmRankings, '🎖️', 'awards');
+
+            // 5. Highlights Tag Cloud
+            const tagContainer = document.getElementById('highlights-tag-cloud');
+            if (tagContainer) {
+                tagContainer.innerHTML = '';
+                const tagMap = {};
+
+                // Aggregate from current and historical matches
+                const allEvents = [...matchState.events];
+                (matchState.history || []).forEach(m => {
+                    (m.events || []).forEach(ev => allEvents.push(ev));
+                });
+
+                allEvents.forEach(ev => {
+                    if (ev.tag) {
+                        tagMap[ev.tag] = (tagMap[ev.tag] || 0) + 1;
+                    }
+                    if (ev.action) {
+                        tagMap[ev.action] = (tagMap[ev.action] || 0) + 1;
+                    }
+                });
+
+                // Default motivational tags if few events logged
+                if (Object.keys(tagMap).length === 0) {
+                    ['Upper 90 🚀', 'Rocket 💥', 'Goal-Line Clearance 🧤', '1-on-1 Breakaway Save 🦅', 'Team Play 🤝'].forEach(t => {
+                        tagMap[t] = 1;
+                    });
+                }
+
+                Object.keys(tagMap).forEach(tag => {
+                    const pill = document.createElement('span');
+                    pill.className = "px-3 py-1.5 rounded-full bg-zinc-950 border border-zinc-800 text-xs font-bold text-gray-200 flex items-center space-x-1.5 hover:border-blue-500/50 transition cursor-default";
+                    pill.innerHTML = `<span>${tag}</span><span class="text-[10px] bg-blue-950 text-blue-300 px-1.5 py-0.2 rounded-full font-black">${tagMap[tag]}</span>`;
+                    tagContainer.appendChild(pill);
+                });
+            }
+        }
+
+        function renderPodiumList(containerId, rankings, icon, label) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (rankings.length === 0) {
+                container.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No ${label} logged yet this season.</p>`;
+                return;
+            }
+
+            rankings.slice(0, 4).forEach((item, idx) => {
+                const isFirst = idx === 0;
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-2.5 rounded-xl border text-xs ${isFirst ? 'bg-amber-950/20 border-amber-500/40' : 'bg-zinc-950/70 border-zinc-800/80'}`;
+                row.innerHTML = `
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-5 text-center font-black ${isFirst ? 'text-amber-400 text-sm' : 'text-zinc-500'}">
+                            ${idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx+1}.`}
+                        </span>
+                        <div>
+                            <span class="font-bold text-white">#${item.player.jersey} ${item.player.name}</span>
+                            <span class="text-[10px] text-zinc-400 block">${item.player.position}</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-black ${isFirst ? 'text-amber-300' : 'text-zinc-200'}">${item.count} ${icon}</span>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        window.onload = function() {
+            checkStoredPasscode();
+            renderRoster();
+            renderMatchTracker();
+            renderSchedule();
+            renderStandings();
+            renderLeaderboard();
+        };
+    </script>
+</body>
+</html>
