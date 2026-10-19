@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Rockies Albion 14 | Team Portal & Match Center</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -74,13 +75,16 @@
                         <span>CMSA Boys U13 Tier 2</span>
                         <span>•</span>
                         <span id="connection-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="connection-status-text" class="text-zinc-400">Live Sync</span>
+                        <span id="connection-status-text" class="text-zinc-400">Firebase Live</span>
                     </p>
                 </div>
             </div>
 
             <!-- Mode Toggle (Spectator vs Coach Mode) -->
             <div class="flex items-center space-x-2">
+                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="hidden sm:inline-flex items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
+                    <span>☁️ Cloud</span>
+                </button>
                 <button id="btn-mode-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95">
                     <span id="mode-toggle-icon">🔒</span>
                     <span id="mode-toggle-label">Spectator Mode</span>
@@ -282,7 +286,6 @@
 
                     <!-- Stat Rows -->
                     <div class="space-y-2 text-xs">
-                        <!-- Shots on Target -->
                         <div>
                             <div class="flex justify-between font-bold text-[11px] mb-1">
                                 <span id="stat-sot-us" class="text-blue-400">0</span>
@@ -299,7 +302,6 @@
                             </div>
                         </div>
 
-                        <!-- Total Shots -->
                         <div>
                             <div class="flex justify-between font-bold text-[11px] mb-1">
                                 <span id="stat-shots-us" class="text-blue-400">0</span>
@@ -316,7 +318,6 @@
                             </div>
                         </div>
 
-                        <!-- Goalkeeper Saves -->
                         <div>
                             <div class="flex justify-between font-bold text-[11px] mb-1">
                                 <span id="stat-saves-us" class="text-blue-400">0</span>
@@ -333,7 +334,6 @@
                             </div>
                         </div>
 
-                        <!-- Corner Kicks -->
                         <div>
                             <div class="flex justify-between font-bold text-[11px] mb-1">
                                 <span id="stat-corners-us" class="text-blue-400">0</span>
@@ -416,6 +416,21 @@
                     <p class="text-xs text-zinc-400 mt-0.5">
                         Arrive <strong class="text-amber-400">30 mins early for matches</strong> and <strong class="text-blue-400">15 mins early for practice/PDP</strong>. Bring your <strong class="text-emerald-400">Size 5 ball</strong>.
                     </p>
+                    <!-- Kit Uniform Quick Reference Banner -->
+                    <div class="mt-2.5 text-xs bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-inner">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-base">👕</span>
+                            <span class="font-extrabold text-white text-[11px] uppercase tracking-wider">Uniform Guide:</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3 text-[11px]">
+                            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
+                                <strong class="text-zinc-200">PDP (Tues) & Perf (Wed):</strong> <span class="text-amber-300 font-bold">Black Training Kit</span>
+                            </span>
+                            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
+                                <strong class="text-zinc-200">Practice (Thurs):</strong> <span class="text-blue-300 font-bold">Grey/Blue Training Kit</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="flex items-center space-x-2">
                     <button id="btn-add-event" onclick="openAddEventModal()" class="hidden px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition shadow active:scale-95 flex items-center space-x-1.5">
@@ -494,7 +509,6 @@
 
             <!-- Leaderboard Podiums Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- 1. Golden Boot (Goals) -->
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
                         <div class="flex items-center space-x-2">
@@ -506,7 +520,6 @@
                     <div id="podium-goals" class="space-y-2"></div>
                 </div>
 
-                <!-- 2. Playmaker Award (Assists) -->
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
                         <div class="flex items-center space-x-2">
@@ -518,7 +531,6 @@
                     <div id="podium-assists" class="space-y-2"></div>
                 </div>
 
-                <!-- 3. Defensive Heroics & Clearances -->
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
                         <div class="flex items-center space-x-2">
@@ -530,7 +542,6 @@
                     <div id="podium-defense" class="space-y-2"></div>
                 </div>
 
-                <!-- 4. Man of the Match Honors -->
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
                         <div class="flex items-center space-x-2">
@@ -564,50 +575,83 @@
     </footer>
 
     <!-- ================= 3. MODALS & DIALOGS ================= -->
-
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
+    <input type="file" id="video-upload-file-input" accept="video/*" class="hidden" onchange="processVideoUploadFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
 
-    <!-- MODAL 1: RECORD GOAL -->
-    <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl my-auto">
+    <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
+    <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <h3 class="text-base font-extrabold text-white flex items-center space-x-2">
                     <span>⚽</span><span>Record Rockies Goal</span>
                 </h3>
-                <button onclick="closeGoalModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+                <button onclick="closeGoalModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
-            <form onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-4">
+            <form onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-3.5 text-xs">
+                <!-- 1. Scorer -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Scorer (Required)</label>
-                    <select id="goal-scorer-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-blue-500"></select>
+                    <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">1. Goal Scorer (Required)</label>
+                    <select id="goal-scorer-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs sm:text-sm focus:border-blue-500"></select>
                 </div>
+                <!-- 2. Assist -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Assist (Optional)</label>
-                    <select id="goal-assist-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-blue-500">
+                    <label class="block font-bold text-emerald-300 uppercase tracking-wider mb-1">2. Assist Pass (Optional)</label>
+                    <select id="goal-assist-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-medium text-xs sm:text-sm focus:border-emerald-500">
                         <option value="">None (Solo / Unassisted)</option>
                     </select>
                 </div>
+                <!-- 3. Play Phase / Origin -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Goal Tag / Technique</label>
-                    <select id="goal-tag-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-blue-500">
-                        <option value="Upper 90 🚀">Upper 90 🚀</option>
-                        <option value="Rocket 💥">Rocket 💥</option>
-                        <option value="Tap-in 🎯">Tap-in 🎯</option>
-                        <option value="Header ⚽">Header ⚽</option>
-                        <option value="Free Kick 🎯">Free Kick 🎯</option>
-                        <option value="Penalty ⚽">Penalty ⚽</option>
-                        <option value="Volley ⚡">Volley ⚡</option>
-                        <option value="Team Play 🤝">Team Play 🤝</option>
+                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Play Phase (How It Came About)</label>
+                    <select id="goal-phase-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-amber-500">
+                        <option value="Open Play ⚡">Open Play ⚡</option>
+                        <option value="Corner Kick 🚩">Corner Kick 🚩</option>
+                        <option value="Direct Free Kick 🎯">Direct Free Kick 🎯</option>
+                        <option value="Penalty Kick 🥅">Penalty Kick 🥅</option>
+                        <option value="Fast Counter Attack 💨">Fast Counter Attack 💨</option>
+                        <option value="Throw-in / Set Piece 📐">Throw-in / Set Piece 📐</option>
+                        <option value="Solo Dribble Run 🏃">Solo Dribble Run 🏃</option>
                     </select>
                 </div>
+                <!-- 4. Finish Technique -->
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Video Clip Path or URL (Optional)</label>
-                    <input type="text" id="goal-video-input" placeholder="e.g. videos/05-goal.mp4" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
+                    <label class="block font-bold text-purple-300 uppercase tracking-wider mb-1">4. How It Was Finished</label>
+                    <select id="goal-finish-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-purple-500">
+                        <option value="Right Foot 👟">Right Foot 👟</option>
+                        <option value="Left Foot 👟">Left Foot 👟</option>
+                        <option value="Header 🗣️">Header 🗣️</option>
+                        <option value="Volley / Half-Volley 💥">Volley / Half-Volley 💥</option>
+                        <option value="Tap-in / Rebound 🎯">Tap-in / Rebound 🎯</option>
+                        <option value="Chip / Lob 🎈">Chip / Lob 🎈</option>
+                        <option value="Deflection / Body 🔀">Deflection / Body 🔀</option>
+                    </select>
+                </div>
+                <!-- 5. Highlight Tag -->
+                <div>
+                    <label class="block font-bold text-rose-300 uppercase tracking-wider mb-1">5. Special Style / Highlight Tag</label>
+                    <input type="text" id="goal-tag-input" placeholder="e.g. Upper 90 🚀, Rocket 💥, Backheel ✨" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
+                    <div class="flex flex-wrap gap-1 mt-1.5">
+                        <button type="button" onclick="setGoalTag('Upper 90 🚀')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Upper 90 🚀</button>
+                        <button type="button" onclick="setGoalTag('Rocket 💥')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Rocket 💥</button>
+                        <button type="button" onclick="setGoalTag('Bicycle Kick 🚲')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Bicycle 🚲</button>
+                        <button type="button" onclick="setGoalTag('Backheel ✨')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Backheel ✨</button>
+                        <button type="button" onclick="setGoalTag('Team Play 🤝')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Team Play 🤝</button>
+                    </div>
+                </div>
+                <!-- 6. Video Clip (Phone Upload or Direct Link) -->
+                <div>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">6. Video Clip (From Device or Link)</label>
+                    <div class="space-y-1.5">
+                        <button type="button" onclick="triggerVideoUpload('goal-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
+                            <span>📱 Pick / Record Video from Phone</span>
+                        </button>
+                        <input type="text" id="goal-video-input" placeholder="Or paste video link / videos/05-goal.mp4" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                    </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
-                    <button type="button" onclick="closeGoalModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow">Save Goal</button>
+                    <button type="button" onclick="closeGoalModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold shadow-lg">Save Goal</button>
                 </div>
             </form>
         </div>
@@ -648,14 +692,14 @@
                 </h3>
                 <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
-            <form onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-4">
+            <form onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-4 text-xs">
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Defender or Goalkeeper</label>
-                    <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500"></select>
+                    <label class="block font-bold text-gray-300 uppercase mb-1">Defender or Goalkeeper</label>
+                    <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Action Type</label>
-                    <select id="defense-type-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500">
+                    <label class="block font-bold text-gray-300 uppercase mb-1">Action Type</label>
+                    <select id="defense-type-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold">
                         <option value="Goal-Line Clearance 🧤">Goal-Line Clearance 🧤</option>
                         <option value="Last-Man Shot Block 🛑">Last-Man Shot Block 🛑</option>
                         <option value="1-on-1 Breakaway Save 🦅">1-on-1 Breakaway Save 🦅</option>
@@ -664,14 +708,51 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-gray-300 uppercase mb-1">Notes (Optional)</label>
+                    <label class="block font-bold text-gray-300 uppercase mb-1">Notes (Optional)</label>
                     <input type="text" id="defense-note-input" placeholder="e.g. Big stop on the line!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
-                    <button type="button" onclick="closeDefensiveModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold shadow">Save Stop</button>
+                    <button type="button" onclick="closeDefensiveModal()" class="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-bold shadow">Save Stop</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL 1E: VIDEO UPLOAD PROGRESS MODAL -->
+    <div id="video-upload-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-[70] hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-sky-500/50 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
+            <div class="w-12 h-12 bg-sky-950 border border-sky-500/50 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-3 shadow-inner">
+                ☁️
+            </div>
+            <h3 class="text-sm font-extrabold text-white">Uploading Video to Cloud</h3>
+            <p id="video-upload-filename" class="text-[11px] text-gray-400 mt-1 truncate">Processing file...</p>
+            <div class="w-full bg-zinc-800 rounded-full h-3 mt-4 overflow-hidden border border-zinc-700">
+                <div id="video-upload-bar" class="bg-sky-500 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+            <div class="flex items-center justify-between text-[11px] font-bold text-gray-300 mt-2 px-1">
+                <span id="video-upload-status">Uploading...</span>
+                <span id="video-upload-percent" class="text-sky-400">0%</span>
+            </div>
+            <button id="video-upload-cancel-btn" onclick="cancelVideoUpload()" class="mt-4 px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-400 hover:text-white text-xs font-semibold">
+                Cancel Upload
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 1D: VIDEO CLIP LIGHTBOX PLAYER -->
+    <div id="video-clip-modal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-[65] hidden flex items-center justify-center p-3">
+        <div class="bg-zinc-950 border border-white/20 rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl relative my-auto">
+            <div class="flex items-center justify-between p-3.5 bg-zinc-900 border-b border-zinc-800">
+                <div>
+                    <h3 id="video-clip-title" class="text-xs sm:text-sm font-bold text-white truncate">Match Highlight Clip</h3>
+                    <p id="video-clip-subtitle" class="text-[10px] text-blue-300 font-semibold"></p>
+                </div>
+                <button onclick="closeVideoClipModal()" class="w-7 h-7 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white text-lg flex items-center justify-center font-bold">&times;</button>
+            </div>
+            <div id="video-clip-media-container" class="bg-black flex items-center justify-center min-h-[220px] max-h-[65vh]">
+                <!-- Video tag injected dynamically -->
+            </div>
         </div>
     </div>
 
@@ -747,12 +828,17 @@
                 </div>
             </div>
 
-            <!-- Coach Only Video Intro Input -->
-            <div id="modal-coach-video-ctrl" class="mt-4 pt-3 border-t border-zinc-800 hidden space-y-2">
-                <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video Path or URL</label>
+            <!-- Video Clip Upload and Link Controls -->
+            <div class="mt-4 pt-3 border-t border-zinc-800 space-y-2">
+                <div class="flex items-center justify-between">
+                    <label class="block text-[11px] font-bold text-zinc-400 uppercase">Intro Video / Highlight Clip</label>
+                    <button type="button" onclick="triggerVideoUpload('player-modal')" class="text-[11px] font-bold text-sky-400 hover:text-sky-300 underline">
+                        📱 Upload Video from Phone
+                    </button>
+                </div>
                 <div class="flex space-x-2">
                     <input type="text" id="modal-player-video-input" placeholder="e.g. videos/04-logan.mp4" class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-xs text-white" />
-                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white">Save</button>
+                    <button onclick="savePlayerVideoUrl()" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow">Save</button>
                 </div>
             </div>
         </div>
@@ -796,7 +882,7 @@
     <!-- MODAL 6: COACH AUTH MODAL (PIN: 1414) -->
     <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-6 text-center shadow-2xl">
-            <div class="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl mx-auto mb-3">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/50 flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
                 🔐
             </div>
             <h3 class="text-sm font-black text-white">Coach / Manager Access</h3>
@@ -806,7 +892,32 @@
                 <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-bold">Incorrect PIN.</p>
                 <div class="flex space-x-2 pt-1">
                     <button type="button" onclick="closeCoachAuthModal()" class="flex-1 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Cancel</button>
-                    <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold">Unlock</button>
+                    <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold shadow">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6B: FIREBASE CLOUD CONFIG MODAL -->
+    <div id="cloud-config-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-zinc-900 border border-sky-600/40 rounded-2xl max-w-sm w-full p-5 shadow-2xl my-auto text-xs">
+            <div class="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+                <div class="flex items-center space-x-2">
+                    <span class="text-base">☁️</span>
+                    <h3 class="text-sm font-black text-white">Firebase Project Settings</h3>
+                </div>
+                <button onclick="closeCloudConfigModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
+            </div>
+            <p class="text-zinc-400 mb-3">Project: <strong class="text-white">rockies-albion-14</strong> (Blaze Plan). Storage Bucket: <code class="text-sky-300">rockies-albion-14.firebasestorage.app</code></p>
+            <form onsubmit="saveFirebaseCloudConfig(event)" class="space-y-3">
+                <div>
+                    <label class="block font-bold text-zinc-300 mb-1">Web API Key (Optional)</label>
+                    <input type="password" id="input-firebase-api-key" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-mono" />
+                    <p class="text-[10px] text-zinc-500 mt-1">If blank, local caching and auto-sync remain active.</p>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="closeCloudConfigModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold shadow">Save Settings</button>
                 </div>
             </form>
         </div>
@@ -943,11 +1054,11 @@
             <form onsubmit="saveNewScheduleEvent(event)" class="mt-4 space-y-3 text-xs">
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Event Type</label>
-                    <select id="new-event-type" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold" onchange="toggleOpponentInput()">
+                    <select id="new-event-type" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold" onchange="handleNewEventTypeChange()">
                         <option value="game">⚽ CMSA League Match</option>
-                        <option value="practice">🏃 Team Practice</option>
-                        <option value="pdp">🎯 PDP Clinic</option>
-                        <option value="performance">⚡ Performance Training</option>
+                        <option value="practice">🏃 Team Practice (Thursdays)</option>
+                        <option value="pdp">🎯 PDP Clinic (Tuesdays)</option>
+                        <option value="performance">⚡ Performance Training (Wednesdays)</option>
                     </select>
                 </div>
                 <div>
@@ -975,7 +1086,7 @@
                     </div>
                     <div>
                         <label class="block font-bold text-gray-300 mb-1">Jersey / Kit</label>
-                        <input type="text" id="new-event-kit" placeholder="e.g. Royal Blue Kit (Home)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                        <input type="text" id="new-event-kit" placeholder="e.g. Black Training Kit or Grey/Blue Training Kit" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                     </div>
                 </div>
                 <div>
@@ -1007,7 +1118,87 @@
     </div>
 
     <!-- ================= 4. JAVASCRIPT APPLICATION LOGIC ================= -->
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'rockies-albion-14';
+        const defaultProjectId = "rockies-albion-14";
+        const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const savedApiKey = localStorage.getItem('rfc14_firebase_api_key') || "";
+        const firebaseConfig = envConfig || {
+            apiKey: savedApiKey || "AIzaSyDummyKey-ForFirebaseInit",
+            authDomain: `${defaultProjectId}.firebaseapp.com`,
+            projectId: defaultProjectId,
+            storageBucket: `${defaultProjectId}.firebasestorage.app`,
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:albion14"
+        };
+
+        let app, db, auth, storage;
+        let currentUser = null;
+        let currentUploadTask = null;
+        let activeVideoUploadTarget = 'goal-modal';
+
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            storage = getStorage(app);
+            initAuthAndSync();
+        } catch (e) {
+            console.warn("Firebase offline or local mode:", e);
+        }
+
+        async function initAuthAndSync() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    const dot = document.getElementById('connection-status-dot');
+                    const text = document.getElementById('connection-status-text');
+                    if (user) {
+                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+                        if (text) text.textContent = "Firebase Live";
+                        setupRealtimeSync();
+                    } else {
+                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
+                        if (text) text.textContent = "Local Sync";
+                    }
+                });
+            } catch (err) {
+                console.warn("Auth initialization fallback:", err);
+            }
+        }
+
+        function setupRealtimeSync() {
+            if (!db || !currentUser) return;
+            try {
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                onSnapshot(matchDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const remoteState = snap.data();
+                        if (remoteState && typeof remoteState === 'object') {
+                            matchState = { ...matchState, ...remoteState };
+                            renderMatchTracker();
+                            renderRoster();
+                            renderLeaderboard();
+                        }
+                    }
+                }, (error) => {
+                    console.debug("Firestore snapshot note:", error);
+                });
+            } catch (err) {
+                console.warn("Firestore listener init note:", err);
+            }
+        }
+
         // Official 12-Player Active Roster
         const players = [
             { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "videos/01-haaris.mp4" },
@@ -1046,40 +1237,39 @@
             { id: 18, name: "CWFC B2014 Green", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
         ];
 
-        // Authentic 38-Event Schedule from Albion Schedule.xlsx
-        // Games: Arrive 30 minutes prior. Practice/PDP/Perf: Arrive 15 minutes prior. Bring Size 5 ball.
+        // Authentic 38-Event Schedule directly from Albion Schedule.xlsx
         let scheduleEvents = [
             { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 4 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Practice Bibs & Flats" },
+            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
             { id: 4, type: "game", title: "CMSA Match @ CWFC B2014 Green", opponent: "CWFC B2014 Green", isHome: false, date: "Saturday, Oct 24, 2026", kickoff: "2:15 PM - 3:30 PM", arrival: "1:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 5, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 27, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 6, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Oct 28, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Rockies Athletic Gear" },
-            { id: 7, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 29, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Practice Bibs & Flats" },
-            { id: 8, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 3, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 9, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 4, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Athletic Kit" },
+            { id: 5, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 27, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 6, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Oct 28, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 7, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 29, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 8, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 3, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 9, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 4, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
             { id: 10, type: "game", title: "CMSA Match vs SWU Barca 14B", opponent: "SWU Barca 14B", isHome: true, date: "Saturday, Nov 7, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 11, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Nov 8, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Indoor Flats & Shin Guards" },
-            { id: 12, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 10, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
+            { id: 11, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Nov 8, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 12, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 10, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
             { id: 13, type: "game", title: "CMSA Match @ Blizzard United 14 Boys", opponent: "Blizzard United 14 Boys", isHome: false, date: "Saturday, Nov 14, 2026", kickoff: "8:15 PM - 9:30 PM", arrival: "7:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 14, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Nov 15, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Indoor Training Shoes" },
-            { id: 15, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 17, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 16, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 18, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Performance Kit" },
-            { id: 17, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Nov 19, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Training Bibs & Flats" },
+            { id: 14, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Nov 15, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 15, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 17, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 16, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 18, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 17, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Nov 19, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
             { id: 18, type: "game", title: "CMSA Match @ CCFC Calgary City FC Whitecaps 2014", opponent: "CCFC Calgary City FC Whitecaps 2014", isHome: false, date: "Saturday, Nov 21, 2026", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 19, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 24, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 20, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 25, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Performance Kit" },
+            { id: 19, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 24, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 20, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 25, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
             { id: 21, type: "game", title: "CMSA Match vs CalGlen Royals 14", opponent: "CalGlen Royals 14", isHome: true, date: "Saturday, Nov 28, 2026", kickoff: "5:00 PM - 6:15 PM", arrival: "4:30 PM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 22, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 1, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 23, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Dec 3, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Practice Bibs" },
-            { id: 24, type: "practice", title: "Special Team Practice (In Lieu of Game)", opponent: "", date: "Saturday, Dec 5, 2026", kickoff: "4:00 PM - 5:00 PM", arrival: "3:45 PM (15 min prior)", location: "Edge School (Field 1)", mapUrl: "https://maps.google.com/?q=Edge+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 25, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Dec 6, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Indoor Training Shoes" },
-            { id: 26, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 8, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 27, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 9, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Performance Kit" },
+            { id: 22, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 1, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 23, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Dec 3, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 24, type: "practice", title: "Special Team Practice (In Lieu of Game)", opponent: "", date: "Saturday, Dec 5, 2026", kickoff: "4:00 PM - 5:00 PM", arrival: "3:45 PM (15 min prior)", location: "Edge School (Field 1)", mapUrl: "https://maps.google.com/?q=Edge+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 25, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Dec 6, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 26, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 8, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 27, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 9, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
             { id: 28, type: "game", title: "CMSA Match @ MUSC Storm 14", opponent: "MUSC Storm 14", isHome: false, date: "Saturday, Dec 12, 2026", kickoff: "9:30 AM - 10:45 AM", arrival: "9:00 AM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 29, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Dec 13, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Indoor Flats & Shin Guards" },
-            { id: 30, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 15, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Training Kit & Size 5 Ball" },
-            { id: 31, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 16, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Performance Gear" },
+            { id: 29, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Dec 13, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 30, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 15, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 31, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 16, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
             { id: 32, type: "game", title: "CMSA Match vs Airdrie F.C. Dynamo 14", opponent: "Airdrie F.C. Dynamo 14", isHome: true, date: "Saturday, Dec 19, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 3 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
             { id: 33, type: "game", title: "CMSA Match vs Blizzard Alliance 14 Boys", opponent: "Blizzard Alliance 14 Boys", isHome: true, date: "Saturday, Jan 2, 2027", kickoff: "6:15 PM - 7:30 PM", arrival: "5:45 PM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
             { id: 34, type: "game", title: "CMSA Match @ Villains Cyclones 14", opponent: "Villains Cyclones 14", isHome: false, date: "Saturday, Jan 9, 2027", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
@@ -1089,7 +1279,6 @@
             { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" }
         ];
 
-        // Active Application State
         let isCoachMode = false;
         let activePlayerCard = null;
         let confirmActionCallback = null;
@@ -1097,7 +1286,6 @@
         let pendingAiParsedTeams = [];
         let timerInterval = null;
 
-        // Current Match State
         let matchState = {
             scoreUs: 0,
             scoreThem: 0,
@@ -1121,7 +1309,6 @@
             history: []
         };
 
-        // ================= STORAGE SYNCHRONIZATION =================
         function loadPersistentData() {
             try {
                 const savedMatch = localStorage.getItem('rfc14_match_state');
@@ -1129,7 +1316,6 @@
                     const parsed = JSON.parse(savedMatch);
                     if (parsed && typeof parsed === 'object') {
                         matchState = { ...matchState, ...parsed };
-                        // Clean legacy mock history if any
                         if (matchState.history && Array.isArray(matchState.history)) {
                             matchState.history = matchState.history.filter(m => !m.opponent.includes('Chestermere'));
                         }
@@ -1149,22 +1335,36 @@
                         scheduleEvents = parsedE;
                     }
                 }
+
+                // Automatic uniform migration check
+                scheduleEvents.forEach(ev => {
+                    if (ev.type === 'pdp' || ev.type === 'performance') {
+                        ev.jerseyKit = "Black Training Kit & Size 5 Ball";
+                    } else if (ev.type === 'practice') {
+                        ev.jerseyKit = "Grey/Blue Training Kit & Size 5 Ball";
+                    }
+                });
             } catch (err) {
                 console.warn("Storage sync notice:", err);
             }
         }
 
-        function savePersistentData() {
+        async function savePersistentData() {
             try {
                 localStorage.setItem('rfc14_match_state', JSON.stringify(matchState));
                 localStorage.setItem('rfc14_standings_table', JSON.stringify(leagueStandings));
                 localStorage.setItem('rfc14_custom_events', JSON.stringify(scheduleEvents));
+
+                // Cloud Firestore write when connected
+                if (db && currentUser) {
+                    const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                    await setDoc(matchDocRef, matchState, { merge: true });
+                }
             } catch (err) {
                 console.warn("Save storage error:", err);
             }
         }
 
-        // ================= PASSCODE GATE =================
         function checkAutoUnlock() {
             if (localStorage.getItem('rockies_family_auth') === 'unlocked_ok') {
                 const gate = document.getElementById('family-pass-gate');
@@ -1194,7 +1394,6 @@
             if (input) input.value = '';
         }
 
-        // ================= NAVIGATION =================
         function switchTab(tabName) {
             const tabs = ['roster', 'tracker', 'schedule', 'standings', 'leaderboard'];
             tabs.forEach(t => {
@@ -1215,7 +1414,6 @@
             if (tabName === 'leaderboard') renderLeaderboard();
         }
 
-        // ================= COACH AUTHENTICATION =================
         function toggleCoachMode() {
             if (isCoachMode) {
                 isCoachMode = false;
@@ -1253,6 +1451,30 @@
             }
         }
 
+        function openCloudConfigModal() {
+            const modal = document.getElementById('cloud-config-modal');
+            const input = document.getElementById('input-firebase-api-key');
+            if (input) input.value = localStorage.getItem('rfc14_firebase_api_key') || "";
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeCloudConfigModal() {
+            const modal = document.getElementById('cloud-config-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveFirebaseCloudConfig(e) {
+            e.preventDefault();
+            const key = document.getElementById('input-firebase-api-key')?.value.trim();
+            if (key) {
+                localStorage.setItem('rfc14_firebase_api_key', key);
+            } else {
+                localStorage.removeItem('rfc14_firebase_api_key');
+            }
+            closeCloudConfigModal();
+            location.reload();
+        }
+
         function updateCoachModeUI() {
             const toggleBtn = document.getElementById('btn-mode-toggle');
             const toggleIcon = document.getElementById('mode-toggle-icon');
@@ -1269,6 +1491,7 @@
             const startNewMatchBtn = document.getElementById('btn-start-new-match');
             const pkUs = document.getElementById('pk-controls-us');
             const pkThem = document.getElementById('pk-controls-them');
+            const cloudBtn = document.getElementById('btn-cloud-config');
 
             const ctrlSot = document.getElementById('coach-ctrl-sot');
             const ctrlShots = document.getElementById('coach-ctrl-shots');
@@ -1291,6 +1514,7 @@
                 if (startNewMatchBtn) startNewMatchBtn.classList.remove('hidden');
                 if (pkUs) pkUs.classList.remove('hidden');
                 if (pkThem) pkThem.classList.remove('hidden');
+                if (cloudBtn) cloudBtn.classList.remove('hidden');
 
                 if (ctrlSot) ctrlSot.classList.remove('hidden');
                 if (ctrlShots) ctrlShots.classList.remove('hidden');
@@ -1323,7 +1547,6 @@
             renderSchedule();
         }
 
-        // ================= STATS COMPUTATION =================
         function getPlayerGoals(jersey) {
             let count = 0;
             (matchState.history || []).forEach(m => {
@@ -1372,7 +1595,6 @@
             return count;
         }
 
-        // ================= ROSTER RENDERING =================
         function renderRoster() {
             const grid = document.getElementById('roster-grid');
             if (!grid) return;
@@ -1419,7 +1641,6 @@
             if (countEl) countEl.textContent = `${players.length} Players`;
         }
 
-        // ================= PLAYER MODAL =================
         function openPlayerModal(jersey) {
             const player = players.find(p => p.jersey === jersey);
             if (!player) return;
@@ -1438,7 +1659,6 @@
             document.getElementById('modal-family-parents').textContent = savedParents;
             document.getElementById('modal-family-siblings').textContent = savedSiblings;
 
-            // Media Banner with Video & Audio Unmute
             const banner = document.getElementById('modal-player-media-banner');
             const customVid = localStorage.getItem(`rfc14_vid_${player.jersey}`) || player.videoUrl;
             if (customVid) {
@@ -1454,7 +1674,6 @@
                 renderJerseyCrestBanner(banner, player.jersey, player.name, player.position);
             }
 
-            // Family Photo Thumbnail
             const familyThumb = document.getElementById('modal-family-photo-thumb');
             const photo = localStorage.getItem(`rfc14_fam_${player.jersey}`) || player.photo;
             if (photo) {
@@ -1463,14 +1682,8 @@
                 familyThumb.innerHTML = `<span class="text-2xl">👨‍👩‍👦</span>`;
             }
 
-            // Coach Controls
-            const coachCtrl = document.getElementById('modal-coach-video-ctrl');
-            if (isCoachMode && coachCtrl) {
-                coachCtrl.classList.remove('hidden');
-                document.getElementById('modal-player-video-input').value = customVid || '';
-            } else if (coachCtrl) {
-                coachCtrl.classList.add('hidden');
-            }
+            const videoInput = document.getElementById('modal-player-video-input');
+            if (videoInput) videoInput.value = customVid || '';
 
             document.getElementById('player-modal').classList.remove('hidden');
         }
@@ -1526,9 +1739,134 @@
             }
             openPlayerModal(activePlayerCard.jersey);
             renderRoster();
+            savePersistentData();
         }
 
-        // ================= FAMILY PHOTOS & DETAILS =================
+        function triggerVideoUpload(targetContext) {
+            activeVideoUploadTarget = targetContext;
+            const input = document.getElementById('video-upload-file-input');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }
+
+        function processVideoUploadFile(e) {
+            const file = e.target.files?.[0];
+            if (!file) return;
+
+            const modal = document.getElementById('video-upload-modal');
+            const filenameEl = document.getElementById('video-upload-filename');
+            const bar = document.getElementById('video-upload-bar');
+            const percentEl = document.getElementById('video-upload-percent');
+            const statusEl = document.getElementById('video-upload-status');
+
+            if (filenameEl) filenameEl.textContent = file.name;
+            if (bar) bar.style.width = '0%';
+            if (percentEl) percentEl.textContent = '0%';
+            if (statusEl) statusEl.textContent = 'Uploading to Firebase Storage...';
+            if (modal) modal.classList.remove('hidden');
+
+            // Attempt Firebase Storage Upload if Storage is active
+            if (storage && auth?.currentUser) {
+                try {
+                    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const uploadPath = `artifacts/${appId}/public/videos/${Date.now()}_${cleanName}`;
+                    const targetRef = storageRef(storage, uploadPath);
+                    currentUploadTask = uploadBytesResumable(targetRef, file);
+
+                    currentUploadTask.on('state_changed',
+                        (snapshot) => {
+                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            if (bar) bar.style.width = `${progress}%`;
+                            if (percentEl) percentEl.textContent = `${progress}%`;
+                        },
+                        (error) => {
+                            console.warn("Storage upload notice:", error);
+                            // Fallback to local Blob URL if cloud rules or permissions are restricted
+                            finishLocalVideoFallback(file);
+                        },
+                        async () => {
+                            const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
+                            completeVideoAttachment(downloadUrl);
+                        }
+                    );
+                    return;
+                } catch (err) {
+                    console.warn("Upload task init notice:", err);
+                }
+            }
+
+            // Fallback for offline or local preview
+            finishLocalVideoFallback(file);
+        }
+
+        function finishLocalVideoFallback(file) {
+            const bar = document.getElementById('video-upload-bar');
+            const percentEl = document.getElementById('video-upload-percent');
+            const statusEl = document.getElementById('video-upload-status');
+            if (statusEl) statusEl.textContent = 'Processing local video...';
+
+            let p = 0;
+            const fakeTimer = setInterval(() => {
+                p += 25;
+                if (bar) bar.style.width = `${p}%`;
+                if (percentEl) percentEl.textContent = `${p}%`;
+                if (p >= 100) {
+                    clearInterval(fakeTimer);
+                    const localUrl = URL.createObjectURL(file);
+                    completeVideoAttachment(localUrl);
+                }
+            }, 100);
+        }
+
+        function completeVideoAttachment(url) {
+            const modal = document.getElementById('video-upload-modal');
+            if (modal) modal.classList.add('hidden');
+
+            if (activeVideoUploadTarget === 'goal-modal') {
+                const goalInput = document.getElementById('goal-video-input');
+                if (goalInput) goalInput.value = url;
+            } else if (activeVideoUploadTarget === 'player-modal' && activePlayerCard) {
+                const playerInput = document.getElementById('modal-player-video-input');
+                if (playerInput) playerInput.value = url;
+                savePlayerVideoUrl();
+            }
+        }
+
+        function cancelVideoUpload() {
+            if (currentUploadTask) {
+                currentUploadTask.cancel();
+                currentUploadTask = null;
+            }
+            const modal = document.getElementById('video-upload-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openVideoClipModal(url, title, subtitle) {
+            if (!url) return;
+            const modal = document.getElementById('video-clip-modal');
+            const titleEl = document.getElementById('video-clip-title');
+            const subEl = document.getElementById('video-clip-subtitle');
+            const container = document.getElementById('video-clip-media-container');
+
+            if (titleEl) titleEl.textContent = title || "Match Highlight Clip";
+            if (subEl) subEl.textContent = subtitle || "";
+            if (container) {
+                container.innerHTML = `
+                    <video src="${url}" controls autoplay playsinline class="w-full h-auto max-h-[60vh] object-contain rounded-xl"></video>
+                `;
+            }
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeVideoClipModal() {
+            const modal = document.getElementById('video-clip-modal');
+            const container = document.getElementById('video-clip-media-container');
+            if (container) container.innerHTML = '';
+            if (modal) modal.classList.add('hidden');
+        }
+
         function triggerFamilyPhotoUpload() {
             document.getElementById('family-photo-file-input').click();
         }
@@ -1601,7 +1939,6 @@
             renderRoster();
         }
 
-        // ================= MATCH PERIODS & TIMERS =================
         function setMatchPeriod(period) {
             matchState.period = period;
             const badge = document.getElementById('match-period-badge');
@@ -1678,7 +2015,6 @@
             });
         }
 
-        // ================= MATCH STATS ADJUSTMENTS =================
         function adjustStat(key, amount) {
             if (!matchState.stats) matchState.stats = { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 };
             matchState.stats[key] = Math.max(0, (matchState.stats[key] || 0) + amount);
@@ -1717,7 +2053,6 @@
             }
         }
 
-        // ================= PENALTY SHOOTOUT (PK) =================
         function recordShootoutKick(team, scored) {
             if (!matchState.shootout) matchState.shootout = { active: true, usKicks: [], themKicks: [] };
             if (team === 'us') matchState.shootout.usKicks.push(scored);
@@ -1753,7 +2088,6 @@
             return html;
         }
 
-        // ================= GOALS & TIMELINE LOGIC =================
         function openGoalModal() {
             const selScorer = document.getElementById('goal-scorer-select');
             const selAssist = document.getElementById('goal-assist-select');
@@ -1770,12 +2104,19 @@
             document.getElementById('goal-modal').classList.add('hidden');
         }
 
+        function setGoalTag(tag) {
+            const input = document.getElementById('goal-tag-input');
+            if (input) input.value = tag;
+        }
+
         function confirmRockiesGoal(e) {
             e.preventDefault();
             const scorerJersey = parseInt(document.getElementById('goal-scorer-select').value);
             const assistVal = document.getElementById('goal-assist-select').value;
             const assistJersey = assistVal ? parseInt(assistVal) : null;
-            const tag = document.getElementById('goal-tag-select').value;
+            const phase = document.getElementById('goal-phase-select').value;
+            const finish = document.getElementById('goal-finish-select').value;
+            const customTag = document.getElementById('goal-tag-input').value.trim();
             const video = document.getElementById('goal-video-input').value.trim();
 
             const scorer = players.find(p => p.jersey === scorerJersey);
@@ -1793,7 +2134,9 @@
                 scorerName: scorer ? scorer.name : "Scorer",
                 assistJersey,
                 assistName: assist ? assist.name : null,
-                tag,
+                phase,
+                finish,
+                tag: customTag || finish,
                 video
             });
 
@@ -1875,7 +2218,6 @@
 
         function deleteMatchEvent(id) {
             matchState.events = matchState.events.filter(e => e.id !== id);
-            // Recalculate scores from events
             let us = 0, them = 0;
             matchState.events.forEach(ev => {
                 if (ev.type === 'goal') us++;
@@ -1939,7 +2281,6 @@
             document.getElementById('timer-display').textContent = formatTimer(matchState.timerSeconds);
             document.getElementById('match-period-badge').textContent = matchState.period || "1st Half";
 
-            // MOTM Display
             const motmBox = document.getElementById('motm-name-display');
             if (matchState.motmJersey) {
                 const p = players.find(r => r.jersey === matchState.motmJersey);
@@ -1948,13 +2289,11 @@
                 motmBox.textContent = "Man of the Match: Not Crowned Yet";
             }
 
-            // Populate MOTM select
             const motmSelect = document.getElementById('motm-player-select');
             if (motmSelect) {
                 motmSelect.innerHTML = '<option value="">Select MOTM...</option>' + players.map(p => `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
             }
 
-            // Timeline
             const timeline = document.getElementById('match-timeline-list');
             const eventCount = document.getElementById('match-event-count');
             if (eventCount) eventCount.textContent = `${matchState.events.length} Events Logged`;
@@ -1965,14 +2304,17 @@
                 } else {
                     timeline.innerHTML = matchState.events.map(ev => {
                         if (ev.type === 'goal') {
+                            const originText = ev.phase ? `${ev.phase} ➔ ` : '';
+                            const finishText = ev.finish || ev.tag || '';
                             return `
                             <div class="flex items-center justify-between p-3 rounded-2xl bg-blue-950/40 border border-blue-500/30">
                                 <div class="flex items-center space-x-3">
                                     <span class="text-lg">⚽</span>
                                     <div>
-                                        <div class="flex items-center space-x-2">
+                                        <div class="flex flex-wrap items-center gap-1.5">
                                             <span class="text-xs font-black text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
-                                            <span class="text-[10px] bg-blue-900 text-blue-200 px-1.5 py-0.2 rounded font-bold">${ev.tag}</span>
+                                            ${originText ? `<span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold">${originText}${finishText}</span>` : `<span class="text-[10px] bg-blue-900 text-blue-200 px-1.5 py-0.2 rounded font-bold">${ev.tag}</span>`}
+                                            ${ev.video ? `<button onclick="openVideoClipModal('${ev.video}', '#${ev.scorerJersey} ${ev.scorerName} Goal', '${ev.time}')" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
                                         </div>
                                         <p class="text-[10px] text-zinc-400 mt-0.5">
                                             ${ev.assistName ? `Assist: #${ev.assistJersey} ${ev.assistName}` : 'Unassisted (Solo)'}
@@ -2059,7 +2401,6 @@
             }).join('');
         }
 
-        // ================= SCHEDULE & OPPONENT LOOKUP =================
         function renderSchedule() {
             const list = document.getElementById('schedule-cards-list');
             if (!list) return;
@@ -2080,17 +2421,16 @@
                 let badgeClass = 'bg-blue-950 text-blue-300 border-blue-500/50';
 
                 if (isPDP) {
-                    badgeLabel = '🎯 PDP Clinic';
+                    badgeLabel = '🎯 PDP Clinic (Tuesday)';
                     badgeClass = 'bg-purple-950 text-purple-300 border-purple-500/50';
                 } else if (isPerf) {
-                    badgeLabel = '⚡ Performance';
+                    badgeLabel = '⚡ Performance (Wednesday)';
                     badgeClass = 'bg-amber-950 text-amber-300 border-amber-500/50';
                 } else if (!isGame) {
                     badgeLabel = '🏃 Team Practice';
                     badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-500/50';
                 }
 
-                // Opponent scouting lookup from authentic standings
                 let oppRecord = null;
                 if (isGame && ev.opponent) {
                     const normOpp = ev.opponent.toLowerCase();
@@ -2152,7 +2492,9 @@
                             <a href="${ev.mapUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 font-bold underline text-[11px]">Maps ↗</a>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-[11px] font-semibold text-zinc-400">👕 ${ev.jerseyKit}</span>
+                            <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-950/70 border border-zinc-800 px-2.5 py-0.5 rounded-lg">
+                                👕 ${ev.jerseyKit}
+                            </span>
                             ${isGame && isCoachMode ? `
                                 <button onclick="startMatchFromSchedule('${ev.opponent}')" class="px-3 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] shadow active:scale-95 transition">
                                     ⚡ Start in Tracker
@@ -2183,18 +2525,31 @@
 
         function openAddEventModal() {
             document.getElementById('add-event-modal').classList.remove('hidden');
+            handleNewEventTypeChange();
         }
 
         function closeAddEventModal() {
             document.getElementById('add-event-modal').classList.add('hidden');
         }
 
-        function toggleOpponentInput() {
+        function handleNewEventTypeChange() {
             const type = document.getElementById('new-event-type').value;
             const oppBox = document.getElementById('box-new-event-opponent');
-            if (oppBox) {
-                if (type === 'game') oppBox.classList.remove('hidden');
-                else oppBox.classList.add('hidden');
+            const kitInput = document.getElementById('new-event-kit');
+            const arrivalInput = document.getElementById('new-event-arrival');
+
+            if (type === 'game') {
+                if (oppBox) oppBox.classList.remove('hidden');
+                if (kitInput) kitInput.value = 'Royal Blue Kit (Home)';
+                if (arrivalInput) arrivalInput.value = '30 min prior';
+            } else if (type === 'pdp' || type === 'performance') {
+                if (oppBox) oppBox.classList.add('hidden');
+                if (kitInput) kitInput.value = 'Black Training Kit & Size 5 Ball';
+                if (arrivalInput) arrivalInput.value = '15 min prior';
+            } else {
+                if (oppBox) oppBox.classList.add('hidden');
+                if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
+                if (arrivalInput) arrivalInput.value = '15 min prior';
             }
         }
 
@@ -2206,7 +2561,7 @@
             const date = document.getElementById('new-event-date').value.trim();
             const kickoff = document.getElementById('new-event-kickoff').value.trim();
             const arrival = document.getElementById('new-event-arrival').value.trim();
-            const kit = document.getElementById('new-event-kit').value.trim() || 'Training Kit (Size 5 Ball)';
+            const kit = document.getElementById('new-event-kit').value.trim() || 'Black Training Kit & Size 5 Ball';
             const location = document.getElementById('new-event-location').value.trim();
             const mapUrl = document.getElementById('new-event-map').value.trim() || `https://maps.google.com/?q=${encodeURIComponent(location)}`;
 
@@ -2229,7 +2584,6 @@
             savePersistentData();
         }
 
-        // ================= STANDINGS & AI SCANNER =================
         function renderStandings() {
             const tbody = document.getElementById('standings-table-rows');
             if (!tbody) return;
@@ -2384,7 +2738,6 @@
 
                 const apiKey = "";
                 if (!apiKey) {
-                    // Fallback to the authentic 18 teams directly from the CMSA table screenshot
                     setTimeout(() => {
                         pendingAiParsedTeams = [
                             { id: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, l: 0, t: 0, gf: 5, ga: 0, isUs: false },
@@ -2422,7 +2775,7 @@ Extract every team in rank order with:
 - ga: Goals Against (convert '-' to 0)
 Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2501,7 +2854,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             savePersistentData();
         }
 
-        // ================= LEADERBOARD PODIUMS =================
         function renderLeaderboard() {
             const goalsPodium = document.getElementById('podium-goals');
             const assistsPodium = document.getElementById('podium-assists');
@@ -2592,9 +2944,17 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             // Tag Cloud
             if (tagsCloud) {
                 const tags = [];
-                (matchState.events || []).forEach(e => { if (e.tag) tags.push(e.tag); });
+                (matchState.events || []).forEach(e => {
+                    if (e.tag) tags.push(e.tag);
+                    if (e.phase) tags.push(e.phase);
+                    if (e.finish) tags.push(e.finish);
+                });
                 (matchState.history || []).forEach(m => {
-                    (m.events || []).forEach(e => { if (e.tag) tags.push(e.tag); });
+                    (m.events || []).forEach(e => {
+                        if (e.tag) tags.push(e.tag);
+                        if (e.phase) tags.push(e.phase);
+                        if (e.finish) tags.push(e.finish);
+                    });
                 });
                 if (tags.length === 0) {
                     tagsCloud.innerHTML = `<span class="text-xs text-zinc-500 italic">No technique tags logged yet.</span>`;
@@ -2608,7 +2968,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             }
         }
 
-        // ================= GENERAL CONFIRM MODAL (NO ALERT/CONFIRM) =================
         function openConfirmModal(title, msg, onConfirm) {
             const modal = document.getElementById('confirm-modal');
             const titleEl = document.getElementById('confirm-title');
@@ -2628,7 +2987,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             confirmActionCallback = null;
         }
 
-        // ================= GLOBAL BINDINGS =================
         window.handleFamilyPassSubmit = handleFamilyPassSubmit;
         window.relockSite = relockSite;
         window.switchTab = switchTab;
@@ -2636,11 +2994,19 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.openCoachAuthModal = openCoachAuthModal;
         window.closeCoachAuthModal = closeCoachAuthModal;
         window.submitCoachPin = submitCoachPin;
+        window.openCloudConfigModal = openCloudConfigModal;
+        window.closeCloudConfigModal = closeCloudConfigModal;
+        window.saveFirebaseCloudConfig = saveFirebaseCloudConfig;
         window.openPlayerModal = openPlayerModal;
         window.closePlayerModal = closePlayerModal;
         window.savePlayerVideoUrl = savePlayerVideoUrl;
         window.toggleVideoMute = toggleVideoMute;
         window.handleVideoLoadError = handleVideoLoadError;
+        window.triggerVideoUpload = triggerVideoUpload;
+        window.processVideoUploadFile = processVideoUploadFile;
+        window.cancelVideoUpload = cancelVideoUpload;
+        window.openVideoClipModal = openVideoClipModal;
+        window.closeVideoClipModal = closeVideoClipModal;
         window.triggerFamilyPhotoUpload = triggerFamilyPhotoUpload;
         window.processFamilyPhotoFile = processFamilyPhotoFile;
         window.openFamilyPhotoLightbox = openFamilyPhotoLightbox;
@@ -2655,6 +3021,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.recordShootoutKick = recordShootoutKick;
         window.openGoalModal = openGoalModal;
         window.closeGoalModal = closeGoalModal;
+        window.setGoalTag = setGoalTag;
         window.confirmRockiesGoal = confirmRockiesGoal;
         window.openOpponentGoalModal = openOpponentGoalModal;
         window.closeOpponentGoalModal = closeOpponentGoalModal;
@@ -2669,7 +3036,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.startMatchFromSchedule = startMatchFromSchedule;
         window.openAddEventModal = openAddEventModal;
         window.closeAddEventModal = closeAddEventModal;
-        window.toggleOpponentInput = toggleOpponentInput;
+        window.handleNewEventTypeChange = handleNewEventTypeChange;
         window.saveNewScheduleEvent = saveNewScheduleEvent;
         window.openEditStandingsModal = openEditStandingsModal;
         window.closeEditStandingsModal = closeEditStandingsModal;
@@ -2682,7 +3049,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.openConfirmModal = openConfirmModal;
         window.closeConfirmModal = closeConfirmModal;
 
-        // Boot
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistentData();
             checkAutoUnlock();
