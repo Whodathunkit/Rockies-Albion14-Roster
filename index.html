@@ -82,7 +82,7 @@
 
             <!-- Mode Toggle (Spectator vs Coach Mode) -->
             <div class="flex items-center space-x-2">
-                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="hidden sm:inline-flex items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
+                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="hidden items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
                     <span>☁️ Cloud</span>
                 </button>
                 <button id="btn-mode-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95">
@@ -1543,6 +1543,10 @@
         }
 
         function openCloudConfigModal() {
+            if (!isCoachMode) {
+                openCoachAuthModal();
+                return;
+            }
             const modal = document.getElementById('cloud-config-modal');
             const input = document.getElementById('input-firebase-api-key');
             if (input) input.value = localStorage.getItem('rfc14_firebase_api_key') || "";
@@ -1556,6 +1560,7 @@
 
         function saveFirebaseCloudConfig(e) {
             e.preventDefault();
+            if (!isCoachMode) return;
             const key = document.getElementById('input-firebase-api-key')?.value.trim();
             if (key) {
                 localStorage.setItem('rfc14_firebase_api_key', key);
@@ -1607,7 +1612,10 @@
                 if (endMatchTriggerBtn) endMatchTriggerBtn.classList.remove('hidden');
                 if (pkUs) pkUs.classList.remove('hidden');
                 if (pkThem) pkThem.classList.remove('hidden');
-                if (cloudBtn) cloudBtn.classList.remove('hidden');
+                if (cloudBtn) {
+                    cloudBtn.classList.remove('hidden');
+                    cloudBtn.classList.add('inline-flex');
+                }
 
                 if (ctrlSot) ctrlSot.classList.remove('hidden');
                 if (ctrlShots) ctrlShots.classList.remove('hidden');
@@ -1630,6 +1638,10 @@
                 if (endMatchTriggerBtn) endMatchTriggerBtn.classList.add('hidden');
                 if (pkUs) pkUs.classList.add('hidden');
                 if (pkThem) pkThem.classList.add('hidden');
+                if (cloudBtn) {
+                    cloudBtn.classList.add('hidden');
+                    cloudBtn.classList.remove('inline-flex');
+                }
 
                 if (ctrlSot) ctrlSot.classList.add('hidden');
                 if (ctrlShots) ctrlShots.classList.add('hidden');
