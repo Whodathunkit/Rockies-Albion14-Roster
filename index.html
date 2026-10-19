@@ -857,6 +857,16 @@
                     </div>
                 </div>
 
+                <div class="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-3.5 space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">✨ Recent Match Highlights</span>
+                        <span id="modal-highlights-count" class="text-[10px] font-bold text-blue-400">0 Plays</span>
+                    </div>
+                    <div id="modal-player-recent-highlights" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                        <!-- Dynamically populated via JS -->
+                    </div>
+                </div>
+
                 <div class="space-y-1.5 text-xs">
                     <label class="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Player Highlight Video</label>
                     <div class="flex space-x-1.5">
@@ -1679,6 +1689,100 @@
             return count;
         }
 
+        function getPlayerRecentHighlights(jersey) {
+            const items = [];
+
+            // 1. Active match MOTM & events
+            const activeOpp = matchState.opponentName || 'Opponent';
+            if (matchState.motmJersey === jersey) {
+                items.push({
+                    icon: '🎖️',
+                    label: 'Man of the Match',
+                    detail: `vs ${activeOpp}`,
+                    time: 'Live',
+                    badgeClass: 'bg-amber-950/70 text-amber-300 border-amber-500/30',
+                    video: ''
+                });
+            }
+            (matchState.events || []).forEach(ev => {
+                if (ev.type === 'goal' && ev.scorerJersey === jersey) {
+                    items.push({
+                        icon: '⚽',
+                        label: `Goal (${ev.tag || ev.finish || 'Goal'})`,
+                        detail: `${ev.phase ? ev.phase + ' • ' : ''}vs ${activeOpp}`,
+                        time: ev.time || '',
+                        badgeClass: 'bg-blue-950/70 text-blue-200 border-blue-500/30',
+                        video: ev.video || ''
+                    });
+                } else if (ev.type === 'goal' && ev.assistJersey === jersey) {
+                    items.push({
+                        icon: '👟',
+                        label: `Assist (#${ev.scorerJersey} ${ev.scorerName ? ev.scorerName.split(' ')[0] : ''})`,
+                        detail: `vs ${activeOpp}`,
+                        time: ev.time || '',
+                        badgeClass: 'bg-indigo-950/70 text-indigo-200 border-indigo-500/30',
+                        video: ev.video || ''
+                    });
+                } else if (ev.type === 'defense' && ev.playerJersey === jersey) {
+                    items.push({
+                        icon: '🛡️',
+                        label: ev.action || 'Defensive Play',
+                        detail: `${ev.note ? ev.note + ' • ' : ''}vs ${activeOpp}`,
+                        time: ev.time || '',
+                        badgeClass: 'bg-teal-950/70 text-teal-200 border-teal-500/30',
+                        video: ev.video || ''
+                    });
+                }
+            });
+
+            // 2. Archived past matches MOTM & events
+            (matchState.history || []).forEach(m => {
+                const opp = m.opponent || 'Opponent';
+                if (m.motmJersey === jersey) {
+                    items.push({
+                        icon: '🎖️',
+                        label: 'Man of the Match',
+                        detail: `vs ${opp}`,
+                        time: m.date || 'Final',
+                        badgeClass: 'bg-amber-950/70 text-amber-300 border-amber-500/30',
+                        video: ''
+                    });
+                }
+                (m.events || []).forEach(ev => {
+                    if (ev.type === 'goal' && ev.scorerJersey === jersey) {
+                        items.push({
+                            icon: '⚽',
+                            label: `Goal (${ev.tag || ev.finish || 'Goal'})`,
+                            detail: `${ev.phase ? ev.phase + ' • ' : ''}vs ${opp}`,
+                            time: ev.time || m.date || '',
+                            badgeClass: 'bg-blue-950/70 text-blue-200 border-blue-500/30',
+                            video: ev.video || ''
+                        });
+                    } else if (ev.type === 'goal' && ev.assistJersey === jersey) {
+                        items.push({
+                            icon: '👟',
+                            label: `Assist (#${ev.scorerJersey} ${ev.scorerName ? ev.scorerName.split(' ')[0] : ''})`,
+                            detail: `vs ${opp}`,
+                            time: ev.time || m.date || '',
+                            badgeClass: 'bg-indigo-950/70 text-indigo-200 border-indigo-500/30',
+                            video: ev.video || ''
+                        });
+                    } else if (ev.type === 'defense' && ev.playerJersey === jersey) {
+                        items.push({
+                            icon: '🛡️',
+                            label: ev.action || 'Defensive Play',
+                            detail: `${ev.note ? ev.note + ' • ' : ''}vs ${opp}`,
+                            time: ev.time || m.date || '',
+                            badgeClass: 'bg-teal-950/70 text-teal-200 border-teal-500/30',
+                            video: ev.video || ''
+                        });
+                    }
+                });
+            });
+
+            return items;
+        }
+
         function renderRoster() {
             const grid = document.getElementById('roster-grid');
             if (!grid) return;
@@ -1689,6 +1793,7 @@
                 const motms = getPlayerMOTMCount(p.jersey);
                 const customPhoto = localStorage.getItem(`rfc14_fam_${p.jersey}`) || p.photo;
                 const customVideo = localStorage.getItem(`rfc14_vid_${p.jersey}`) || p.videoUrl;
+                const recentHighlights = getPlayerRecentHighlights(p.jersey).slice(0, 2);
 
                 return `
                 <div onclick="openPlayerModal(${p.jersey})" class="bg-zinc-900 border border-zinc-800/90 hover:border-blue-500/50 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
@@ -1706,7 +1811,23 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold">
+                    ${recentHighlights.length > 0 ? `
+                    <div class="mt-3 pt-2.5 border-t border-zinc-800/60 space-y-1.5">
+                        <p class="text-[9px] font-black uppercase tracking-wider text-zinc-500">Recent Highlights</p>
+                        ${recentHighlights.map(h => `
+                            <div class="flex items-center justify-between px-2 py-1 rounded-lg border ${h.badgeClass} text-[10px]">
+                                <div class="flex items-center space-x-1.5 truncate pr-1">
+                                    <span>${h.icon}</span>
+                                    <span class="font-bold truncate">${h.label}</span>
+                                    <span class="text-[9px] opacity-75 truncate">• ${h.detail}</span>
+                                </div>
+                                ${h.time ? `<span class="text-[9px] font-mono text-amber-400/90 flex-shrink-0 ml-1">${h.time}</span>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+
+                    <div class="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between text-[11px] font-bold">
                         <div class="flex items-center space-x-2 text-zinc-300">
                             <span>⚽ ${goals}</span>
                             <span>👟 ${assists}</span>
@@ -1742,6 +1863,32 @@
             const savedSiblings = localStorage.getItem(`rfc14_siblings_${player.jersey}`) || player.siblings || 'None recorded';
             document.getElementById('modal-family-parents').textContent = savedParents;
             document.getElementById('modal-family-siblings').textContent = savedSiblings;
+
+            const allHighlights = getPlayerRecentHighlights(player.jersey);
+            const hlContainer = document.getElementById('modal-player-recent-highlights');
+            const hlCount = document.getElementById('modal-highlights-count');
+            if (hlCount) hlCount.textContent = `${allHighlights.length} ${allHighlights.length === 1 ? 'Highlight' : 'Highlights'}`;
+            if (hlContainer) {
+                if (allHighlights.length === 0) {
+                    hlContainer.innerHTML = `<p class="text-[11px] text-zinc-500 italic py-1">No match highlights recorded yet this season.</p>`;
+                } else {
+                    hlContainer.innerHTML = allHighlights.map(h => `
+                        <div class="flex items-center justify-between p-2 rounded-xl border ${h.badgeClass}">
+                            <div class="flex items-center space-x-2 min-w-0 pr-2">
+                                <span class="text-sm flex-shrink-0">${h.icon}</span>
+                                <div class="min-w-0">
+                                    <p class="text-[11px] font-extrabold text-white truncate">${h.label}</p>
+                                    <p class="text-[10px] opacity-80 truncate">${h.detail}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-1.5 flex-shrink-0">
+                                ${h.video ? `<button type="button" onclick="openVideoClipModal('${h.video}', '${player.name} - ${h.label}', '${h.time}')" class="px-1.5 py-0.5 rounded bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 text-[9px] font-bold">▶ Clip</button>` : ''}
+                                ${h.time ? `<span class="text-[10px] font-mono font-bold text-amber-400">${h.time}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
 
             const banner = document.getElementById('modal-player-media-banner');
             const customVid = localStorage.getItem(`rfc14_vid_${player.jersey}`) || player.videoUrl;
