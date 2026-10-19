@@ -147,13 +147,13 @@
             </div>
 
             <!-- Roster Header -->
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <h2 class="text-xl font-black text-white tracking-tight">Active Team Roster</h2>
                     <p class="text-xs text-zinc-400">Tap any player to open their card, family profile, and season records.</p>
                 </div>
-                <div class="text-right">
-                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full">13 Players</span>
+                <div class="flex-shrink-0">
+                    <span id="roster-player-count" class="text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-500/30 px-2.5 py-1 rounded-full whitespace-nowrap inline-block">13 Players</span>
                 </div>
             </div>
 
@@ -876,11 +876,12 @@
         // Official 13-Player Roster for Rockies Albion 14
         const DEFAULT_ROSTER = [
             { jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Riz & Rabea", siblings: "" },
-            { jersey: 3, name: "Nael Salazar Simon", position: "Goalkeeper", parents: "Paulina & Armando", siblings: "" },
+            { jersey: 3, name: "Nael Salazar Simon", position: "GK / Winger", parents: "Paulina & Armando", siblings: "" },
             { jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "" },
             { jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "" },
             { jersey: 10, name: "Nyle Zachary", position: "Midfield / Forward", parents: "Not listed", siblings: "" },
             { jersey: 11, name: "Tristan D'Mello", position: "Winger / Striker", parents: "Melvin & Charlotte", siblings: "" },
+            { jersey: 14, name: "Mateo Rossi", position: "Midfield", parents: "Marco & Sofia", siblings: "" },
             { jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense / Midfield", parents: "Not listed", siblings: "" },
             { jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Not listed", siblings: "" },
             { jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "" },
