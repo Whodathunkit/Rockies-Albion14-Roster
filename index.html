@@ -1352,6 +1352,7 @@
         let currentScheduleFilter = 'all';
         let pendingAiParsedTeams = [];
         let timerInterval = null;
+        let currentEditingEventId = null;
 
         // Current active match state
         let matchState = {
@@ -2275,11 +2276,15 @@
             if (selAssist) {
                 selAssist.innerHTML = '<option value="">None (Solo / Unassisted)</option>' + players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`).join('');
             }
+            if (!currentEditingEventId) {
+                resetGoalModalFields();
+            }
             document.getElementById('goal-modal').classList.remove('hidden');
         }
 
         function closeGoalModal() {
             document.getElementById('goal-modal').classList.add('hidden');
+            currentEditingEventId = null;
             resetGoalModalFields();
         }
 
@@ -2321,6 +2326,37 @@
 
             const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
             const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+
+            if (currentEditingEventId) {
+                const targetList = currentEditMatchId
+                    ? (matchState.history.find(m => m.id === currentEditMatchId)?.events || [])
+                    : matchState.events;
+                const existingEv = targetList.find(ev => ev.id === currentEditingEventId);
+                if (existingEv) {
+                    existingEv.scorerJersey = scorerJersey;
+                    existingEv.scorerName = scorer ? scorer.name : "Scorer";
+                    existingEv.assistJersey = assistJersey;
+                    existingEv.assistName = assist ? assist.name : null;
+                    existingEv.phase = phase;
+                    existingEv.finish = finish;
+                    existingEv.tag = customTag || finish;
+                    existingEv.video = video;
+                    if (manualTime) existingEv.time = manualTime;
+                }
+                currentEditingEventId = null;
+                if (currentEditMatchId) {
+                    renderEditMatchEvents();
+                } else {
+                    renderMatchTracker();
+                }
+                resetGoalModalFields();
+                document.getElementById('goal-modal').classList.add('hidden');
+                renderRoster();
+                renderLeaderboard();
+                savePersistentData();
+                return;
+            }
+
             const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
 
             const newEvent = {
@@ -2362,12 +2398,18 @@
 
         function openOpponentGoalModal() {
             const inputName = document.getElementById('opponent-goal-name-input');
-            if (inputName) inputName.value = matchState.opponentName || 'Opponent';
+            if (!currentEditingEventId && inputName) {
+                const activeMatchOpp = currentEditMatchId
+                    ? (matchState.history.find(m => m.id === currentEditMatchId)?.opponent || matchState.opponentName)
+                    : matchState.opponentName;
+                inputName.value = activeMatchOpp || 'Opponent';
+            }
             document.getElementById('opponent-goal-modal').classList.remove('hidden');
         }
 
         function closeOpponentGoalModal() {
             document.getElementById('opponent-goal-modal').classList.add('hidden');
+            currentEditingEventId = null;
             const noteInput = document.getElementById('opponent-goal-note-input');
             if (noteInput) noteInput.value = '';
             const timeInput = document.getElementById('opponent-goal-time-input');
@@ -2382,6 +2424,28 @@
 
             const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
             const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+
+            if (currentEditingEventId) {
+                const targetList = currentEditMatchId
+                    ? (matchState.history.find(m => m.id === currentEditMatchId)?.events || [])
+                    : matchState.events;
+                const existingEv = targetList.find(ev => ev.id === currentEditingEventId);
+                if (existingEv) {
+                    existingEv.oppName = oppName;
+                    existingEv.note = note;
+                    if (manualTime) existingEv.time = manualTime;
+                }
+                currentEditingEventId = null;
+                if (currentEditMatchId) {
+                    renderEditMatchEvents();
+                } else {
+                    renderMatchTracker();
+                }
+                closeOpponentGoalModal();
+                savePersistentData();
+                return;
+            }
+
             const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
 
             const newEvent = {
@@ -2417,11 +2481,15 @@
             if (selDef) {
                 selDef.innerHTML = players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})</option>`).join('');
             }
+            if (!currentEditingEventId) {
+                resetDefensiveModalFields();
+            }
             document.getElementById('defensive-modal').classList.remove('hidden');
         }
 
         function closeDefensiveModal() {
             document.getElementById('defensive-modal').classList.add('hidden');
+            currentEditingEventId = null;
             resetDefensiveModalFields();
         }
 
@@ -2449,6 +2517,34 @@
 
             const m = Math.floor(matchState.timerSeconds / 60).toString().padStart(2, '0');
             const s = (matchState.timerSeconds % 60).toString().padStart(2, '0');
+
+            if (currentEditingEventId) {
+                const targetList = currentEditMatchId
+                    ? (matchState.history.find(m => m.id === currentEditMatchId)?.events || [])
+                    : matchState.events;
+                const existingEv = targetList.find(ev => ev.id === currentEditingEventId);
+                if (existingEv) {
+                    existingEv.playerJersey = playerJersey;
+                    existingEv.playerName = p ? p.name : "Defender";
+                    existingEv.action = action;
+                    existingEv.note = note;
+                    existingEv.video = video;
+                    if (manualTime) existingEv.time = manualTime;
+                }
+                currentEditingEventId = null;
+                if (currentEditMatchId) {
+                    renderEditMatchEvents();
+                } else {
+                    renderMatchTracker();
+                }
+                resetDefensiveModalFields();
+                document.getElementById('defensive-modal').classList.add('hidden');
+                renderRoster();
+                renderLeaderboard();
+                savePersistentData();
+                return;
+            }
+
             const timeString = manualTime || (currentEditMatchId ? "Added Post-Match" : `${m}:${s}`);
 
             const newEvent = {
@@ -2577,7 +2673,8 @@
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="openEditSpecificEvent(${ev.id}, false)" class="text-zinc-400 hover:text-blue-400 text-xs px-1" title="Edit Event">✏️</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
                                 </div>
                             </div>
                             `;
@@ -2593,7 +2690,8 @@
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="openEditSpecificEvent(${ev.id}, false)" class="text-zinc-400 hover:text-blue-400 text-xs px-1" title="Edit Event">✏️</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
                                 </div>
                             </div>
                             `;
@@ -2613,7 +2711,8 @@
                                 </div>
                                 <div class="flex items-center space-x-2">
                                     <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="openEditSpecificEvent(${ev.id}, false)" class="text-zinc-400 hover:text-blue-400 text-xs px-1" title="Edit Event">✏️</button>` : ''}
+                                    ${isCoachMode ? `<button onclick="deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
                                 </div>
                             </div>
                             `;
@@ -3278,20 +3377,69 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
 
                 return `
                 <div class="flex items-center justify-between p-2 rounded-lg border ${colorClass} text-xs">
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 cursor-pointer flex-1" onclick="openEditSpecificEvent(${ev.id}, true)" title="Tap to edit this event">
                         <span>${icon}</span>
                         <div>
-                            <p class="font-bold text-white text-[11px]">${title}</p>
+                            <p class="font-bold text-white text-[11px] hover:text-blue-300 transition">${title}</p>
                             <p class="text-[9px] text-zinc-400">${subtitle}</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-1.5">
                         <span class="text-[9px] font-mono text-amber-400">${ev.time}</span>
-                        <button type="button" onclick="deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>
+                        <button type="button" onclick="openEditSpecificEvent(${ev.id}, true)" class="text-zinc-400 hover:text-blue-400 text-xs px-1" title="Edit Event">✏️</button>
+                        <button type="button" onclick="deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>
                     </div>
                 </div>
                 `;
             }).join('');
+        }
+
+        function openEditSpecificEvent(eventId, isPastMatch = true) {
+            const targetList = (isPastMatch && currentEditMatchId)
+                ? (matchState.history.find(m => m.id === currentEditMatchId)?.events || [])
+                : matchState.events;
+            const ev = targetList.find(e => e.id === eventId);
+            if (!ev) return;
+
+            currentEditingEventId = eventId;
+
+            if (ev.type === 'goal') {
+                openGoalModal();
+                const scorerSel = document.getElementById('goal-scorer-select');
+                if (scorerSel) scorerSel.value = String(ev.scorerJersey || '');
+                const assistSel = document.getElementById('goal-assist-select');
+                if (assistSel) assistSel.value = ev.assistJersey ? String(ev.assistJersey) : '';
+                const phaseSel = document.getElementById('goal-phase-select');
+                if (phaseSel && ev.phase) phaseSel.value = ev.phase;
+                const finishSel = document.getElementById('goal-finish-select');
+                if (finishSel && ev.finish) finishSel.value = ev.finish;
+                const tagInput = document.getElementById('goal-tag-input');
+                if (tagInput) tagInput.value = ev.tag || '';
+                const timeInput = document.getElementById('goal-time-input');
+                if (timeInput) timeInput.value = ev.time || '';
+                const videoInput = document.getElementById('goal-video-input');
+                if (videoInput) videoInput.value = ev.video || '';
+            } else if (ev.type === 'opp_goal') {
+                openOpponentGoalModal();
+                const nameInput = document.getElementById('opponent-goal-name-input');
+                if (nameInput) nameInput.value = ev.oppName || '';
+                const noteInput = document.getElementById('opponent-goal-note-input');
+                if (noteInput) noteInput.value = ev.note || '';
+                const timeInput = document.getElementById('opponent-goal-time-input');
+                if (timeInput) timeInput.value = ev.time || '';
+            } else if (ev.type === 'defense') {
+                openDefensiveModal();
+                const defSel = document.getElementById('defense-player-select');
+                if (defSel) defSel.value = String(ev.playerJersey || '');
+                const typeSel = document.getElementById('defense-type-select');
+                if (typeSel && ev.action) typeSel.value = ev.action;
+                const noteInput = document.getElementById('defense-note-input');
+                if (noteInput) noteInput.value = ev.note || '';
+                const timeInput = document.getElementById('defense-time-input');
+                if (timeInput) timeInput.value = ev.time || '';
+                const videoInput = document.getElementById('defense-video-input');
+                if (videoInput) videoInput.value = ev.video || '';
+            }
         }
 
         function deletePastMatchEvent(eventId) {
@@ -3449,6 +3597,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.confirmDeletePastMatch = confirmDeletePastMatch;
         window.deletePastMatchEvent = deletePastMatchEvent;
         window.renderEditMatchEvents = renderEditMatchEvents;
+        window.openEditSpecificEvent = openEditSpecificEvent;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadPersistentData();
