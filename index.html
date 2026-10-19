@@ -180,24 +180,48 @@
             <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-800 text-xs font-bold text-zinc-400">
                     <div class="flex items-center space-x-2">
-                        <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
-                        <span class="text-white uppercase tracking-wider">CMSA League Match</span>
+                        <span id="match-live-pulse-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping"></span>
+                        <span id="match-header-status-text" class="text-white uppercase tracking-wider">CMSA League Match</span>
                     </div>
                     <div class="flex items-center space-x-2">
+                        <!-- Dedicated End Match & Archive Action Buttons -->
+                        <button id="btn-end-match-trigger" onclick="triggerEndMatchAction()" class="hidden px-3 py-1 rounded-lg bg-rose-700 hover:bg-rose-600 text-[11px] font-black text-white shadow transition active:scale-95 flex items-center space-x-1">
+                            <span>🏁</span>
+                            <span id="btn-end-match-label">End Match</span>
+                        </button>
                         <button id="btn-start-new-match" onclick="resetNewMatchConfirm()" class="hidden px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-bold text-gray-300 transition">
-                            🔄 New Match
+                            🔄 Reset / New
                         </button>
                     </div>
                 </div>
 
                 <!-- Match Period Selector (Coach Only) -->
                 <div id="box-period-controls" class="hidden pt-3 flex flex-wrap items-center justify-center gap-1.5 border-b border-zinc-800/80 pb-3">
-                    <button onclick="setMatchPeriod('1st Half')" class="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-500/40 text-blue-300 text-[11px] font-bold hover:bg-blue-900 transition">1st Half (0')</button>
-                    <button onclick="setMatchPeriod('Halftime')" class="px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-amber-300 text-[11px] font-bold hover:bg-zinc-700 transition">Halftime ⏸</button>
-                    <button onclick="setMatchPeriod('2nd Half')" class="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-500/40 text-blue-300 text-[11px] font-bold hover:bg-blue-900 transition">2nd Half (35')</button>
-                    <button onclick="setMatchPeriod('Full Time')" class="px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-emerald-300 text-[11px] font-bold hover:bg-zinc-700 transition">Full Time 🏁</button>
-                    <button onclick="setMatchPeriod('Overtime')" class="px-2.5 py-1 rounded-lg bg-purple-950 border border-purple-500/40 text-purple-300 text-[11px] font-bold hover:bg-purple-900 transition">Overtime 🔥</button>
-                    <button onclick="setMatchPeriod('Penalties')" class="px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/40 text-rose-300 text-[11px] font-bold hover:bg-rose-900 transition">Penalties 🎯</button>
+                    <button onclick="setMatchPeriod('1st Half')" id="btn-period-1st" class="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-500/40 text-blue-300 text-[11px] font-bold hover:bg-blue-900 transition">1st Half (0')</button>
+                    <button onclick="setMatchPeriod('Halftime')" id="btn-period-half" class="px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-amber-300 text-[11px] font-bold hover:bg-zinc-700 transition">Halftime ⏸</button>
+                    <button onclick="setMatchPeriod('2nd Half')" id="btn-period-2nd" class="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-500/40 text-blue-300 text-[11px] font-bold hover:bg-blue-900 transition">2nd Half (35')</button>
+                    <button onclick="setMatchPeriod('Full Time')" id="btn-period-ft" class="px-2.5 py-1 rounded-lg bg-emerald-950 border border-emerald-500/60 text-emerald-300 text-[11px] font-extrabold hover:bg-emerald-900 transition shadow">Full Time (Final) 🏁</button>
+                    <button onclick="setMatchPeriod('Overtime')" id="btn-period-ot" class="px-2.5 py-1 rounded-lg bg-purple-950 border border-purple-500/40 text-purple-300 text-[11px] font-bold hover:bg-purple-900 transition">Overtime 🔥</button>
+                    <button onclick="setMatchPeriod('Penalties')" id="btn-period-pk" class="px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/40 text-rose-300 text-[11px] font-bold hover:bg-rose-900 transition">Penalties 🎯</button>
+                </div>
+
+                <!-- Prominent Final Match Banner (Appears when match is ended / Full Time) -->
+                <div id="box-final-match-banner" class="hidden mt-3 p-3 bg-gradient-to-r from-emerald-950/80 via-zinc-900 to-emerald-950/80 border border-emerald-500/50 rounded-2xl flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-2 shadow-lg">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="text-2xl">🏁</span>
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400">Match Concluded</span>
+                            <h4 id="final-banner-result-text" class="text-sm font-black text-white">Full Time Final Result</h4>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="archiveMatchToHistoryPrompt()" class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow active:scale-95 transition">
+                            💾 Save & Archive Match
+                        </button>
+                        <button onclick="resumeMatchFromFinal()" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-bold transition">
+                            ↩ Resume
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Score Display -->
@@ -589,19 +613,16 @@
                 <button onclick="closeGoalModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             <form id="rockies-goal-form" onsubmit="confirmRockiesGoal(event)" class="mt-4 space-y-3.5 text-xs">
-                <!-- 1. Scorer -->
                 <div>
                     <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">1. Goal Scorer (Required)</label>
                     <select id="goal-scorer-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs sm:text-sm focus:border-blue-500"></select>
                 </div>
-                <!-- 2. Assist -->
                 <div>
                     <label class="block font-bold text-emerald-300 uppercase tracking-wider mb-1">2. Assist Pass (Optional)</label>
                     <select id="goal-assist-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-medium text-xs sm:text-sm focus:border-emerald-500">
                         <option value="">None (Solo / Unassisted)</option>
                     </select>
                 </div>
-                <!-- 3. Play Phase / Origin -->
                 <div>
                     <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Play Phase (How It Came About)</label>
                     <select id="goal-phase-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-amber-500">
@@ -614,7 +635,6 @@
                         <option value="Solo Dribble Run 🏃">Solo Dribble Run 🏃</option>
                     </select>
                 </div>
-                <!-- 4. Finish Technique -->
                 <div>
                     <label class="block font-bold text-purple-300 uppercase tracking-wider mb-1">4. How It Was Finished</label>
                     <select id="goal-finish-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-purple-500">
@@ -627,7 +647,6 @@
                         <option value="Deflection / Body 🔀">Deflection / Body 🔀</option>
                     </select>
                 </div>
-                <!-- 5. Highlight Tag -->
                 <div>
                     <label class="block font-bold text-rose-300 uppercase tracking-wider mb-1">5. Special Style / Highlight Tag</label>
                     <input type="text" id="goal-tag-input" placeholder="e.g. Upper 90 🚀, Rocket 💥, Backheel ✨" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
@@ -639,7 +658,6 @@
                         <button type="button" onclick="setGoalTag('Team Play 🤝')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Team Play 🤝</button>
                     </div>
                 </div>
-                <!-- 6. Video Clip (Phone Upload or Direct Link) -->
                 <div>
                     <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">6. Video Clip (From Device or Link)</label>
                     <div class="space-y-1.5">
@@ -697,12 +715,10 @@
                 <button onclick="closeDefensiveModal()" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             <form id="rockies-defense-form" onsubmit="confirmDefensiveStop(event)" class="mt-4 space-y-3.5 text-xs">
-                <!-- 1. Defender / Keeper -->
                 <div>
                     <label class="block font-bold text-teal-300 uppercase tracking-wider mb-1">1. Defender or Goalkeeper (Required)</label>
                     <select id="defense-player-select" required class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold"></select>
                 </div>
-                <!-- 2. Defensive Action -->
                 <div>
                     <label class="block font-bold text-blue-300 uppercase tracking-wider mb-1">2. Defensive Action Type (Required)</label>
                     <select id="defense-type-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-sm focus:border-teal-500 font-bold">
@@ -714,12 +730,10 @@
                         <option value="Breakaway Interception / Cutoff 🔐">Breakaway Interception / Cutoff 🔐</option>
                     </select>
                 </div>
-                <!-- 3. Description / Highlight Note -->
                 <div>
                     <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Highlight Note</label>
                     <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line with open net!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                 </div>
-                <!-- 4. Video Clip (Phone Upload or Direct Link) -->
                 <div>
                     <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">4. Video Clip (From Device or Link)</label>
                     <div class="space-y-1.5">
@@ -981,7 +995,6 @@
                 <button onclick="closeAiStandingsModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
 
-            <!-- Loading -->
             <div id="ai-standings-loading" class="py-10 text-center space-y-4">
                 <div class="relative w-16 h-16 mx-auto">
                     <div class="absolute inset-0 rounded-full border-4 border-purple-500/20 animate-ping"></div>
@@ -997,7 +1010,6 @@
                 </div>
             </div>
 
-            <!-- Preview & Confirm -->
             <div id="ai-standings-preview" class="hidden space-y-3 pt-3">
                 <div class="flex items-center justify-between bg-purple-950/40 border border-purple-500/30 rounded-xl p-3">
                     <div class="flex items-center space-x-2">
@@ -1041,7 +1053,6 @@
                 </div>
             </div>
 
-            <!-- Error Dialog -->
             <div id="ai-standings-error" class="hidden py-6 text-center space-y-4">
                 <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-2xl mx-auto">
                     ⚠️
@@ -1304,6 +1315,7 @@
         let pendingAiParsedTeams = [];
         let timerInterval = null;
 
+        // Current active match state
         let matchState = {
             scoreUs: 0,
             scoreThem: 0,
@@ -1311,6 +1323,7 @@
             timerSeconds: 0,
             timerRunning: false,
             period: "1st Half",
+            isFinal: false,
             motmJersey: null,
             events: [
                 {
@@ -1518,6 +1531,7 @@
             const editStandingsBtn = document.getElementById('btn-edit-standings');
             const aiScanStandingsBtn = document.getElementById('btn-ai-scan-standings');
             const startNewMatchBtn = document.getElementById('btn-start-new-match');
+            const endMatchTriggerBtn = document.getElementById('btn-end-match-trigger');
             const pkUs = document.getElementById('pk-controls-us');
             const pkThem = document.getElementById('pk-controls-them');
             const cloudBtn = document.getElementById('btn-cloud-config');
@@ -1541,6 +1555,7 @@
                 if (editStandingsBtn) editStandingsBtn.classList.remove('hidden');
                 if (aiScanStandingsBtn) aiScanStandingsBtn.classList.remove('hidden');
                 if (startNewMatchBtn) startNewMatchBtn.classList.remove('hidden');
+                if (endMatchTriggerBtn) endMatchTriggerBtn.classList.remove('hidden');
                 if (pkUs) pkUs.classList.remove('hidden');
                 if (pkThem) pkThem.classList.remove('hidden');
                 if (cloudBtn) cloudBtn.classList.remove('hidden');
@@ -1563,6 +1578,7 @@
                 if (editStandingsBtn) editStandingsBtn.classList.add('hidden');
                 if (aiScanStandingsBtn) aiScanStandingsBtn.classList.add('hidden');
                 if (startNewMatchBtn) startNewMatchBtn.classList.add('hidden');
+                if (endMatchTriggerBtn) endMatchTriggerBtn.classList.add('hidden');
                 if (pkUs) pkUs.classList.add('hidden');
                 if (pkThem) pkThem.classList.add('hidden');
 
@@ -1985,10 +2001,105 @@
             if (period === '2nd Half' && matchState.timerSeconds < 35 * 60) {
                 matchState.timerSeconds = 35 * 60;
                 document.getElementById('timer-display').textContent = formatTimer(matchState.timerSeconds);
-            } else if (period === 'Halftime' || period === 'Full Time') {
+            } else if (period === 'Halftime') {
                 pauseTimer();
+            } else if (period === 'Full Time') {
+                pauseTimer();
+                matchState.isFinal = true;
             }
+
+            updateMatchFinalBanner();
             savePersistentData();
+        }
+
+        function triggerEndMatchAction() {
+            if (!isCoachMode) {
+                openCoachAuthModal();
+                return;
+            }
+            if (!matchState.isFinal && matchState.period !== 'Full Time') {
+                setMatchPeriod('Full Time');
+            } else {
+                archiveMatchToHistoryPrompt();
+            }
+        }
+
+        function updateMatchFinalBanner() {
+            const banner = document.getElementById('box-final-match-banner');
+            const resultText = document.getElementById('final-banner-result-text');
+            const headerText = document.getElementById('match-header-status-text');
+            const pulseDot = document.getElementById('match-live-pulse-dot');
+            const endBtnLabel = document.getElementById('btn-end-match-label');
+
+            if (matchState.period === 'Full Time' || matchState.isFinal) {
+                if (banner) banner.classList.remove('hidden');
+                if (resultText) {
+                    const us = matchState.scoreUs;
+                    const them = matchState.scoreThem;
+                    const outcome = us > them ? 'Rockies WIN 🎉' : (us === them ? 'DRAW 🤝' : 'Opponent WIN');
+                    resultText.textContent = `FINAL SCORE: Rockies ${us} - ${them} ${matchState.opponentName} (${outcome})`;
+                }
+                if (headerText) headerText.textContent = "MATCH COMPLETED (FINAL)";
+                if (pulseDot) {
+                    pulseDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-400";
+                }
+                if (endBtnLabel) endBtnLabel.textContent = "Archive Match";
+            } else {
+                if (banner) banner.classList.add('hidden');
+                if (headerText) headerText.textContent = "CMSA LEAGUE MATCH";
+                if (pulseDot) {
+                    pulseDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping";
+                }
+                if (endBtnLabel) endBtnLabel.textContent = "End Match";
+            }
+        }
+
+        function resumeMatchFromFinal() {
+            matchState.isFinal = false;
+            matchState.period = "2nd Half";
+            const badge = document.getElementById('match-period-badge');
+            if (badge) badge.textContent = "2nd Half";
+            updateMatchFinalBanner();
+            savePersistentData();
+        }
+
+        function archiveMatchToHistoryPrompt() {
+            const us = matchState.scoreUs;
+            const them = matchState.scoreThem;
+            const motmP = players.find(p => p.jersey === matchState.motmJersey);
+            const motmText = motmP ? `#${motmP.jersey} ${motmP.name}` : 'Unassigned (tap Cancel to pick MOTM first)';
+
+            openConfirmModal("Archive Match to History", `Save final score (${us} - ${them} vs ${matchState.opponentName}) with MOTM: ${motmText} to past season records?`, () => {
+                matchState.history.unshift({
+                    id: Date.now(),
+                    opponent: matchState.opponentName || 'Opponent',
+                    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    scoreUs: matchState.scoreUs,
+                    scoreThem: matchState.scoreThem,
+                    motmJersey: matchState.motmJersey,
+                    motmName: motmP ? motmP.name : 'Unassigned',
+                    events: [...matchState.events],
+                    stats: { ...matchState.stats }
+                });
+
+                // Reset board cleanly for upcoming matches
+                matchState.scoreUs = 0;
+                matchState.scoreThem = 0;
+                matchState.timerSeconds = 0;
+                matchState.timerRunning = false;
+                matchState.period = "1st Half";
+                matchState.isFinal = false;
+                matchState.motmJersey = null;
+                matchState.events = [];
+                matchState.shootout = { active: false, usKicks: [], themKicks: [] };
+                matchState.stats = { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 };
+                
+                pauseTimer();
+                renderMatchTracker();
+                renderRoster();
+                renderLeaderboard();
+                savePersistentData();
+            });
         }
 
         function formatTimer(sec) {
@@ -2185,7 +2296,6 @@
                 video
             });
 
-            // Cleanly clear fields after saving
             resetGoalModalFields();
             document.getElementById('goal-modal').classList.add('hidden');
             renderMatchTracker();
@@ -2272,7 +2382,6 @@
                 video
             });
 
-            // Cleanly clear fields after saving
             resetDefensiveModalFields();
             document.getElementById('defensive-modal').classList.add('hidden');
             renderMatchTracker();
@@ -2307,26 +2416,13 @@
         }
 
         function resetNewMatchConfirm() {
-            openConfirmModal("Archive & Start New Match", "Archive the current match score, stats, and timeline into past match history and reset?", () => {
-                if (matchState.scoreUs > 0 || matchState.scoreThem > 0 || matchState.events.length > 0) {
-                    const motmP = players.find(p => p.jersey === matchState.motmJersey);
-                    matchState.history.unshift({
-                        id: Date.now(),
-                        opponent: matchState.opponentName || 'Opponent',
-                        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                        scoreUs: matchState.scoreUs,
-                        scoreThem: matchState.scoreThem,
-                        motmJersey: matchState.motmJersey,
-                        motmName: motmP ? motmP.name : 'Unassigned',
-                        events: [...matchState.events],
-                        stats: { ...matchState.stats }
-                    });
-                }
+            openConfirmModal("Reset Live Scoreboard", "Reset scoreboard and timer to 0-0 for a new match? (Tip: Use 'Archive Match' first if you want to keep final records)", () => {
                 matchState.scoreUs = 0;
                 matchState.scoreThem = 0;
                 matchState.timerSeconds = 0;
                 matchState.timerRunning = false;
                 matchState.period = "1st Half";
+                matchState.isFinal = false;
                 matchState.motmJersey = null;
                 matchState.events = [];
                 matchState.shootout = { active: false, usKicks: [], themKicks: [] };
@@ -2345,6 +2441,8 @@
             document.getElementById('opponent-name-display').textContent = matchState.opponentName;
             document.getElementById('timer-display').textContent = formatTimer(matchState.timerSeconds);
             document.getElementById('match-period-badge').textContent = matchState.period || "1st Half";
+
+            updateMatchFinalBanner();
 
             const motmBox = document.getElementById('motm-name-display');
             if (matchState.motmJersey) {
@@ -3083,6 +3181,10 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.toggleMatchTimer = toggleMatchTimer;
         window.resetTimerPrompt = resetTimerPrompt;
         window.setMatchPeriod = setMatchPeriod;
+        window.triggerEndMatchAction = triggerEndMatchAction;
+        window.updateMatchFinalBanner = updateMatchFinalBanner;
+        window.resumeMatchFromFinal = resumeMatchFromFinal;
+        window.archiveMatchToHistoryPrompt = archiveMatchToHistoryPrompt;
         window.adjustStat = adjustStat;
         window.recordShootoutKick = recordShootoutKick;
         window.openGoalModal = openGoalModal;
