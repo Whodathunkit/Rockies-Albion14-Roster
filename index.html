@@ -75,7 +75,7 @@
                         <span>CMSA Boys U13 Tier 2</span>
                         <span>•</span>
                         <span id="connection-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="connection-status-text" class="text-zinc-400">Firebase Live</span>
+                        <span id="connection-status-text" class="text-zinc-400">Connecting...</span>
                     </p>
                 </div>
             </div>
@@ -135,10 +135,10 @@
                             </div>
                             <p class="text-[11px] text-zinc-400 mt-0.5">Tactics, Lineups & Training</p>
                         </div>
-                        <!-- <div class="flex items-center space-x-1.5">
+                        <div class="flex items-center space-x-1.5">
                             <a href="tel:5874320709" class="p-2 rounded-lg bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-600/40 text-emerald-300 transition" title="Call Kevin">📞</a>
                             <a href="mailto:kevin.diazlizama@gmail.com" class="p-2 rounded-lg bg-blue-950/70 hover:bg-blue-900 border border-blue-600/40 text-blue-300 transition" title="Email Kevin">✉️</a>
-                        </div> -->
+                        </div>
                     </div>
 
                     <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between">
@@ -229,7 +229,7 @@
                     <!-- Home Team -->
                     <div class="col-span-2 space-y-2">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#003C71] border border-blue-400/40 p-2 flex items-center justify-center shadow-lg">
-                            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies" class="h-full w-auto object-contain brightness-125" />
+                            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/60x60/003C71/ffffff?text=RFC'" />
                         </div>
                         <h4 class="text-sm sm:text-base font-black text-white tracking-tight">Rockies Albion 14</h4>
                         <div id="score-us" class="text-5xl sm:text-6xl font-black text-white tracking-tighter">0</div>
@@ -603,7 +603,7 @@
     <input type="file" id="video-upload-file-input" accept="video/*" class="hidden" onchange="processVideoUploadFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
 
-    <!-- MODAL 0: COACH AUTH MODAL (Restored to fix Spectator Mode lock) -->
+    <!-- MODAL 0: COACH AUTH MODAL -->
     <div id="coach-auth-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-sm w-full p-6 shadow-2xl text-center">
             <div class="w-12 h-12 rounded-2xl bg-blue-950 border border-blue-500/40 flex items-center justify-center text-xl mx-auto mb-3 shadow-inner">
@@ -626,24 +626,23 @@
 
     <!-- MODAL 0B: CLOUD CONFIG MODAL -->
     <div id="cloud-config-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4">
-        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-sm w-full p-5 shadow-2xl">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <h3 class="text-sm font-black text-white flex items-center space-x-2">
-                    <span>☁️</span><span>Firebase Cloud Sync</span>
+                    <span>☁️</span><span>Firebase Cloud Sync Status</span>
                 </h3>
                 <button type="button" onclick="closeCloudConfigModal()" class="text-gray-400 hover:text-white text-xl leading-none">&times;</button>
             </div>
-            <form onsubmit="saveFirebaseCloudConfig(event)" class="mt-3 space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-gray-300 mb-1">Firebase Web API Key</label>
-                    <input type="text" id="input-firebase-api-key" placeholder="AIzaSy..." class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-mono text-xs" />
-                    <p class="text-[10px] text-zinc-400 mt-1">Leave blank to use default / local browser storage.</p>
+            <div class="mt-3 space-y-3 text-xs text-zinc-300">
+                <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-1.5">
+                    <p class="font-bold text-white">Active Cloud Connection:</p>
+                    <p id="cloud-modal-status-detail" class="text-emerald-400 font-mono text-[11px]">Connected to Firebase Firestore & Storage</p>
+                    <p class="text-[11px] text-zinc-400">All player photos, family profiles, video clips, match events, and league standings are synced to Firebase under <code class="text-blue-300">/artifacts/rockies-albion-14/public/data/</code>.</p>
                 </div>
-                <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
-                    <button type="button" onclick="closeCloudConfigModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold shadow">Save Settings</button>
+                <div class="flex justify-end pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="closeCloudConfigModal()" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow">Done</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -707,10 +706,10 @@
                     <input type="text" id="goal-time-input" placeholder="e.g. 14:22 or 2nd Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">7. Video Clip (From Device or Link)</label>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">7. Video Clip (Upload to Firebase or Link)</label>
                     <div class="space-y-1.5">
                         <button type="button" onclick="triggerVideoUpload('goal-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
-                            <span>📱 Pick / Record Video from Phone</span>
+                            <span>☁️ Upload Video from Phone to Firebase</span>
                         </button>
                         <input type="text" id="goal-video-input" placeholder="Or paste video link / videos/05-goal.mp4" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                     </div>
@@ -787,10 +786,10 @@
                     <input type="text" id="defense-time-input" placeholder="e.g. 35:00 or 1st Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">5. Video Clip (From Device or Link)</label>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">5. Video Clip (Upload to Firebase or Link)</label>
                     <div class="space-y-1.5">
                         <button type="button" onclick="triggerVideoUpload('defensive-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
-                            <span>📱 Pick / Record Video from Phone</span>
+                            <span>☁️ Upload Video from Phone to Firebase</span>
                         </button>
                         <input type="text" id="defense-video-input" placeholder="Or paste video link" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                     </div>
@@ -840,9 +839,9 @@
 
                 <div class="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-3.5 space-y-2.5 text-xs">
                     <div class="flex items-center justify-between">
-                        <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">Family & Supporters</span>
+                        <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">Family & Supporters (Synced to Cloud)</span>
                         <div class="flex space-x-2">
-                            <button type="button" onclick="triggerFamilyPhotoUpload()" class="text-[11px] font-bold text-emerald-400 hover:underline">📷 Photo</button>
+                            <button type="button" onclick="triggerFamilyPhotoUpload()" class="text-[11px] font-bold text-emerald-400 hover:underline">📷 Upload Photo</button>
                             <button type="button" onclick="openEditFamilyModal()" class="text-[11px] font-bold text-blue-400 hover:underline">✏️ Edit</button>
                         </div>
                     </div>
@@ -868,11 +867,11 @@
                 </div>
 
                 <div class="space-y-1.5 text-xs">
-                    <label class="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Player Highlight Video</label>
+                    <label class="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Player Highlight Video (Cloud Synced)</label>
                     <div class="flex space-x-1.5">
-                        <input type="text" id="modal-player-video-input" placeholder="Paste video URL or upload..." class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
+                        <input type="text" id="modal-player-video-input" placeholder="Paste video URL or upload to cloud..." class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
                         <button type="button" onclick="savePlayerVideoUrl()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold">Save</button>
-                        <button type="button" onclick="triggerVideoUpload('player-modal')" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold" title="Upload from Phone">📱</button>
+                        <button type="button" onclick="triggerVideoUpload('player-modal')" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold" title="Upload from Phone to Firebase">☁️📱</button>
                     </div>
                 </div>
             </div>
@@ -894,7 +893,7 @@
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
                     <button type="button" onclick="closeEditFamilyModal()" class="px-3 py-1.5 rounded-lg bg-zinc-800 text-gray-300 font-bold">Cancel</button>
-                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold">Save</button>
+                    <button type="submit" class="px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold">Save to Cloud</button>
                 </div>
             </form>
         </div>
@@ -914,11 +913,11 @@
         </div>
     </div>
 
-    <!-- MODAL 6: VIDEO UPLOAD PROGRESS & CLIP LIGHTBOX -->
+    <!-- MODAL 6: MEDIA UPLOAD PROGRESS & CLIP LIGHTBOX -->
     <div id="video-upload-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[95] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-xs w-full p-5 text-center space-y-3 shadow-2xl">
-            <div class="text-2xl">📹</div>
-            <h4 id="video-upload-status" class="text-xs font-black text-white">Uploading Video...</h4>
+            <div class="text-2xl">☁️</div>
+            <h4 id="video-upload-status" class="text-xs font-black text-white">Uploading to Firebase...</h4>
             <p id="video-upload-filename" class="text-[11px] text-zinc-400 truncate"></p>
             <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div id="video-upload-bar" class="h-full bg-sky-500 transition-all duration-200" style="width: 0%"></div>
@@ -1199,14 +1198,13 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getStorage, ref as storageRef, uploadBytesResumable, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rockies-albion-14';
         const defaultProjectId = "rockies-albion-14";
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const savedApiKey = localStorage.getItem('rfc14_firebase_api_key') || "";
         const firebaseConfig = envConfig || {
-            apiKey: savedApiKey || "AIzaSyDummyKey-ForFirebaseInit",
+            apiKey: "AIzaSyDummyKey-ForFirebaseInit",
             authDomain: `${defaultProjectId}.firebaseapp.com`,
             projectId: defaultProjectId,
             storageBucket: `${defaultProjectId}.firebasestorage.app`,
@@ -1218,65 +1216,109 @@
         let currentUser = null;
         let currentUploadTask = null;
         let activeVideoUploadTarget = 'goal-modal';
+        let isFamilyUnlocked = false;
+        const resolvedMediaCache = {};
 
-        try {
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            storage = getStorage(app);
-            initAuthAndSync();
-        } catch (e) {
-            console.warn("Firebase offline or local mode:", e);
-        }
+        // Upload video/media chunks directly to Firestore if Firebase Storage bucket is unavailable
+        async function uploadVideoToFirestoreChunks(file, onProgress) {
+            if (!db || !currentUser) {
+                throw new Error("Firebase is not connected yet.");
+            }
+            const maxBytes = 15 * 1024 * 1024; // 15MB max for Firestore chunked video
+            if (file.size > maxBytes) {
+                throw new Error("Video file is larger than 15MB. Please trim the clip or use a shorter highlight video.");
+            }
 
-        async function initAuthAndSync() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
+            const dataUrl = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const base64Index = dataUrl.indexOf(',');
+            const metaHeader = dataUrl.substring(0, base64Index + 1);
+            const rawBase64 = dataUrl.substring(base64Index + 1);
+
+            const chunkSize = 650 * 1024; // ~650KB per Firestore document (well under 1MB limit)
+            const totalChunks = Math.ceil(rawBase64.length / chunkSize);
+            const mediaId = `vid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+
+            for (let i = 0; i < totalChunks; i++) {
+                const chunkData = rawBase64.substring(i * chunkSize, (i + 1) * chunkSize);
+                const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${i}`);
+                await setDoc(chunkDocRef, {
+                    mediaId,
+                    index: i,
+                    totalChunks,
+                    metaHeader,
+                    mimeType: file.type || 'video/mp4',
+                    data: chunkData,
+                    createdAt: Date.now()
+                });
+                if (typeof onProgress === 'function') {
+                    onProgress(Math.round(((i + 1) / totalChunks) * 100));
                 }
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    const dot = document.getElementById('connection-status-dot');
-                    const text = document.getElementById('connection-status-text');
-                    if (user) {
-                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-                        if (text) text.textContent = "Firebase Live";
-                        setupRealtimeSync();
-                    } else {
-                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
-                        if (text) text.textContent = "Local Sync";
-                    }
-                });
-            } catch (err) {
-                console.warn("Auth initialization fallback:", err);
             }
+
+            const firestoreUri = `firestore://mediaChunks/${mediaId}?chunks=${totalChunks}`;
+            resolvedMediaCache[firestoreUri] = URL.createObjectURL(file);
+            return firestoreUri;
         }
 
-        function setupRealtimeSync() {
-            if (!db || !currentUser) return;
+        // Resolve a firestore://mediaChunks/ URI back into a playable video URL on any device
+        async function resolveFirebaseMediaUrl(url) {
+            if (!url || !url.startsWith('firestore://mediaChunks/')) {
+                return url;
+            }
+            if (resolvedMediaCache[url]) {
+                return resolvedMediaCache[url];
+            }
+            if (!db || !currentUser) return '';
+
             try {
-                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-                onSnapshot(matchDocRef, (snap) => {
-                    if (snap.exists()) {
-                        const remoteState = snap.data();
-                        if (remoteState && typeof remoteState === 'object') {
-                            matchState = { ...matchState, ...remoteState };
-                            renderMatchTracker();
-                            renderRoster();
-                            renderLeaderboard();
-                        }
+                const withoutPrefix = url.replace('firestore://mediaChunks/', '');
+                const [mediaId, queryStr] = withoutPrefix.split('?');
+                const params = new URLSearchParams(queryStr || '');
+                const totalChunks = parseInt(params.get('chunks') || '1', 10);
+
+                let fullBase64 = '';
+                let mimeType = 'video/mp4';
+
+                for (let i = 0; i < totalChunks; i++) {
+                    const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${i}`);
+                    const snap = await getDoc(chunkDocRef);
+                    if (!snap.exists()) {
+                        throw new Error(`Missing media chunk ${i}`);
                     }
-                }, (error) => {
-                    console.debug("Firestore snapshot note:", error);
-                });
+                    const d = snap.data();
+                    if (d.mimeType) mimeType = d.mimeType;
+                    fullBase64 += d.data;
+                }
+
+                const byteCharacters = atob(fullBase64);
+                const byteArrays = [];
+                const sliceSize = 8192;
+                for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+                    const slice = byteCharacters.slice(offset, offset + sliceSize);
+                    const byteNumbers = new Array(slice.length);
+                    for (let i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+                    byteArrays.push(new Uint8Array(byteNumbers));
+                }
+
+                const blob = new Blob(byteArrays, { type: mimeType });
+                const objectUrl = URL.createObjectURL(blob);
+                resolvedMediaCache[url] = objectUrl;
+                return objectUrl;
             } catch (err) {
-                console.warn("Firestore listener init note:", err);
+                console.warn("Error resolving Firestore video chunks:", err);
+                return '';
             }
         }
 
-        // Official 12-Player Active Roster
+        // Official 12-Player Active Roster (Synced with Firestore playerProfiles)
         const players = [
             { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "videos/01-haaris.mp4" },
             { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "videos/03-nael.mp4" },
@@ -1291,6 +1333,9 @@
             { id: 65, jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", photo: "", videoUrl: "videos/65-nicholas.mp4" },
             { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "videos/70-esteban.mp4" }
         ];
+
+        // Cloud-synced player profile overrides (photo, videoUrl, parents, siblings keyed by jersey)
+        let playerProfilesMap = {};
 
         // CMSA Boys U13 Tier 2 Official 18-Team Table
         let leagueStandings = [
@@ -1400,66 +1445,173 @@
             history: []
         };
 
-        function loadPersistentData() {
+        try {
+            app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            storage = getStorage(app);
+            initAuthAndSync();
+        } catch (e) {
+            console.warn("Firebase initialization error:", e);
+        }
+
+        async function initAuthAndSync() {
             try {
-                const savedMatch = localStorage.getItem('rfc14_match_state');
-                if (savedMatch) {
-                    const parsed = JSON.parse(savedMatch);
-                    if (parsed && typeof parsed === 'object') {
-                        matchState = { ...matchState, ...parsed };
-                        if (matchState.history && Array.isArray(matchState.history)) {
-                            matchState.history = matchState.history.filter(m => !m.opponent.includes('Chestermere'));
-                        }
-                    }
-                }
-                const savedStandings = localStorage.getItem('rfc14_standings_table');
-                if (savedStandings) {
-                    const parsedS = JSON.parse(savedStandings);
-                    if (Array.isArray(parsedS) && parsedS.length >= 10) {
-                        leagueStandings = parsedS;
-                    }
-                }
-                const savedEvents = localStorage.getItem('rfc14_custom_events');
-                if (savedEvents) {
-                    const parsedE = JSON.parse(savedEvents);
-                    if (Array.isArray(parsedE)) {
-                        scheduleEvents = parsedE;
-                    }
+                // RULE 3: Authenticate FIRST before any Firestore or Storage operations
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
 
-                // Automatic uniform migration check
-                scheduleEvents.forEach(ev => {
-                    if (ev.type === 'pdp' || ev.type === 'performance') {
-                        ev.jerseyKit = "Black Training Kit & Size 5 Ball";
-                    } else if (ev.type === 'practice') {
-                        ev.jerseyKit = "Grey/Blue Training Kit & Size 5 Ball";
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    const dot = document.getElementById('connection-status-dot');
+                    const text = document.getElementById('connection-status-text');
+                    if (user) {
+                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+                        if (text) text.textContent = "Firebase Live";
+                        setupRealtimeSync();
+                    } else {
+                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
+                        if (text) text.textContent = "Offline";
                     }
                 });
             } catch (err) {
-                console.warn("Storage sync notice:", err);
+                console.warn("Auth initialization error:", err);
             }
         }
 
-        async function savePersistentData() {
+        function setupRealtimeSync() {
+            if (!db || !currentUser) return;
+
+            // 1. Live Match & History Listener
             try {
-                localStorage.setItem('rfc14_match_state', JSON.stringify(matchState));
-                localStorage.setItem('rfc14_standings_table', JSON.stringify(leagueStandings));
-                localStorage.setItem('rfc14_custom_events', JSON.stringify(scheduleEvents));
-
-                // Cloud Firestore write when connected
-                if (db && currentUser) {
-                    const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-                    await setDoc(matchDocRef, matchState, { merge: true });
-                }
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                onSnapshot(matchDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const remoteState = snap.data();
+                        if (remoteState && typeof remoteState === 'object') {
+                            matchState = { ...matchState, ...remoteState };
+                            renderMatchTracker();
+                            renderRoster();
+                            renderLeaderboard();
+                            if (activePlayerCard) openPlayerModal(activePlayerCard.jersey);
+                        }
+                    }
+                }, (error) => {
+                    console.warn("MatchCenter snapshot error:", error);
+                });
             } catch (err) {
-                console.warn("Save storage error:", err);
+                console.warn("MatchCenter listener init error:", err);
+            }
+
+            // 2. Player Profiles (Photos, Highlight Videos, Parents & Siblings) Listener
+            try {
+                const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
+                onSnapshot(profilesColRef, (snap) => {
+                    snap.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const jerseyNum = parseInt(docSnap.id, 10) || data.jersey;
+                        if (jerseyNum) {
+                            playerProfilesMap[jerseyNum] = data;
+                            const rosterPlayer = players.find(p => p.jersey === jerseyNum);
+                            if (rosterPlayer) {
+                                if (data.parents !== undefined) rosterPlayer.parents = data.parents;
+                                if (data.siblings !== undefined) rosterPlayer.siblings = data.siblings;
+                                if (data.photo !== undefined) rosterPlayer.photo = data.photo;
+                                if (data.videoUrl !== undefined) rosterPlayer.videoUrl = data.videoUrl;
+                            }
+                        }
+                    });
+                    renderRoster();
+                    if (activePlayerCard) {
+                        refreshActivePlayerModalUI(activePlayerCard.jersey);
+                    }
+                }, (error) => {
+                    console.warn("PlayerProfiles snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("PlayerProfiles listener init error:", err);
+            }
+
+            // 3. League Standings & Custom Schedule Listener
+            try {
+                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
+                onSnapshot(portalDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data.standingsJson) {
+                            try {
+                                const parsedS = JSON.parse(data.standingsJson);
+                                if (Array.isArray(parsedS) && parsedS.length > 0) {
+                                    leagueStandings = parsedS;
+                                    renderStandings();
+                                    renderSchedule();
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing standingsJson:", e);
+                            }
+                        }
+                        if (data.scheduleJson) {
+                            try {
+                                const parsedE = JSON.parse(data.scheduleJson);
+                                if (Array.isArray(parsedE) && parsedE.length > 0) {
+                                    scheduleEvents = parsedE;
+                                    renderSchedule();
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing scheduleJson:", e);
+                            }
+                        }
+                    }
+                }, (error) => {
+                    console.warn("TeamPortal snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("TeamPortal listener init error:", err);
             }
         }
 
-        function checkAutoUnlock() {
-            if (localStorage.getItem('rockies_family_auth') === 'unlocked_ok') {
-                const gate = document.getElementById('family-pass-gate');
-                if (gate) gate.classList.add('hidden');
+        // Save matchState, standings, and schedule to Firestore
+        async function savePersistentData() {
+            if (!db || !currentUser) return;
+            try {
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                await setDoc(matchDocRef, matchState, { merge: true });
+
+                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
+                await setDoc(portalDocRef, {
+                    standingsJson: JSON.stringify(leagueStandings),
+                    scheduleJson: JSON.stringify(scheduleEvents),
+                    updatedAt: Date.now()
+                }, { merge: true });
+            } catch (err) {
+                console.warn("Firestore save error:", err);
+            }
+        }
+
+        // Save an individual player's photo, videoUrl, or family info to Firestore
+        async function savePlayerProfileToFirebase(jersey, profileUpdates) {
+            if (!playerProfilesMap[jersey]) {
+                playerProfilesMap[jersey] = { jersey };
+            }
+            playerProfilesMap[jersey] = { ...playerProfilesMap[jersey], ...profileUpdates, jersey, updatedAt: Date.now() };
+
+            const rosterPlayer = players.find(p => p.jersey === jersey);
+            if (rosterPlayer) {
+                if (profileUpdates.parents !== undefined) rosterPlayer.parents = profileUpdates.parents;
+                if (profileUpdates.siblings !== undefined) rosterPlayer.siblings = profileUpdates.siblings;
+                if (profileUpdates.photo !== undefined) rosterPlayer.photo = profileUpdates.photo;
+                if (profileUpdates.videoUrl !== undefined) rosterPlayer.videoUrl = profileUpdates.videoUrl;
+            }
+
+            if (!db || !currentUser) return;
+            try {
+                const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
+                await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
+            } catch (err) {
+                console.warn("Error saving player profile to Firestore:", err);
             }
         }
 
@@ -1469,7 +1621,7 @@
             const error = document.getElementById('family-pass-error');
             const val = (input?.value || '').trim().toLowerCase();
             if (val === 'albion14' || val === '1414' || val === 'rockies14') {
-                localStorage.setItem('rockies_family_auth', 'unlocked_ok');
+                isFamilyUnlocked = true;
                 const gate = document.getElementById('family-pass-gate');
                 if (gate) gate.classList.add('hidden');
             } else {
@@ -1478,7 +1630,7 @@
         }
 
         function relockSite() {
-            localStorage.removeItem('rockies_family_auth');
+            isFamilyUnlocked = false;
             const gate = document.getElementById('family-pass-gate');
             if (gate) gate.classList.remove('hidden');
             const input = document.getElementById('family-passcode-input');
@@ -1548,27 +1700,12 @@
                 return;
             }
             const modal = document.getElementById('cloud-config-modal');
-            const input = document.getElementById('input-firebase-api-key');
-            if (input) input.value = localStorage.getItem('rfc14_firebase_api_key') || "";
             if (modal) modal.classList.remove('hidden');
         }
 
         function closeCloudConfigModal() {
             const modal = document.getElementById('cloud-config-modal');
             if (modal) modal.classList.add('hidden');
-        }
-
-        function saveFirebaseCloudConfig(e) {
-            e.preventDefault();
-            if (!isCoachMode) return;
-            const key = document.getElementById('input-firebase-api-key')?.value.trim();
-            if (key) {
-                localStorage.setItem('rfc14_firebase_api_key', key);
-            } else {
-                localStorage.removeItem('rfc14_firebase_api_key');
-            }
-            closeCloudConfigModal();
-            location.reload();
         }
 
         function updateCoachModeUI() {
@@ -1803,8 +1940,10 @@
                 const assists = getPlayerAssists(p.jersey);
                 const stops = getPlayerStops(p.jersey);
                 const motms = getPlayerMOTMCount(p.jersey);
-                const customPhoto = localStorage.getItem(`rfc14_fam_${p.jersey}`) || p.photo;
-                const customVideo = localStorage.getItem(`rfc14_vid_${p.jersey}`) || p.videoUrl;
+                const prof = playerProfilesMap[p.jersey] || {};
+                const customPhoto = prof.photo !== undefined ? prof.photo : p.photo;
+                const customVideo = prof.videoUrl !== undefined ? prof.videoUrl : p.videoUrl;
+                const parentsText = prof.parents !== undefined ? prof.parents : (p.parents || 'Family');
                 const recentHighlights = getPlayerRecentHighlights(p.jersey).slice(0, 2);
 
                 return `
@@ -1816,7 +1955,7 @@
                                 ${customVideo ? `<span class="text-[10px] bg-blue-950 border border-blue-500/40 text-blue-300 px-1.5 py-0.2 rounded font-bold">▶ Clip</span>` : ''}
                             </div>
                             <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${p.position}</p>
-                            <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${p.parents || 'Family'}</p>
+                            <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${parentsText}</p>
                         </div>
                         <div class="w-10 h-10 rounded-xl bg-[#003C71] border border-blue-400/40 flex items-center justify-center text-sm font-black text-white shadow-md flex-shrink-0">
                             #${p.jersey}
@@ -1858,10 +1997,10 @@
             if (countEl) countEl.textContent = `${players.length} Players`;
         }
 
-        function openPlayerModal(jersey) {
+        function refreshActivePlayerModalUI(jersey) {
             const player = players.find(p => p.jersey === jersey);
             if (!player) return;
-            activePlayerCard = player;
+            const prof = playerProfilesMap[jersey] || {};
 
             document.getElementById('modal-player-name').textContent = player.name;
             document.getElementById('modal-player-position').textContent = player.position;
@@ -1871,10 +2010,10 @@
             document.getElementById('modal-stat-stops').textContent = getPlayerStops(player.jersey);
             document.getElementById('modal-stat-motm').textContent = getPlayerMOTMCount(player.jersey);
 
-            const savedParents = localStorage.getItem(`rfc14_parents_${player.jersey}`) || player.parents || 'Not listed';
-            const savedSiblings = localStorage.getItem(`rfc14_siblings_${player.jersey}`) || player.siblings || 'None recorded';
+            const savedParents = prof.parents !== undefined ? prof.parents : (player.parents || 'Not listed');
+            const savedSiblings = prof.siblings !== undefined ? prof.siblings : (player.siblings || 'None recorded');
             document.getElementById('modal-family-parents').textContent = savedParents;
-            document.getElementById('modal-family-siblings').textContent = savedSiblings;
+            document.getElementById('modal-family-siblings').textContent = savedSiblings || 'None recorded';
 
             const allHighlights = getPlayerRecentHighlights(player.jersey);
             const hlContainer = document.getElementById('modal-player-recent-highlights');
@@ -1903,22 +2042,30 @@
             }
 
             const banner = document.getElementById('modal-player-media-banner');
-            const customVid = localStorage.getItem(`rfc14_vid_${player.jersey}`) || player.videoUrl;
+            const customVid = prof.videoUrl !== undefined ? prof.videoUrl : player.videoUrl;
             if (customVid) {
                 banner.innerHTML = `
-                    <div class="relative w-full h-full">
-                        <video id="player-banner-video" src="${customVid}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="handleVideoLoadError(this, ${player.jersey}, '${player.name}')"></video>
+                    <div class="relative w-full h-full flex items-center justify-center">
+                        <video id="player-banner-video" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="handleVideoLoadError(this, ${player.jersey}, '${player.name}')"></video>
                         <button onclick="toggleVideoMute()" id="btn-unmute-video" class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/75 hover:bg-black border border-white/20 text-white text-[11px] font-bold shadow flex items-center space-x-1">
                             <span>🔊</span><span id="label-unmute">Unmute</span>
                         </button>
                     </div>
                 `;
+                const vidEl = document.getElementById('player-banner-video');
+                resolveFirebaseMediaUrl(customVid).then(resolvedUrl => {
+                    if (vidEl && resolvedUrl) {
+                        vidEl.src = resolvedUrl;
+                    } else if (vidEl) {
+                        handleVideoLoadError(vidEl, player.jersey, player.name);
+                    }
+                });
             } else {
                 renderJerseyCrestBanner(banner, player.jersey, player.name, player.position);
             }
 
             const familyThumb = document.getElementById('modal-family-photo-thumb');
-            const photo = localStorage.getItem(`rfc14_fam_${player.jersey}`) || player.photo;
+            const photo = prof.photo !== undefined ? prof.photo : player.photo;
             if (photo) {
                 familyThumb.innerHTML = `<img src="${photo}" alt="Family" class="w-full h-full object-cover" />`;
             } else {
@@ -1927,7 +2074,13 @@
 
             const videoInput = document.getElementById('modal-player-video-input');
             if (videoInput) videoInput.value = customVid || '';
+        }
 
+        function openPlayerModal(jersey) {
+            const player = players.find(p => p.jersey === jersey);
+            if (!player) return;
+            activePlayerCard = player;
+            refreshActivePlayerModalUI(jersey);
             document.getElementById('player-modal').classList.remove('hidden');
         }
 
@@ -1952,7 +2105,7 @@
                             #${jersey}
                         </div>
                         <h4 class="text-base font-black text-white">${name}</h4>
-                        <p class="text-[11px] text-zinc-400">Video clip will play here when uploaded</p>
+                        <p class="text-[11px] text-zinc-400">Video clip will play here when uploaded to Firebase</p>
                     </div>
                 `;
             }
@@ -1971,18 +2124,13 @@
             activePlayerCard = null;
         }
 
-        function savePlayerVideoUrl() {
+        async function savePlayerVideoUrl() {
             if (!activePlayerCard) return;
             const input = document.getElementById('modal-player-video-input');
             const val = (input?.value || '').trim();
-            if (val) {
-                localStorage.setItem(`rfc14_vid_${activePlayerCard.jersey}`, val);
-            } else {
-                localStorage.removeItem(`rfc14_vid_${activePlayerCard.jersey}`);
-            }
-            openPlayerModal(activePlayerCard.jersey);
+            await savePlayerProfileToFirebase(activePlayerCard.jersey, { videoUrl: val });
+            refreshActivePlayerModalUI(activePlayerCard.jersey);
             renderRoster();
-            savePersistentData();
         }
 
         function triggerVideoUpload(targetContext) {
@@ -2007,10 +2155,12 @@
             if (filenameEl) filenameEl.textContent = file.name;
             if (bar) bar.style.width = '0%';
             if (percentEl) percentEl.textContent = '0%';
-            if (statusEl) statusEl.textContent = 'Uploading to Firebase Storage...';
+            if (statusEl) statusEl.textContent = 'Uploading Video to Firebase...';
             if (modal) modal.classList.remove('hidden');
 
-            if (storage && auth?.currentUser) {
+            const hasValidStorageKey = firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyDummyKey-ForFirebaseInit";
+
+            if (storage && auth?.currentUser && hasValidStorageKey) {
                 try {
                     const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
                     const uploadPath = `artifacts/${appId}/public/videos/${Date.now()}_${cleanName}`;
@@ -2019,48 +2169,57 @@
 
                     currentUploadTask.on('state_changed',
                         (snapshot) => {
-                            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+                            const progress = snapshot.totalBytes > 0
+                                ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+                                : 50;
                             if (bar) bar.style.width = `${progress}%`;
                             if (percentEl) percentEl.textContent = `${progress}%`;
                         },
                         (error) => {
-                            console.warn("Storage upload notice:", error);
-                            finishLocalVideoFallback(file);
+                            console.warn("Firebase Storage fallback to Firestore chunks:", error);
+                            handleVideoFallbackToFirestore(file);
                         },
                         async () => {
-                            const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
-                            completeVideoAttachment(downloadUrl);
+                            try {
+                                const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
+                                await completeVideoAttachment(downloadUrl);
+                            } catch (urlErr) {
+                                console.warn("Error getting video download URL, using Firestore chunks:", urlErr);
+                                handleVideoFallbackToFirestore(file);
+                            }
                         }
                     );
                     return;
                 } catch (err) {
-                    console.warn("Upload task init notice:", err);
+                    console.warn("Upload task init error, using Firestore chunks:", err);
                 }
             }
 
-            finishLocalVideoFallback(file);
+            handleVideoFallbackToFirestore(file);
         }
 
-        function finishLocalVideoFallback(file) {
+        // Store video in Firestore chunks so it persists in Firebase across all devices even without a Storage bucket
+        async function handleVideoFallbackToFirestore(file) {
             const bar = document.getElementById('video-upload-bar');
             const percentEl = document.getElementById('video-upload-percent');
             const statusEl = document.getElementById('video-upload-status');
-            if (statusEl) statusEl.textContent = 'Processing local video...';
 
-            let p = 0;
-            const fakeTimer = setInterval(() => {
-                p += 25;
-                if (bar) bar.style.width = `${p}%`;
-                if (percentEl) percentEl.textContent = `${p}%`;
-                if (p >= 100) {
-                    clearInterval(fakeTimer);
-                    const localUrl = URL.createObjectURL(file);
-                    completeVideoAttachment(localUrl);
-                }
-            }, 100);
+            try {
+                if (statusEl) statusEl.textContent = 'Saving Video to Firebase Firestore...';
+                const firestoreUri = await uploadVideoToFirestoreChunks(file, (pct) => {
+                    if (bar) bar.style.width = `${pct}%`;
+                    if (percentEl) percentEl.textContent = `${pct}%`;
+                });
+                await completeVideoAttachment(firestoreUri);
+            } catch (err) {
+                console.warn("Firestore video upload error:", err);
+                const modal = document.getElementById('video-upload-modal');
+                if (modal) modal.classList.add('hidden');
+                openConfirmModal("Video Upload Notice", err.message || "Could not upload video to Firebase.", () => {});
+            }
         }
 
-        function completeVideoAttachment(url) {
+        async function completeVideoAttachment(url) {
             const modal = document.getElementById('video-upload-modal');
             if (modal) modal.classList.add('hidden');
 
@@ -2073,7 +2232,7 @@
             } else if (activeVideoUploadTarget === 'player-modal' && activePlayerCard) {
                 const playerInput = document.getElementById('modal-player-video-input');
                 if (playerInput) playerInput.value = url;
-                savePlayerVideoUrl();
+                await savePlayerVideoUrl();
             }
         }
 
@@ -2086,7 +2245,7 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        function openVideoClipModal(url, title, subtitle) {
+        async function openVideoClipModal(url, title, subtitle) {
             if (!url) return;
             const modal = document.getElementById('video-clip-modal');
             const titleEl = document.getElementById('video-clip-title');
@@ -2096,11 +2255,20 @@
             if (titleEl) titleEl.textContent = title || "Match Highlight Clip";
             if (subEl) subEl.textContent = subtitle || "";
             if (container) {
-                container.innerHTML = `
-                    <video src="${url}" controls autoplay playsinline class="w-full h-auto max-h-[60vh] object-contain rounded-xl"></video>
-                `;
+                container.innerHTML = `<p class="text-xs text-zinc-400 py-8 animate-pulse">Loading video from Firebase...</p>`;
             }
             if (modal) modal.classList.remove('hidden');
+
+            const playableUrl = await resolveFirebaseMediaUrl(url);
+            if (container) {
+                if (playableUrl) {
+                    container.innerHTML = `
+                        <video src="${playableUrl}" controls autoplay playsinline class="w-full h-auto max-h-[60vh] object-contain rounded-xl"></video>
+                    `;
+                } else {
+                    container.innerHTML = `<p class="text-xs text-rose-400 py-8">Could not load video stream from Firebase.</p>`;
+                }
+            }
         }
 
         function closeVideoClipModal() {
@@ -2114,24 +2282,66 @@
             document.getElementById('family-photo-file-input').click();
         }
 
+        // Compress family photo and upload to Firebase Storage + save to Firestore playerProfiles
         function processFamilyPhotoFile(e) {
             const file = e.target.files?.[0];
             if (!file || !activePlayerCard) return;
+
+            const targetJersey = activePlayerCard.jersey;
+            const modal = document.getElementById('video-upload-modal');
+            const filenameEl = document.getElementById('video-upload-filename');
+            const bar = document.getElementById('video-upload-bar');
+            const percentEl = document.getElementById('video-upload-percent');
+            const statusEl = document.getElementById('video-upload-status');
+
+            if (filenameEl) filenameEl.textContent = file.name;
+            if (bar) bar.style.width = '25%';
+            if (percentEl) percentEl.textContent = '25%';
+            if (statusEl) statusEl.textContent = 'Syncing Photo to Firebase...';
+            if (modal) modal.classList.remove('hidden');
+
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const img = new Image();
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    const maxDim = 800;
+                    const maxDim = 750;
                     let w = img.width, h = img.height;
                     if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
                     else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
                     canvas.width = w; canvas.height = h;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, w, h);
-                    const b64 = canvas.toDataURL('image/jpeg', 0.85);
-                    localStorage.setItem(`rfc14_fam_${activePlayerCard.jersey}`, b64);
-                    openPlayerModal(activePlayerCard.jersey);
+                    const b64DataUrl = canvas.toDataURL('image/jpeg', 0.80);
+
+                    if (bar) bar.style.width = '65%';
+                    if (percentEl) percentEl.textContent = '65%';
+
+                    let finalPhotoValue = b64DataUrl;
+                    const hasValidStorageKey = firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyDummyKey-ForFirebaseInit";
+
+                    // Try uploading to Firebase Storage first; otherwise store compressed JPEG directly in Firestore playerProfiles
+                    if (storage && auth?.currentUser && hasValidStorageKey) {
+                        try {
+                            const photoPath = `artifacts/${appId}/public/photos/player_${targetJersey}_${Date.now()}.jpg`;
+                            const photoRef = storageRef(storage, photoPath);
+                            await uploadString(photoRef, b64DataUrl, 'data_url');
+                            finalPhotoValue = await getDownloadURL(photoRef);
+                        } catch (storageErr) {
+                            console.debug("Using Firestore document storage for compressed photo:", storageErr);
+                        }
+                    }
+
+                    if (bar) bar.style.width = '100%';
+                    if (percentEl) percentEl.textContent = '100%';
+
+                    // Save to Firestore playerProfiles collection so all devices see the photo immediately
+                    await savePlayerProfileToFirebase(targetJersey, { photo: finalPhotoValue });
+
+                    if (modal) modal.classList.add('hidden');
+                    if (activePlayerCard && activePlayerCard.jersey === targetJersey) {
+                        refreshActivePlayerModalUI(targetJersey);
+                    }
                     renderRoster();
                 };
                 img.src = evt.target.result;
@@ -2141,12 +2351,13 @@
 
         function openFamilyPhotoLightbox() {
             if (!activePlayerCard) return;
-            const photo = localStorage.getItem(`rfc14_fam_${activePlayerCard.jersey}`) || activePlayerCard.photo;
+            const prof = playerProfilesMap[activePlayerCard.jersey] || {};
+            const photo = prof.photo !== undefined ? prof.photo : activePlayerCard.photo;
             if (!photo) return;
             document.getElementById('family-lightbox-img').src = photo;
             document.getElementById('family-lightbox-title').textContent = `${activePlayerCard.name}'s Family`;
-            const parents = localStorage.getItem(`rfc14_parents_${activePlayerCard.jersey}`) || activePlayerCard.parents || 'Not listed';
-            const siblings = localStorage.getItem(`rfc14_siblings_${activePlayerCard.jersey}`) || activePlayerCard.siblings;
+            const parents = prof.parents !== undefined ? prof.parents : (activePlayerCard.parents || 'Not listed');
+            const siblings = prof.siblings !== undefined ? prof.siblings : activePlayerCard.siblings;
             document.getElementById('family-lightbox-sub').textContent = `Parents: ${parents} ${siblings ? `• Siblings: ${siblings}` : ''}`;
             document.getElementById('family-lightbox-modal').classList.remove('hidden');
         }
@@ -2157,8 +2368,9 @@
 
         function openEditFamilyModal() {
             if (!activePlayerCard) return;
-            const parents = localStorage.getItem(`rfc14_parents_${activePlayerCard.jersey}`) || activePlayerCard.parents || '';
-            const siblings = localStorage.getItem(`rfc14_siblings_${activePlayerCard.jersey}`) || activePlayerCard.siblings || '';
+            const prof = playerProfilesMap[activePlayerCard.jersey] || {};
+            const parents = prof.parents !== undefined ? prof.parents : (activePlayerCard.parents || '');
+            const siblings = prof.siblings !== undefined ? prof.siblings : (activePlayerCard.siblings || '');
             document.getElementById('input-family-parents').value = parents;
             document.getElementById('input-family-siblings').value = siblings;
             document.getElementById('edit-family-modal').classList.remove('hidden');
@@ -2168,17 +2380,14 @@
             document.getElementById('edit-family-modal').classList.add('hidden');
         }
 
-        function saveFamilyDetails(e) {
+        async function saveFamilyDetails(e) {
             e.preventDefault();
             if (!activePlayerCard) return;
             const parents = document.getElementById('input-family-parents').value.trim();
             const siblings = document.getElementById('input-family-siblings').value.trim();
-            localStorage.setItem(`rfc14_parents_${activePlayerCard.jersey}`, parents);
-            localStorage.setItem(`rfc14_siblings_${activePlayerCard.jersey}`, siblings);
-            activePlayerCard.parents = parents;
-            activePlayerCard.siblings = siblings;
+            await savePlayerProfileToFirebase(activePlayerCard.jersey, { parents, siblings });
             closeEditFamilyModal();
-            openPlayerModal(activePlayerCard.jersey);
+            refreshActivePlayerModalUI(activePlayerCard.jersey);
             renderRoster();
         }
 
@@ -2325,7 +2534,9 @@
                 timerInterval = setInterval(() => {
                     matchState.timerSeconds++;
                     document.getElementById('timer-display').textContent = formatTimer(matchState.timerSeconds);
-                    savePersistentData();
+                    if (matchState.timerSeconds % 5 === 0) {
+                        savePersistentData();
+                    }
                 }, 1000);
             }
         }
@@ -2793,7 +3004,7 @@
             const motmBox = document.getElementById('motm-name-display');
             if (matchState.motmJersey) {
                 const p = players.find(r => r.jersey === matchState.motmJersey);
-                motmBox.textContent = `Man of the Match: #${p.jersey} ${p.name} 🎖️`;
+                if (p) motmBox.textContent = `Man of the Match: #${p.jersey} ${p.name} 🎖️`;
             } else {
                 motmBox.textContent = "Man of the Match: Not Crowned Yet";
             }
@@ -3253,26 +3464,7 @@
                 const apiKey = "";
                 if (!apiKey) {
                     setTimeout(() => {
-                        pendingAiParsedTeams = [
-                            { id: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, l: 0, t: 0, gf: 5, ga: 0, isUs: false },
-                            { id: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, l: 0, t: 0, gf: 7, ga: 2, isUs: false },
-                            { id: 3, name: "Villains Cyclones 14", gp: 1, w: 1, l: 0, t: 0, gf: 4, ga: 1, isUs: false },
-                            { id: 4, name: "WHU West Hills Gunners 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 3, isUs: false },
-                            { id: 5, name: "Foothills 2014 Prospects", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 1, isUs: false },
-                            { id: 6, name: "EMFC Juventus 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 4, isUs: false },
-                            { id: 7, name: "MUSC Storm 14", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 2, isUs: false },
-                            { id: 8, name: "CalGlen Royals 14", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 2, isUs: false },
-                            { id: 9, name: "SWU Atletico 14B", gp: 0, w: 0, l: 0, t: 0, gf: 0, ga: 0, isUs: false },
-                            { id: 10, name: "Rockies Albion 14", gp: 0, w: 0, l: 0, t: 0, gf: 0, ga: 0, isUs: true },
-                            { id: 11, name: "Blizzard United 14 Boys", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 3, isUs: false },
-                            { id: 12, name: "SWU Barca 14B", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 3, isUs: false },
-                            { id: 13, name: "RANGERS ATHLETICS 14", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 3, isUs: false },
-                            { id: 14, name: "New Frontier SC 14 Boys (Shaw)", gp: 1, w: 0, l: 1, t: 0, gf: 4, ga: 6, isUs: false },
-                            { id: 15, name: "Chinooks FC Premiers 2014", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 4, isUs: false },
-                            { id: 16, name: "Spartans Admirals", gp: 1, w: 0, l: 1, t: 0, gf: 3, ga: 6, isUs: false },
-                            { id: 17, name: "CCFC Calgary City FC Whitecaps 2014", gp: 1, w: 0, l: 1, t: 0, gf: 0, ga: 5, isUs: false },
-                            { id: 18, name: "CWFC B2014 Green", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
-                        ];
+                        pendingAiParsedTeams = [...leagueStandings];
                         populateAiPreview(pendingAiParsedTeams);
                     }, 600);
                     return;
@@ -3694,7 +3886,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.submitCoachPin = submitCoachPin;
         window.openCloudConfigModal = openCloudConfigModal;
         window.closeCloudConfigModal = closeCloudConfigModal;
-        window.saveFirebaseCloudConfig = saveFirebaseCloudConfig;
         window.openPlayerModal = openPlayerModal;
         window.closePlayerModal = closePlayerModal;
         window.savePlayerVideoUrl = savePlayerVideoUrl;
@@ -3759,8 +3950,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.openEditSpecificEvent = openEditSpecificEvent;
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadPersistentData();
-            checkAutoUnlock();
             renderRoster();
             renderMatchTracker();
             renderSchedule();
