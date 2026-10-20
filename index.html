@@ -82,8 +82,9 @@
 
             <!-- Mode Toggle (Spectator vs Coach Mode) -->
             <div class="flex items-center space-x-2">
-                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="hidden items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
-                    <span>☁️ Cloud</span>
+                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="inline-flex items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300 transition">
+                    <span>☁️</span>
+                    <span class="hidden sm:inline">Cloud Status</span>
                 </button>
                 <button id="btn-mode-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95">
                     <span id="mode-toggle-icon">🔒</span>
@@ -636,10 +637,15 @@
             <div class="mt-3 space-y-3 text-xs text-zinc-300">
                 <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-1.5">
                     <p class="font-bold text-white">Active Cloud Connection:</p>
-                    <p id="cloud-modal-status-detail" class="text-emerald-400 font-mono text-[11px]">Connected to Firebase Firestore & Storage</p>
-                    <p class="text-[11px] text-zinc-400">All player photos, family profiles, video clips, match events, and league standings are synced to Firebase under <code class="text-blue-300">/artifacts/rockies-albion-14/public/data/</code>.</p>
+                    <p id="cloud-modal-status-detail" class="text-emerald-400 font-mono text-[11px]">Connecting to Firebase Firestore...</p>
+                    <p id="cloud-modal-uid-detail" class="text-zinc-400 font-mono text-[10px]">Session UID: Authenticating...</p>
+                    <p id="cloud-modal-counts-detail" class="text-blue-300 font-semibold text-[11px]">Synced Profiles: 0</p>
+                    <p class="text-[11px] text-zinc-400 pt-1">All player photos, family profiles, video clips, match events, and league standings are stored directly in Firestore under <code class="text-blue-300">/artifacts/${appId}/public/data/</code> so they sync across every phone, tablet, and computer.</p>
                 </div>
-                <div class="flex justify-end pt-2 border-t border-zinc-800">
+                <div class="flex items-center justify-between pt-2 border-t border-zinc-800">
+                    <button type="button" onclick="forceCloudPull()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold transition">
+                        🔄 Force Refresh from Cloud
+                    </button>
                     <button type="button" onclick="closeCloudConfigModal()" class="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold shadow">Done</button>
                 </div>
             </div>
@@ -1197,8 +1203,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref as storageRef, uploadBytesResumable, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js";
+        import { getFirestore, doc, getDoc, getDocs, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rockies-albion-14';
         const defaultProjectId = "rockies-albion-14";
@@ -1212,22 +1217,43 @@
             appId: "1:1234567890:web:albion14"
         };
 
-        let app, db, auth, storage;
+        let app, db, auth;
         let currentUser = null;
-        let currentUploadTask = null;
+        let cancelUploadRequested = false;
         let activeVideoUploadTarget = 'goal-modal';
         let isFamilyUnlocked = false;
+        let listenersInitialized = false;
         const resolvedMediaCache = {};
 
-        // Upload video/media chunks directly to Firestore if Firebase Storage bucket is unavailable
+        function setSyncBadge(statusText, dotColorClass) {
+            const dot = document.getElementById('connection-status-dot');
+            const text = document.getElementById('connection-status-text');
+            const modalDetail = document.getElementById('cloud-modal-status-detail');
+            const uidDetail = document.getElementById('cloud-modal-uid-detail');
+            const countsDetail = document.getElementById('cloud-modal-counts-detail');
+
+            if (dot && dotColorClass) dot.className = `w-1.5 h-1.5 rounded-full ${dotColorClass}`;
+            if (text && statusText) text.textContent = statusText;
+            if (modalDetail && statusText) modalDetail.textContent = statusText;
+            if (uidDetail) {
+                uidDetail.textContent = currentUser ? `Authenticated UID: ${currentUser.uid}` : 'Not authenticated';
+            }
+            if (countsDetail) {
+                const profileCount = Object.keys(playerProfilesMap).length;
+                countsDetail.textContent = `Cloud Player Profiles Synced: ${profileCount} • Match Events: ${(matchState.events || []).length}`;
+            }
+        }
+
         async function uploadVideoToFirestoreChunks(file, onProgress) {
             if (!db || !currentUser) {
-                throw new Error("Firebase is not connected yet.");
+                throw new Error("Waiting for Firebase Cloud connection. Please try again in a moment.");
             }
-            const maxBytes = 15 * 1024 * 1024; // 15MB max for Firestore chunked video
+            const maxBytes = 20 * 1024 * 1024; // 20MB max for Firestore chunked video
             if (file.size > maxBytes) {
-                throw new Error("Video file is larger than 15MB. Please trim the clip or use a shorter highlight video.");
+                throw new Error("Video file is larger than 20MB. Please trim the clip to a shorter highlight.");
             }
+
+            cancelUploadRequested = false;
 
             const dataUrl = await new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -1240,25 +1266,41 @@
             const metaHeader = dataUrl.substring(0, base64Index + 1);
             const rawBase64 = dataUrl.substring(base64Index + 1);
 
-            const chunkSize = 650 * 1024; // ~650KB per Firestore document (well under 1MB limit)
+            // 450KB per Firestore document (safely below 1MB Firestore document limit)
+            const chunkSize = 450 * 1024;
             const totalChunks = Math.ceil(rawBase64.length / chunkSize);
             const mediaId = `vid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
-            for (let i = 0; i < totalChunks; i++) {
-                const chunkData = rawBase64.substring(i * chunkSize, (i + 1) * chunkSize);
-                const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${i}`);
-                await setDoc(chunkDocRef, {
-                    mediaId,
-                    index: i,
-                    totalChunks,
-                    metaHeader,
-                    mimeType: file.type || 'video/mp4',
-                    data: chunkData,
-                    createdAt: Date.now()
-                });
-                if (typeof onProgress === 'function') {
-                    onProgress(Math.round(((i + 1) / totalChunks) * 100));
+            let completedChunks = 0;
+            const batchSize = 3; // Upload 3 chunks in parallel for fast multi-device sync
+
+            for (let i = 0; i < totalChunks; i += batchSize) {
+                if (cancelUploadRequested) {
+                    throw new Error("Upload cancelled.");
                 }
+                const batchPromises = [];
+                for (let j = i; j < Math.min(i + batchSize, totalChunks); j++) {
+                    const chunkData = rawBase64.substring(j * chunkSize, (j + 1) * chunkSize);
+                    const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${j}`);
+                    batchPromises.push(
+                        setDoc(chunkDocRef, {
+                            mediaId,
+                            index: j,
+                            totalChunks,
+                            metaHeader,
+                            mimeType: file.type || 'video/mp4',
+                            data: chunkData,
+                            updatedBy: currentUser.uid,
+                            createdAt: Date.now()
+                        }).then(() => {
+                            completedChunks++;
+                            if (typeof onProgress === 'function') {
+                                onProgress(Math.round((completedChunks / totalChunks) * 100));
+                            }
+                        })
+                    );
+                }
+                await Promise.all(batchPromises);
             }
 
             const firestoreUri = `firestore://mediaChunks/${mediaId}?chunks=${totalChunks}`;
@@ -1266,7 +1308,6 @@
             return firestoreUri;
         }
 
-        // Resolve a firestore://mediaChunks/ URI back into a playable video URL on any device
         async function resolveFirebaseMediaUrl(url) {
             if (!url || !url.startsWith('firestore://mediaChunks/')) {
                 return url;
@@ -1282,20 +1323,27 @@
                 const params = new URLSearchParams(queryStr || '');
                 const totalChunks = parseInt(params.get('chunks') || '1', 10);
 
-                let fullBase64 = '';
-                let mimeType = 'video/mp4';
-
+                const chunkPromises = [];
                 for (let i = 0; i < totalChunks; i++) {
                     const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${i}`);
-                    const snap = await getDoc(chunkDocRef);
+                    chunkPromises.push(getDoc(chunkDocRef));
+                }
+
+                const snaps = await Promise.all(chunkPromises);
+                const orderedChunks = new Array(totalChunks);
+                let mimeType = 'video/mp4';
+
+                for (let i = 0; i < snaps.length; i++) {
+                    const snap = snaps[i];
                     if (!snap.exists()) {
-                        throw new Error(`Missing media chunk ${i}`);
+                        throw new Error(`Missing video chunk ${i}`);
                     }
                     const d = snap.data();
                     if (d.mimeType) mimeType = d.mimeType;
-                    fullBase64 += d.data;
+                    orderedChunks[i] = d.data;
                 }
 
+                const fullBase64 = orderedChunks.join('');
                 const byteCharacters = atob(fullBase64);
                 const byteArrays = [];
                 const sliceSize = 8192;
@@ -1320,18 +1368,18 @@
 
         // Official 12-Player Active Roster (Synced with Firestore playerProfiles)
         const players = [
-            { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "videos/01-haaris.mp4" },
-            { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "videos/03-nael.mp4" },
-            { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "videos/04-logan.mp4" },
-            { id: 5, jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", photo: "", videoUrl: "videos/05-elijah.mp4" },
-            { id: 11, jersey: 11, name: "Tristan D'Mello", position: "Winger/Striker", parents: "Melvin & Charlotte", siblings: "", photo: "", videoUrl: "videos/11-tristan.mp4" },
-            { id: 22, jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "videos/22-yazed.mp4" },
-            { id: 35, jersey: 35, name: "Nyle Zachary", position: "Midfield/Forward", parents: "Hug Saleh", siblings: "", photo: "", videoUrl: "videos/35-nyle.mp4" },
-            { id: 52, jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Scot & Luba", siblings: "", photo: "", videoUrl: "videos/52-sam.mp4" },
-            { id: 58, jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", photo: "", videoUrl: "videos/58-harrison.mp4" },
-            { id: 62, jersey: 62, name: "Elnathan (Nathan) Udoh", position: "Defense/Midfield", parents: "Emmanuel & Dépéjú", siblings: "", photo: "", videoUrl: "videos/62-nathan.mp4" },
-            { id: 65, jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", photo: "", videoUrl: "videos/65-nicholas.mp4" },
-            { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "videos/70-esteban.mp4" }
+            { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "" },
+            { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
+            { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "" },
+            { id: 5, jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", photo: "", videoUrl: "" },
+            { id: 11, jersey: 11, name: "Tristan D'Mello", position: "Winger/Striker", parents: "Melvin & Charlotte", siblings: "", photo: "", videoUrl: "" },
+            { id: 22, jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "" },
+            { id: 35, jersey: 35, name: "Nyle Zachary", position: "Midfield/Forward", parents: "Hug Saleh", siblings: "", photo: "", videoUrl: "" },
+            { id: 52, jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Scot & Luba", siblings: "", photo: "", videoUrl: "" },
+            { id: 58, jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", photo: "", videoUrl: "" },
+            { id: 62, jersey: 62, name: "Elnathan (Nathan) Udoh", position: "Defense/Midfield", parents: "Emmanuel & Dépéjú", siblings: "", photo: "", videoUrl: "" },
+            { id: 65, jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", photo: "", videoUrl: "" },
+            { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "" }
         ];
 
         // Cloud-synced player profile overrides (photo, videoUrl, parents, siblings keyed by jersey)
@@ -1449,10 +1497,217 @@
             app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
-            storage = getStorage(app);
             initAuthAndSync();
         } catch (e) {
             console.warn("Firebase initialization error:", e);
+            setSyncBadge("Cloud Init Error", "bg-rose-500");
+        }
+
+        async function initAuthAndSync() {
+            try {
+                // RULE 3: Authenticate FIRST before any Firestore operations
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) {
+                        setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+                        setupRealtimeSync();
+                    } else {
+                        setSyncBadge("Disconnected", "bg-amber-400");
+                    }
+                });
+            } catch (err) {
+                console.warn("Auth initialization error:", err);
+                setSyncBadge("Auth Error", "bg-rose-500");
+            }
+        }
+
+        function applyProfileDocToRoster(docId, data) {
+            const jerseyNum = parseInt(docId, 10) || data.jersey;
+            if (!jerseyNum) return;
+            playerProfilesMap[jerseyNum] = { ...(playerProfilesMap[jerseyNum] || {}), ...data, jersey: jerseyNum };
+            const rosterPlayer = players.find(p => p.jersey === jerseyNum);
+            if (rosterPlayer) {
+                if (data.parents !== undefined) rosterPlayer.parents = data.parents;
+                if (data.siblings !== undefined) rosterPlayer.siblings = data.siblings;
+                if (data.photo !== undefined) rosterPlayer.photo = data.photo;
+                if (data.videoUrl !== undefined) rosterPlayer.videoUrl = data.videoUrl;
+            }
+        }
+
+        function setupRealtimeSync() {
+            if (!db || !currentUser || listenersInitialized) return;
+            listenersInitialized = true;
+
+            // 1. Live Match & History Listener
+            try {
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                onSnapshot(matchDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const remoteState = snap.data();
+                        if (remoteState && typeof remoteState === 'object') {
+                            matchState = {
+                                ...matchState,
+                                ...remoteState,
+                                events: Array.isArray(remoteState.events) ? remoteState.events : (matchState.events || []),
+                                history: Array.isArray(remoteState.history) ? remoteState.history : (matchState.history || [])
+                            };
+                            renderMatchTracker();
+                            renderRoster();
+                            renderLeaderboard();
+                            if (activePlayerCard) refreshActivePlayerModalUI(activePlayerCard.jersey);
+                            setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+                        }
+                    }
+                }, (error) => {
+                    console.warn("MatchCenter snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("MatchCenter listener init error:", err);
+            }
+
+            // 2. Player Profiles (Photos, Highlight Videos, Parents & Siblings) Listener
+            try {
+                const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
+                onSnapshot(profilesColRef, (snap) => {
+                    snap.forEach((docSnap) => {
+                        applyProfileDocToRoster(docSnap.id, docSnap.data());
+                    });
+                    renderRoster();
+                    if (activePlayerCard) {
+                        refreshActivePlayerModalUI(activePlayerCard.jersey);
+                    }
+                    setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+                }, (error) => {
+                    console.warn("PlayerProfiles snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("PlayerProfiles listener init error:", err);
+            }
+
+            // 3. League Standings, Custom Schedule & Backup Profiles Map Listener
+            try {
+                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
+                onSnapshot(portalDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data.standingsJson) {
+                            try {
+                                const parsedS = JSON.parse(data.standingsJson);
+                                if (Array.isArray(parsedS) && parsedS.length > 0) {
+                                    leagueStandings = parsedS;
+                                    renderStandings();
+                                    renderSchedule();
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing standingsJson:", e);
+                            }
+                        }
+                        if (data.scheduleJson) {
+                            try {
+                                const parsedE = JSON.parse(data.scheduleJson);
+                                if (Array.isArray(parsedE) && parsedE.length > 0) {
+                                    scheduleEvents = parsedE;
+                                    renderSchedule();
+                                }
+                            } catch (e) {
+                                console.warn("Error parsing scheduleJson:", e);
+                            }
+                        }
+                    }
+                }, (error) => {
+                    console.warn("TeamPortal snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("TeamPortal listener init error:", err);
+            }
+        }
+
+        async function forceCloudPull() {
+            if (!db || !currentUser) return;
+            try {
+                setSyncBadge("Refreshing...", "bg-sky-400 animate-ping");
+                const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
+                const profSnaps = await getDocs(profilesColRef);
+                profSnaps.forEach((docSnap) => {
+                    applyProfileDocToRoster(docSnap.id, docSnap.data());
+                });
+
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                const matchSnap = await getDoc(matchDocRef);
+                if (matchSnap.exists()) {
+                    const remoteState = matchSnap.data();
+                    matchState = { ...matchState, ...remoteState };
+                }
+
+                renderRoster();
+                renderMatchTracker();
+                renderStandings();
+                renderSchedule();
+                renderLeaderboard();
+                if (activePlayerCard) refreshActivePlayerModalUI(activePlayerCard.jersey);
+                setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+            } catch (err) {
+                console.warn("Manual cloud pull error:", err);
+                setSyncBadge("Sync Error", "bg-rose-500");
+            }
+        }
+
+        // Save matchState, standings, and schedule to Firestore with undefined-safe serialization
+        async function savePersistentData() {
+            if (!db || !currentUser) return;
+            try {
+                setSyncBadge("Saving...", "bg-sky-400 animate-pulse");
+                const cleanMatchState = JSON.parse(JSON.stringify(matchState));
+                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+                await setDoc(matchDocRef, cleanMatchState, { merge: true });
+
+                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
+                await setDoc(portalDocRef, {
+                    standingsJson: JSON.stringify(leagueStandings),
+                    scheduleJson: JSON.stringify(scheduleEvents),
+                    updatedAt: Date.now()
+                }, { merge: true });
+                setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+            } catch (err) {
+                console.warn("Firestore save error:", err);
+                setSyncBadge("Save Error", "bg-rose-500");
+            }
+        }
+
+        // Save an individual player's photo, videoUrl, or family info directly to Firestore
+        async function savePlayerProfileToFirebase(jersey, profileUpdates) {
+            if (!playerProfilesMap[jersey]) {
+                playerProfilesMap[jersey] = { jersey };
+            }
+            const cleanUpdates = JSON.parse(JSON.stringify(profileUpdates));
+            playerProfilesMap[jersey] = {
+                ...playerProfilesMap[jersey],
+                ...cleanUpdates,
+                jersey,
+                updatedAt: Date.now()
+            };
+
+            const rosterPlayer = players.find(p => p.jersey === jersey);
+            if (rosterPlayer) {
+                if (cleanUpdates.parents !== undefined) rosterPlayer.parents = cleanUpdates.parents;
+                if (cleanUpdates.siblings !== undefined) rosterPlayer.siblings = cleanUpdates.siblings;
+                if (cleanUpdates.photo !== undefined) rosterPlayer.photo = cleanUpdates.photo;
+                if (cleanUpdates.videoUrl !== undefined) rosterPlayer.videoUrl = cleanUpdates.videoUrl;
+            }
+
+            if (!db || !currentUser) {
+                throw new Error("Firebase is not connected yet.");
+            }
+            setSyncBadge("Saving Profile...", "bg-sky-400 animate-pulse");
+            const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
+            await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
+            setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
         }
 
         async function initAuthAndSync() {
@@ -1695,10 +1950,7 @@
         }
 
         function openCloudConfigModal() {
-            if (!isCoachMode) {
-                openCoachAuthModal();
-                return;
-            }
+            setSyncBadge();
             const modal = document.getElementById('cloud-config-modal');
             if (modal) modal.classList.remove('hidden');
         }
@@ -2142,7 +2394,7 @@
             }
         }
 
-        function processVideoUploadFile(e) {
+        async function processVideoUploadFile(e) {
             const file = e.target.files?.[0];
             if (!file) return;
 
@@ -2153,59 +2405,12 @@
             const statusEl = document.getElementById('video-upload-status');
 
             if (filenameEl) filenameEl.textContent = file.name;
-            if (bar) bar.style.width = '0%';
-            if (percentEl) percentEl.textContent = '0%';
-            if (statusEl) statusEl.textContent = 'Uploading Video to Firebase...';
+            if (bar) bar.style.width = '5%';
+            if (percentEl) percentEl.textContent = '5%';
+            if (statusEl) statusEl.textContent = 'Syncing Video to Firebase Cloud...';
             if (modal) modal.classList.remove('hidden');
 
-            const hasValidStorageKey = firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyDummyKey-ForFirebaseInit";
-
-            if (storage && auth?.currentUser && hasValidStorageKey) {
-                try {
-                    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-                    const uploadPath = `artifacts/${appId}/public/videos/${Date.now()}_${cleanName}`;
-                    const targetRef = storageRef(storage, uploadPath);
-                    currentUploadTask = uploadBytesResumable(targetRef, file);
-
-                    currentUploadTask.on('state_changed',
-                        (snapshot) => {
-                            const progress = snapshot.totalBytes > 0
-                                ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
-                                : 50;
-                            if (bar) bar.style.width = `${progress}%`;
-                            if (percentEl) percentEl.textContent = `${progress}%`;
-                        },
-                        (error) => {
-                            console.warn("Firebase Storage fallback to Firestore chunks:", error);
-                            handleVideoFallbackToFirestore(file);
-                        },
-                        async () => {
-                            try {
-                                const downloadUrl = await getDownloadURL(currentUploadTask.snapshot.ref);
-                                await completeVideoAttachment(downloadUrl);
-                            } catch (urlErr) {
-                                console.warn("Error getting video download URL, using Firestore chunks:", urlErr);
-                                handleVideoFallbackToFirestore(file);
-                            }
-                        }
-                    );
-                    return;
-                } catch (err) {
-                    console.warn("Upload task init error, using Firestore chunks:", err);
-                }
-            }
-
-            handleVideoFallbackToFirestore(file);
-        }
-
-        // Store video in Firestore chunks so it persists in Firebase across all devices even without a Storage bucket
-        async function handleVideoFallbackToFirestore(file) {
-            const bar = document.getElementById('video-upload-bar');
-            const percentEl = document.getElementById('video-upload-percent');
-            const statusEl = document.getElementById('video-upload-status');
-
             try {
-                if (statusEl) statusEl.textContent = 'Saving Video to Firebase Firestore...';
                 const firestoreUri = await uploadVideoToFirestoreChunks(file, (pct) => {
                     if (bar) bar.style.width = `${pct}%`;
                     if (percentEl) percentEl.textContent = `${pct}%`;
@@ -2213,9 +2418,10 @@
                 await completeVideoAttachment(firestoreUri);
             } catch (err) {
                 console.warn("Firestore video upload error:", err);
-                const modal = document.getElementById('video-upload-modal');
                 if (modal) modal.classList.add('hidden');
-                openConfirmModal("Video Upload Notice", err.message || "Could not upload video to Firebase.", () => {});
+                if (err.message !== "Upload cancelled.") {
+                    openConfirmModal("Video Upload Notice", err.message || "Could not upload video to Firebase.", () => {});
+                }
             }
         }
 
@@ -2237,10 +2443,7 @@
         }
 
         function cancelVideoUpload() {
-            if (currentUploadTask) {
-                currentUploadTask.cancel();
-                currentUploadTask = null;
-            }
+            cancelUploadRequested = true;
             const modal = document.getElementById('video-upload-modal');
             if (modal) modal.classList.add('hidden');
         }
@@ -2282,7 +2485,6 @@
             document.getElementById('family-photo-file-input').click();
         }
 
-        // Compress family photo and upload to Firebase Storage + save to Firestore playerProfiles
         function processFamilyPhotoFile(e) {
             const file = e.target.files?.[0];
             if (!file || !activePlayerCard) return;
@@ -2297,52 +2499,44 @@
             if (filenameEl) filenameEl.textContent = file.name;
             if (bar) bar.style.width = '25%';
             if (percentEl) percentEl.textContent = '25%';
-            if (statusEl) statusEl.textContent = 'Syncing Photo to Firebase...';
+            if (statusEl) statusEl.textContent = 'Syncing Photo to Firebase Cloud...';
             if (modal) modal.classList.remove('hidden');
 
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const img = new Image();
                 img.onload = async () => {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 750;
-                    let w = img.width, h = img.height;
-                    if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-                    else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-                    canvas.width = w; canvas.height = h;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, w, h);
-                    const b64DataUrl = canvas.toDataURL('image/jpeg', 0.80);
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const maxDim = 600;
+                        let w = img.width, h = img.height;
+                        if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const b64DataUrl = canvas.toDataURL('image/jpeg', 0.75);
 
-                    if (bar) bar.style.width = '65%';
-                    if (percentEl) percentEl.textContent = '65%';
+                        if (bar) bar.style.width = '75%';
+                        if (percentEl) percentEl.textContent = '75%';
 
-                    let finalPhotoValue = b64DataUrl;
-                    const hasValidStorageKey = firebaseConfig.apiKey && firebaseConfig.apiKey !== "AIzaSyDummyKey-ForFirebaseInit";
+                        // Save directly to Firestore playerProfiles collection so all devices receive it immediately
+                        await savePlayerProfileToFirebase(targetJersey, { photo: b64DataUrl });
 
-                    // Try uploading to Firebase Storage first; otherwise store compressed JPEG directly in Firestore playerProfiles
-                    if (storage && auth?.currentUser && hasValidStorageKey) {
-                        try {
-                            const photoPath = `artifacts/${appId}/public/photos/player_${targetJersey}_${Date.now()}.jpg`;
-                            const photoRef = storageRef(storage, photoPath);
-                            await uploadString(photoRef, b64DataUrl, 'data_url');
-                            finalPhotoValue = await getDownloadURL(photoRef);
-                        } catch (storageErr) {
-                            console.debug("Using Firestore document storage for compressed photo:", storageErr);
+                        if (bar) bar.style.width = '100%';
+                        if (percentEl) percentEl.textContent = '100%';
+
+                        if (modal) modal.classList.add('hidden');
+                        if (activePlayerCard && activePlayerCard.jersey === targetJersey) {
+                            refreshActivePlayerModalUI(targetJersey);
                         }
+                        renderRoster();
+                    } catch (err) {
+                        console.warn("Error syncing photo to Firebase:", err);
+                        if (modal) modal.classList.add('hidden');
+                        openConfirmModal("Photo Sync Error", err.message || "Could not save photo to Firebase Cloud.", () => {});
                     }
-
-                    if (bar) bar.style.width = '100%';
-                    if (percentEl) percentEl.textContent = '100%';
-
-                    // Save to Firestore playerProfiles collection so all devices see the photo immediately
-                    await savePlayerProfileToFirebase(targetJersey, { photo: finalPhotoValue });
-
-                    if (modal) modal.classList.add('hidden');
-                    if (activePlayerCard && activePlayerCard.jersey === targetJersey) {
-                        refreshActivePlayerModalUI(targetJersey);
-                    }
-                    renderRoster();
                 };
                 img.src = evt.target.result;
             };
@@ -3886,6 +4080,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.submitCoachPin = submitCoachPin;
         window.openCloudConfigModal = openCloudConfigModal;
         window.closeCloudConfigModal = closeCloudConfigModal;
+        window.forceCloudPull = forceCloudPull;
         window.openPlayerModal = openPlayerModal;
         window.closePlayerModal = closePlayerModal;
         window.savePlayerVideoUrl = savePlayerVideoUrl;
