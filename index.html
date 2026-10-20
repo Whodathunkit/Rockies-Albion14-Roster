@@ -1505,9 +1505,13 @@
 
         async function initAuthAndSync() {
             try {
-                // RULE 3: Authenticate FIRST before any Firestore operations
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (customErr) {
+                        console.warn("Custom token auth failed, falling back to anonymous auth:", customErr);
+                        await signInAnonymously(auth);
+                    }
                 } else {
                     await signInAnonymously(auth);
                 }
@@ -1523,7 +1527,8 @@
                 });
             } catch (err) {
                 console.warn("Auth initialization error:", err);
-                setSyncBadge("Auth Error", "bg-rose-500");
+                // Fallback: If auth fails entirely, allow offline/local mode with visual badge
+                setSyncBadge("Local Mode", "bg-amber-400");
             }
         }
 
