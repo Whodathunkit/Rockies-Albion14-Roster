@@ -1208,8 +1208,10 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'rockies-albion-14';
         const defaultProjectId = "rockies-albion-14";
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        
+        // Hardcoded Firebase configuration using your provided API key
         const firebaseConfig = envConfig || {
-            apiKey: "AIzaSyDummyKey-ForFirebaseInit",
+            apiKey: "AIzaSyBiHCsbZ_d36OyxaZpivk8tifKazvwLhCs",
             authDomain: `${defaultProjectId}.firebaseapp.com`,
             projectId: defaultProjectId,
             storageBucket: `${defaultProjectId}.firebasestorage.app`,
@@ -1527,7 +1529,6 @@
                 });
             } catch (err) {
                 console.warn("Auth initialization error:", err);
-                // Fallback: If auth fails entirely, allow offline/local mode with visual badge
                 setSyncBadge("Local Mode", "bg-amber-400");
             }
         }
@@ -1576,7 +1577,7 @@
                 console.warn("MatchCenter listener init error:", err);
             }
 
-            // 2. Player Profiles (Photos, Highlight Videos, Parents & Siblings) Listener
+            // 2. Player Profiles Listener
             try {
                 const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
                 onSnapshot(profilesColRef, (snap) => {
@@ -1595,7 +1596,7 @@
                 console.warn("PlayerProfiles listener init error:", err);
             }
 
-            // 2B. Single-Document Profiles Mirror Listener (Instant multi-device sync fallback)
+            // 2B. Single-Document Profiles Mirror Listener
             try {
                 const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
                 onSnapshot(profilesBackupRef, (snap) => {
@@ -1701,7 +1702,6 @@
             }
         }
 
-        // Save matchState, standings, and schedule to Firestore with undefined-safe serialization
         async function savePersistentData() {
             if (!db || !currentUser) return;
             try {
@@ -1723,7 +1723,6 @@
             }
         }
 
-        // Save an individual player's photo, videoUrl, or family info directly to Firestore
         async function savePlayerProfileToFirebase(jersey, profileUpdates) {
             if (!playerProfilesMap[jersey]) {
                 playerProfilesMap[jersey] = { jersey };
@@ -1751,7 +1750,6 @@
             const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
             await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
 
-            // Also mirror to single-document backup for instant cross-device snapshot sync
             const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
             await setDoc(profilesBackupRef, {
                 profilesJson: JSON.stringify(playerProfilesMap),
@@ -1983,8 +1981,6 @@
 
         function getPlayerRecentHighlights(jersey) {
             const items = [];
-
-            // 1. Active match MOTM & events
             const activeOpp = matchState.opponentName || 'Opponent';
             if (matchState.motmJersey === jersey) {
                 items.push({
@@ -2027,7 +2023,6 @@
                 }
             });
 
-            // 2. Archived past matches MOTM & events
             (matchState.history || []).forEach(m => {
                 const opp = m.opponent || 'Opponent';
                 if (m.motmJersey === jersey) {
@@ -2412,7 +2407,6 @@
                         if (bar) bar.style.width = '75%';
                         if (percentEl) percentEl.textContent = '75%';
 
-                        // Save directly to Firestore playerProfiles collection so all devices receive it immediately
                         await savePlayerProfileToFirebase(targetJersey, { photo: b64DataUrl });
 
                         if (bar) bar.style.width = '100%';
@@ -2574,7 +2568,6 @@
                     stats: { ...matchState.stats }
                 });
 
-                // Reset board cleanly for upcoming matches
                 matchState.scoreUs = 0;
                 matchState.scoreThem = 0;
                 matchState.timerSeconds = 0;
@@ -3546,15 +3539,7 @@
                     reader.readAsDataURL(file);
                 });
 
-                const apiKey = "";
-                if (!apiKey) {
-                    setTimeout(() => {
-                        pendingAiParsedTeams = [...leagueStandings];
-                        populateAiPreview(pendingAiParsedTeams);
-                    }, 600);
-                    return;
-                }
-
+                const apiKey = "AIzaSyBiHCsbZ_d36OyxaZpivk8tifKazvwLhCs";
                 const prompt = `Analyze this CMSA league standings screenshot. Locate the "Boys U13 Tier 2" table.
 Extract every team in rank order with:
 - name: Full club name
@@ -3652,7 +3637,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             const motmPodium = document.getElementById('podium-motm');
             const tagsCloud = document.getElementById('highlights-tag-cloud');
 
-            // 1. Goals
             const scorers = players.map(p => ({ ...p, goals: getPlayerGoals(p.jersey) }))
                 .filter(p => p.goals > 0)
                 .sort((a, b) => b.goals - a.goals);
@@ -3672,7 +3656,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 }
             }
 
-            // 2. Assists
             const playmakers = players.map(p => ({ ...p, assists: getPlayerAssists(p.jersey) }))
                 .filter(p => p.assists > 0)
                 .sort((a, b) => b.assists - a.assists);
@@ -3692,7 +3675,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 }
             }
 
-            // 3. Defensive Heroics
             const defenders = players.map(p => ({ ...p, stops: getPlayerStops(p.jersey) }))
                 .filter(p => p.stops > 0)
                 .sort((a, b) => b.stops - a.stops);
@@ -3712,7 +3694,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 }
             }
 
-            // 4. MOTM Honors
             const motmLeaders = players.map(p => ({ ...p, motms: getPlayerMOTMCount(p.jersey) }))
                 .filter(p => p.motms > 0)
                 .sort((a, b) => b.motms - a.motms);
@@ -3732,7 +3713,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 }
             }
 
-            // Tag Cloud
             if (tagsCloud) {
                 const tags = [];
                 (matchState.events || []).forEach(e => {
@@ -3778,7 +3758,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             confirmActionCallback = null;
         }
 
-        // ================= EDIT PAST MATCH LOGIC =================
         let currentEditMatchId = null;
 
         function renderEditMatchEvents() {
@@ -3971,6 +3950,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.submitCoachPin = submitCoachPin;
         window.openCloudConfigModal = openCloudConfigModal;
         window.closeCloudConfigModal = closeCloudConfigModal;
+        window.saveFirebaseCloudConfig = saveFirebaseCloudConfig;
         window.forceCloudPull = forceCloudPull;
         window.openPlayerModal = openPlayerModal;
         window.closePlayerModal = closePlayerModal;
