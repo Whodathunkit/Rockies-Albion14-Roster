@@ -1590,7 +1590,36 @@
                 console.warn("PlayerProfiles listener init error:", err);
             }
 
-            // 3. League Standings, Custom Schedule & Backup Profiles Map Listener
+            // 2B. Single-Document Profiles Mirror Listener (Instant multi-device sync fallback)
+            try {
+                const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
+                onSnapshot(profilesBackupRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        if (data && data.profilesJson) {
+                            try {
+                                const parsedMap = JSON.parse(data.profilesJson);
+                                Object.keys(parsedMap).forEach((jerseyKey) => {
+                                    applyProfileDocToRoster(jerseyKey, parsedMap[jerseyKey]);
+                                });
+                                renderRoster();
+                                if (activePlayerCard) {
+                                    refreshActivePlayerModalUI(activePlayerCard.jersey);
+                                }
+                                setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
+                            } catch (e) {
+                                console.warn("Error parsing profilesBackup JSON:", e);
+                            }
+                        }
+                    }
+                }, (error) => {
+                    console.warn("ProfilesBackup snapshot error:", error);
+                });
+            } catch (err) {
+                console.warn("ProfilesBackup listener init error:", err);
+            }
+
+            // 3. League Standings & Custom Schedule Listener
             try {
                 const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
                 onSnapshot(portalDocRef, (snap) => {
@@ -1637,6 +1666,15 @@
                 profSnaps.forEach((docSnap) => {
                     applyProfileDocToRoster(docSnap.id, docSnap.data());
                 });
+
+                const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
+                const backupSnap = await getDoc(profilesBackupRef);
+                if (backupSnap.exists() && backupSnap.data().profilesJson) {
+                    const parsedMap = JSON.parse(backupSnap.data().profilesJson);
+                    Object.keys(parsedMap).forEach((jerseyKey) => {
+                        applyProfileDocToRoster(jerseyKey, parsedMap[jerseyKey]);
+                    });
+                }
 
                 const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
                 const matchSnap = await getDoc(matchDocRef);
@@ -1707,167 +1745,15 @@
             setSyncBadge("Saving Profile...", "bg-sky-400 animate-pulse");
             const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
             await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
+
+            // Also mirror to single-document backup for instant cross-device snapshot sync
+            const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
+            await setDoc(profilesBackupRef, {
+                profilesJson: JSON.stringify(playerProfilesMap),
+                updatedAt: Date.now()
+            }, { merge: true });
+
             setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
-        }
-
-        async function initAuthAndSync() {
-            try {
-                // RULE 3: Authenticate FIRST before any Firestore or Storage operations
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    const dot = document.getElementById('connection-status-dot');
-                    const text = document.getElementById('connection-status-text');
-                    if (user) {
-                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
-                        if (text) text.textContent = "Firebase Live";
-                        setupRealtimeSync();
-                    } else {
-                        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-amber-400";
-                        if (text) text.textContent = "Offline";
-                    }
-                });
-            } catch (err) {
-                console.warn("Auth initialization error:", err);
-            }
-        }
-
-        function setupRealtimeSync() {
-            if (!db || !currentUser) return;
-
-            // 1. Live Match & History Listener
-            try {
-                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-                onSnapshot(matchDocRef, (snap) => {
-                    if (snap.exists()) {
-                        const remoteState = snap.data();
-                        if (remoteState && typeof remoteState === 'object') {
-                            matchState = { ...matchState, ...remoteState };
-                            renderMatchTracker();
-                            renderRoster();
-                            renderLeaderboard();
-                            if (activePlayerCard) openPlayerModal(activePlayerCard.jersey);
-                        }
-                    }
-                }, (error) => {
-                    console.warn("MatchCenter snapshot error:", error);
-                });
-            } catch (err) {
-                console.warn("MatchCenter listener init error:", err);
-            }
-
-            // 2. Player Profiles (Photos, Highlight Videos, Parents & Siblings) Listener
-            try {
-                const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
-                onSnapshot(profilesColRef, (snap) => {
-                    snap.forEach((docSnap) => {
-                        const data = docSnap.data();
-                        const jerseyNum = parseInt(docSnap.id, 10) || data.jersey;
-                        if (jerseyNum) {
-                            playerProfilesMap[jerseyNum] = data;
-                            const rosterPlayer = players.find(p => p.jersey === jerseyNum);
-                            if (rosterPlayer) {
-                                if (data.parents !== undefined) rosterPlayer.parents = data.parents;
-                                if (data.siblings !== undefined) rosterPlayer.siblings = data.siblings;
-                                if (data.photo !== undefined) rosterPlayer.photo = data.photo;
-                                if (data.videoUrl !== undefined) rosterPlayer.videoUrl = data.videoUrl;
-                            }
-                        }
-                    });
-                    renderRoster();
-                    if (activePlayerCard) {
-                        refreshActivePlayerModalUI(activePlayerCard.jersey);
-                    }
-                }, (error) => {
-                    console.warn("PlayerProfiles snapshot error:", error);
-                });
-            } catch (err) {
-                console.warn("PlayerProfiles listener init error:", err);
-            }
-
-            // 3. League Standings & Custom Schedule Listener
-            try {
-                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
-                onSnapshot(portalDocRef, (snap) => {
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        if (data.standingsJson) {
-                            try {
-                                const parsedS = JSON.parse(data.standingsJson);
-                                if (Array.isArray(parsedS) && parsedS.length > 0) {
-                                    leagueStandings = parsedS;
-                                    renderStandings();
-                                    renderSchedule();
-                                }
-                            } catch (e) {
-                                console.warn("Error parsing standingsJson:", e);
-                            }
-                        }
-                        if (data.scheduleJson) {
-                            try {
-                                const parsedE = JSON.parse(data.scheduleJson);
-                                if (Array.isArray(parsedE) && parsedE.length > 0) {
-                                    scheduleEvents = parsedE;
-                                    renderSchedule();
-                                }
-                            } catch (e) {
-                                console.warn("Error parsing scheduleJson:", e);
-                            }
-                        }
-                    }
-                }, (error) => {
-                    console.warn("TeamPortal snapshot error:", error);
-                });
-            } catch (err) {
-                console.warn("TeamPortal listener init error:", err);
-            }
-        }
-
-        // Save matchState, standings, and schedule to Firestore
-        async function savePersistentData() {
-            if (!db || !currentUser) return;
-            try {
-                const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-                await setDoc(matchDocRef, matchState, { merge: true });
-
-                const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
-                await setDoc(portalDocRef, {
-                    standingsJson: JSON.stringify(leagueStandings),
-                    scheduleJson: JSON.stringify(scheduleEvents),
-                    updatedAt: Date.now()
-                }, { merge: true });
-            } catch (err) {
-                console.warn("Firestore save error:", err);
-            }
-        }
-
-        // Save an individual player's photo, videoUrl, or family info to Firestore
-        async function savePlayerProfileToFirebase(jersey, profileUpdates) {
-            if (!playerProfilesMap[jersey]) {
-                playerProfilesMap[jersey] = { jersey };
-            }
-            playerProfilesMap[jersey] = { ...playerProfilesMap[jersey], ...profileUpdates, jersey, updatedAt: Date.now() };
-
-            const rosterPlayer = players.find(p => p.jersey === jersey);
-            if (rosterPlayer) {
-                if (profileUpdates.parents !== undefined) rosterPlayer.parents = profileUpdates.parents;
-                if (profileUpdates.siblings !== undefined) rosterPlayer.siblings = profileUpdates.siblings;
-                if (profileUpdates.photo !== undefined) rosterPlayer.photo = profileUpdates.photo;
-                if (profileUpdates.videoUrl !== undefined) rosterPlayer.videoUrl = profileUpdates.videoUrl;
-            }
-
-            if (!db || !currentUser) return;
-            try {
-                const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
-                await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
-            } catch (err) {
-                console.warn("Error saving player profile to Firestore:", err);
-            }
         }
 
         function handleFamilyPassSubmit(e) {
