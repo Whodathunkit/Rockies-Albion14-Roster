@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Rockies Albion 14 | Team Portal & Match Center</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +31,6 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-blue-600 selection:text-white pb-12">
 
-    <!-- ================= 1. TEAM FAMILY PASSCODE LOCK SCREEN ================= -->
     <div id="family-pass-gate" class="fixed inset-0 bg-[#070b14] z-[100] flex items-center justify-center p-4">
         <div class="max-w-md w-full bg-zinc-900/95 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center relative overflow-hidden">
             <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -62,7 +60,6 @@
         </div>
     </div>
 
-    <!-- ================= 2. MAIN APP SHELL ================= -->
     <header class="relative bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -75,16 +72,15 @@
                         <span>CMSA Boys U13 Tier 2</span>
                         <span>•</span>
                         <span id="connection-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="connection-status-text" class="text-zinc-400">Connecting...</span>
+                        <span id="connection-status-text" class="text-zinc-400">Firebase Live</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Mode Toggle (Spectator vs Coach Mode) -->
+            <!-- Mode Toggle & Cloud Status -->
             <div class="flex items-center space-x-2">
-                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="inline-flex items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300 transition">
-                    <span>☁️</span>
-                    <span class="hidden sm:inline">Cloud Status</span>
+                <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="hidden items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
+                    <span>☁️ Cloud Status</span>
                 </button>
                 <button id="btn-mode-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95">
                     <span id="mode-toggle-icon">🔒</span>
@@ -117,8 +113,6 @@
 
         <!-- ================= TAB 1: ROSTER ================= -->
         <section id="view-roster" class="space-y-6">
-
-            <!-- Team Officials & Staff Card -->
             <div class="bg-gradient-to-r from-zinc-900 to-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2.5">
                     <div class="flex items-center space-x-2">
@@ -157,7 +151,6 @@
                 </div>
             </div>
 
-            <!-- Roster Header -->
             <div class="flex items-center justify-between gap-3 min-w-0">
                 <div class="min-w-0">
                     <h2 class="text-xl font-black text-white tracking-tight">Active Team Roster</h2>
@@ -168,16 +161,11 @@
                 </div>
             </div>
 
-            <!-- Roster Cards Container -->
-            <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
-                <!-- Dynamically populated via JS -->
-            </div>
+            <div id="roster-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5"></div>
         </section>
 
         <!-- ================= TAB 2: LIVE TRACKER ================= -->
         <section id="view-tracker" class="hidden space-y-6">
-
-            <!-- Scoreboard Card -->
             <div class="bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 rounded-3xl p-5 sm:p-7 shadow-2xl relative overflow-hidden">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-800 text-xs font-bold text-zinc-400">
                     <div class="flex items-center space-x-2">
@@ -185,7 +173,6 @@
                         <span id="match-header-status-text" class="text-white uppercase tracking-wider">CMSA League Match</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <!-- Dedicated End Match & Archive Action Buttons -->
                         <button id="btn-end-match-trigger" onclick="triggerEndMatchAction()" class="hidden px-3 py-1 rounded-lg bg-rose-700 hover:bg-rose-600 text-[11px] font-black text-white shadow transition active:scale-95 flex items-center space-x-1">
                             <span>🏁</span>
                             <span id="btn-end-match-label">End Match</span>
@@ -196,7 +183,6 @@
                     </div>
                 </div>
 
-                <!-- Match Period Selector (Coach Only) -->
                 <div id="box-period-controls" class="hidden pt-3 flex flex-wrap items-center justify-center gap-1.5 border-b border-zinc-800/80 pb-3">
                     <button onclick="setMatchPeriod('1st Half')" id="btn-period-1st" class="px-2.5 py-1 rounded-lg bg-blue-950 border border-blue-500/40 text-blue-300 text-[11px] font-bold hover:bg-blue-900 transition">1st Half (0')</button>
                     <button onclick="setMatchPeriod('Halftime')" id="btn-period-half" class="px-2.5 py-1 rounded-lg bg-zinc-800 border border-zinc-700 text-amber-300 text-[11px] font-bold hover:bg-zinc-700 transition">Halftime ⏸</button>
@@ -206,7 +192,6 @@
                     <button onclick="setMatchPeriod('Penalties')" id="btn-period-pk" class="px-2.5 py-1 rounded-lg bg-rose-950 border border-rose-500/40 text-rose-300 text-[11px] font-bold hover:bg-rose-900 transition">Penalties 🎯</button>
                 </div>
 
-                <!-- Prominent Final Match Banner (Appears when match is ended / Full Time) -->
                 <div id="box-final-match-banner" class="hidden mt-3 p-3 bg-gradient-to-r from-emerald-950/80 via-zinc-900 to-emerald-950/80 border border-emerald-500/50 rounded-2xl flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-2 shadow-lg">
                     <div class="flex items-center space-x-2.5">
                         <span class="text-2xl">🏁</span>
@@ -225,12 +210,10 @@
                     </div>
                 </div>
 
-                <!-- Score Display -->
                 <div class="grid grid-cols-5 items-center py-6 text-center">
-                    <!-- Home Team -->
                     <div class="col-span-2 space-y-2">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-[#003C71] border border-blue-400/40 p-2 flex items-center justify-center shadow-lg">
-                            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/60x60/003C71/ffffff?text=RFC'" />
+                            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies" class="h-full w-auto object-contain brightness-125" />
                         </div>
                         <h4 class="text-sm sm:text-base font-black text-white tracking-tight">Rockies Albion 14</h4>
                         <div id="score-us" class="text-5xl sm:text-6xl font-black text-white tracking-tighter">0</div>
@@ -245,7 +228,6 @@
                         </div>
                     </div>
 
-                    <!-- Timer, VS & Period -->
                     <div class="col-span-1 space-y-2">
                         <span class="text-xs font-black uppercase tracking-wider text-zinc-500">VS</span>
                         <div id="timer-display" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-tight">00:00</div>
@@ -259,7 +241,6 @@
                         </div>
                     </div>
 
-                    <!-- Away Team -->
                     <div class="col-span-2 space-y-2">
                         <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto rounded-2xl bg-zinc-800 border border-zinc-700 p-2 flex items-center justify-center shadow">
                             <span class="text-2xl">🛡️</span>
@@ -275,7 +256,6 @@
                     </div>
                 </div>
 
-                <!-- Penalty Shootout Tracker (Conditional) -->
                 <div id="shootout-card" class="hidden mt-4 pt-4 border-t border-zinc-800/80 bg-zinc-950/80 rounded-2xl p-4 text-center">
                     <div class="flex items-center justify-between mb-3">
                         <span class="text-xs font-black uppercase tracking-wider text-rose-400">🎯 Penalty Shootout</span>
@@ -301,7 +281,6 @@
                     </div>
                 </div>
 
-                <!-- Match Stats Comparison Bar -->
                 <div class="mt-4 pt-4 border-t border-zinc-800/80 space-y-3">
                     <div class="flex items-center justify-between text-xs font-black text-zinc-400 uppercase tracking-wider">
                         <span>Rockies</span>
@@ -309,7 +288,6 @@
                         <span>Opponent</span>
                     </div>
 
-                    <!-- Stat Rows -->
                     <div class="space-y-2 text-xs">
                         <div>
                             <div class="flex justify-between font-bold text-[11px] mb-1">
@@ -377,12 +355,10 @@
                     </div>
                 </div>
 
-                <!-- Spectator Notice -->
                 <div id="box-viewer-notice" class="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-2.5 text-center text-xs text-zinc-400 mt-4">
                     👀 Spectator Mode Active. Scores, clock, and play-by-play updates stream live.
                 </div>
 
-                <!-- Man of the Match Spotlight Bar -->
                 <div id="motm-banner-box" class="mt-4 pt-4 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between bg-amber-950/20 border border-amber-500/30 rounded-2xl p-3.5">
                     <div class="flex items-center space-x-3 mb-2 sm:mb-0">
                         <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-xl shadow-inner">
@@ -404,7 +380,6 @@
                 </div>
             </div>
 
-            <!-- Play-by-Play Timeline -->
             <div class="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                     <div class="flex items-center space-x-2">
@@ -419,7 +394,6 @@
                 </div>
             </div>
 
-            <!-- Past Match History -->
             <div class="bg-zinc-900/90 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-4">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                     <div class="flex items-center space-x-2">
@@ -427,9 +401,7 @@
                         <h3 class="text-sm font-black uppercase tracking-wider text-white">Past Match History</h3>
                     </div>
                 </div>
-                <div id="past-matches-list" class="space-y-2.5">
-                    <!-- Injected dynamically -->
-                </div>
+                <div id="past-matches-list" class="space-y-2.5"></div>
             </div>
         </section>
 
@@ -441,7 +413,6 @@
                     <p class="text-xs text-zinc-400 mt-0.5">
                         Arrive <strong class="text-amber-400">30 mins early for matches</strong> and <strong class="text-blue-400">15 mins early for practice/PDP</strong>. Bring your <strong class="text-emerald-400">Size 5 ball</strong>.
                     </p>
-                    <!-- Kit Uniform Quick Reference Banner -->
                     <div class="mt-2.5 text-xs bg-zinc-950/90 border border-zinc-800 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-inner">
                         <div class="flex items-center space-x-2">
                             <span class="text-base">👕</span>
@@ -464,16 +435,13 @@
                 </div>
             </div>
 
-            <!-- Schedule Filter Tabs -->
             <div class="flex flex-wrap gap-2 text-xs font-bold">
                 <button onclick="filterSchedule('all')" id="sched-filter-all" class="px-3 py-1.5 rounded-xl bg-zinc-800 text-white">All Events</button>
                 <button onclick="filterSchedule('game')" id="sched-filter-game" class="px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white">⚽ Games Only</button>
                 <button onclick="filterSchedule('practice')" id="sched-filter-practice" class="px-3 py-1.5 rounded-xl bg-zinc-900 text-gray-400 hover:text-white">🏃 Training (Practice/PDP/Perf)</button>
             </div>
 
-            <div id="schedule-cards-list" class="space-y-3.5">
-                <!-- Dynamically injected from the authentic 38 schedule entries -->
-            </div>
+            <div id="schedule-cards-list" class="space-y-3.5"></div>
         </section>
 
         <!-- ================= TAB 4: STANDINGS ================= -->
@@ -501,7 +469,6 @@
                 </div>
             </div>
 
-            <!-- Standings Table Container -->
             <div class="overflow-x-auto rounded-2xl border border-zinc-800 bg-zinc-900/80 shadow-2xl">
                 <table class="w-full text-left text-xs text-gray-300">
                     <thead class="bg-zinc-950 text-[11px] font-black uppercase tracking-wider text-gray-400 border-b border-zinc-800">
@@ -518,9 +485,7 @@
                             <th class="py-3 px-3 text-center font-black text-white">PTS</th>
                         </tr>
                     </thead>
-                    <tbody id="standings-table-rows" class="divide-y divide-zinc-800/80 font-medium">
-                        <!-- Populated dynamically via JS -->
-                    </tbody>
+                    <tbody id="standings-table-rows" class="divide-y divide-zinc-800/80 font-medium"></tbody>
                 </table>
             </div>
         </section>
@@ -532,7 +497,6 @@
                 <p class="text-xs text-zinc-400">Celebrating scorers, playmakers, lock-down defending, and match MVP awards.</p>
             </div>
 
-            <!-- Leaderboard Podiums Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-zinc-800">
@@ -579,7 +543,6 @@
                 </div>
             </div>
 
-            <!-- Special Technique Highlight Reel -->
             <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-xl space-y-3">
                 <div class="flex items-center space-x-2 pb-2 border-b border-zinc-800">
                     <span class="text-lg">✨</span>
@@ -591,7 +554,6 @@
 
     </main>
 
-    <!-- Footer with Relock Option -->
     <footer class="max-w-6xl mx-auto px-4 mt-8 pt-4 border-t border-zinc-800 text-center text-xs text-zinc-500 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p>© 2026 Rockies Albion 14 • Calgary Minor Soccer Association (CMSA)</p>
         <button onclick="relockSite()" class="text-zinc-400 hover:text-white underline text-[11px]">
@@ -599,7 +561,7 @@
         </button>
     </footer>
 
-    <!-- ================= 3. MODALS & DIALOGS ================= -->
+    <!-- File Inputs -->
     <input type="file" id="family-photo-file-input" accept="image/*" class="hidden" onchange="processFamilyPhotoFile(event)" />
     <input type="file" id="video-upload-file-input" accept="video/*" class="hidden" onchange="processVideoUploadFile(event)" />
     <input type="file" id="standings-screenshot-file-input" accept="image/*" class="hidden" onchange="processStandingsScreenshot(event)" />
@@ -625,7 +587,7 @@
         </div>
     </div>
 
-    <!-- MODAL 0B: CLOUD CONFIG MODAL -->
+    <!-- MODAL 0B: CLOUD STATUS MODAL -->
     <div id="cloud-config-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[90] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-md w-full p-5 shadow-2xl">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -640,7 +602,7 @@
                     <p id="cloud-modal-status-detail" class="text-emerald-400 font-mono text-[11px]">Connecting to Firebase Firestore...</p>
                     <p id="cloud-modal-uid-detail" class="text-zinc-400 font-mono text-[10px]">Session UID: Authenticating...</p>
                     <p id="cloud-modal-counts-detail" class="text-blue-300 font-semibold text-[11px]">Synced Profiles: 0</p>
-                    <p class="text-[11px] text-zinc-400 pt-1">All player photos, family profiles, video clips, match events, and league standings are stored directly in Firestore under <code class="text-blue-300">/artifacts/${appId}/public/data/</code> so they sync across every phone, tablet, and computer.</p>
+                    <p class="text-[11px] text-zinc-400 pt-1">All player photos, family profiles, video clips, match events, and league standings sync in real time across devices.</p>
                 </div>
                 <div class="flex items-center justify-between pt-2 border-t border-zinc-800">
                     <button type="button" onclick="forceCloudPull()" class="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold transition">
@@ -652,7 +614,7 @@
         </div>
     </div>
 
-    <!-- MODAL 1: RECORD GOAL + TACTICAL BREAKDOWN -->
+    <!-- MODAL 1: GOAL MODAL -->
     <div id="goal-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-zinc-700 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -673,8 +635,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Play Phase (How It Came About)</label>
-                    <select id="goal-phase-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-amber-500">
+                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Play Phase</label>
+                    <select id="goal-phase-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs">
                         <option value="Open Play ⚡">Open Play ⚡</option>
                         <option value="Corner Kick 🚩">Corner Kick 🚩</option>
                         <option value="Direct Free Kick 🎯">Direct Free Kick 🎯</option>
@@ -685,8 +647,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-purple-300 uppercase tracking-wider mb-1">4. How It Was Finished</label>
-                    <select id="goal-finish-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs focus:border-purple-500">
+                    <label class="block font-bold text-purple-300 uppercase tracking-wider mb-1">4. Finish Type</label>
+                    <select id="goal-finish-select" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold text-xs">
                         <option value="Right Foot 👟">Right Foot 👟</option>
                         <option value="Left Foot 👟">Left Foot 👟</option>
                         <option value="Header 🗣️">Header 🗣️</option>
@@ -697,27 +659,20 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-rose-300 uppercase tracking-wider mb-1">5. Special Style / Highlight Tag</label>
-                    <input type="text" id="goal-tag-input" placeholder="e.g. Upper 90 🚀, Rocket 💥, Backheel ✨" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
-                    <div class="flex flex-wrap gap-1 mt-1.5">
-                        <button type="button" onclick="setGoalTag('Upper 90 🚀')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Upper 90 🚀</button>
-                        <button type="button" onclick="setGoalTag('Rocket 💥')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Rocket 💥</button>
-                        <button type="button" onclick="setGoalTag('Bicycle Kick 🚲')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Bicycle 🚲</button>
-                        <button type="button" onclick="setGoalTag('Backheel ✨')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Backheel ✨</button>
-                        <button type="button" onclick="setGoalTag('Team Play 🤝')" class="px-2 py-0.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] text-zinc-300 font-bold border border-zinc-700">Team Play 🤝</button>
-                    </div>
+                    <label class="block font-bold text-rose-300 uppercase tracking-wider mb-1">5. Highlight Tag</label>
+                    <input type="text" id="goal-tag-input" placeholder="e.g. Upper 90 🚀, Rocket 💥" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">6. Time / Minute (Optional)</label>
-                    <input type="text" id="goal-time-input" placeholder="e.g. 14:22 or 2nd Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
+                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">6. Time / Minute</label>
+                    <input type="text" id="goal-time-input" placeholder="e.g. 14:22" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-semibold placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">7. Video Clip (Upload to Firebase or Link)</label>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">7. Video Clip</label>
                     <div class="space-y-1.5">
                         <button type="button" onclick="triggerVideoUpload('goal-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
-                            <span>☁️ Upload Video from Phone to Firebase</span>
+                            <span>☁️ Upload Video to Firebase</span>
                         </button>
-                        <input type="text" id="goal-video-input" placeholder="Or paste video link / videos/05-goal.mp4" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                        <input type="text" id="goal-video-input" placeholder="Or paste video URL..." class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                     </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
@@ -744,10 +699,10 @@
                 </div>
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Note (Optional)</label>
-                    <input type="text" id="opponent-goal-note-input" placeholder="e.g. Counter attack / deflection" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    <input type="text" id="opponent-goal-note-input" placeholder="e.g. Counter attack" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
                 <div>
-                    <label class="block font-bold text-gray-300 mb-1">Time / Minute (Optional)</label>
+                    <label class="block font-bold text-gray-300 mb-1">Time (Optional)</label>
                     <input type="text" id="opponent-goal-time-input" placeholder="e.g. 24:10" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
                 <div class="flex justify-end space-x-2 pt-2 border-t border-zinc-800">
@@ -758,7 +713,7 @@
         </div>
     </div>
 
-    <!-- MODAL 2: DEFENSIVE BIG PLAY / CLEARANCE MODAL -->
+    <!-- MODAL 2: DEFENSIVE MODAL -->
     <div id="defensive-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[80] hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div class="bg-zinc-900 border border-teal-500/40 rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl my-auto max-h-[92vh] overflow-y-auto">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
@@ -784,20 +739,20 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Highlight Note</label>
-                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line with open net!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                    <label class="block font-bold text-amber-300 uppercase tracking-wider mb-1">3. Description / Note</label>
+                    <input type="text" id="defense-note-input" placeholder="e.g. Cleared right off the line!" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">4. Time / Minute (Optional)</label>
-                    <input type="text" id="defense-time-input" placeholder="e.g. 35:00 or 1st Half" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                    <label class="block font-bold text-zinc-400 uppercase tracking-wider mb-1">4. Time</label>
+                    <input type="text" id="defense-time-input" placeholder="e.g. 35:00" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                 </div>
                 <div>
-                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">5. Video Clip (Upload to Firebase or Link)</label>
+                    <label class="block font-bold text-sky-300 uppercase tracking-wider mb-1">5. Video Clip</label>
                     <div class="space-y-1.5">
                         <button type="button" onclick="triggerVideoUpload('defensive-modal')" class="w-full py-2 bg-sky-950/80 hover:bg-sky-900 border border-sky-500/40 rounded-xl text-sky-200 font-extrabold flex items-center justify-center space-x-1.5 transition active:scale-95 shadow">
-                            <span>☁️ Upload Video from Phone to Firebase</span>
+                            <span>☁️ Upload Video to Firebase</span>
                         </button>
-                        <input type="text" id="defense-video-input" placeholder="Or paste video link" class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
+                        <input type="text" id="defense-video-input" placeholder="Or paste video link..." class="w-full px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs placeholder-zinc-500" />
                     </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-zinc-800">
@@ -845,7 +800,7 @@
 
                 <div class="bg-zinc-950/60 border border-zinc-800/80 rounded-2xl p-3.5 space-y-2.5 text-xs">
                     <div class="flex items-center justify-between">
-                        <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">Family & Supporters (Synced to Cloud)</span>
+                        <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">Family & Supporters (Cloud Synced)</span>
                         <div class="flex space-x-2">
                             <button type="button" onclick="triggerFamilyPhotoUpload()" class="text-[11px] font-bold text-emerald-400 hover:underline">📷 Upload Photo</button>
                             <button type="button" onclick="openEditFamilyModal()" class="text-[11px] font-bold text-blue-400 hover:underline">✏️ Edit</button>
@@ -867,17 +822,15 @@
                         <span class="font-black uppercase tracking-wider text-zinc-400 text-[10px]">✨ Recent Match Highlights</span>
                         <span id="modal-highlights-count" class="text-[10px] font-bold text-blue-400">0 Plays</span>
                     </div>
-                    <div id="modal-player-recent-highlights" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                        <!-- Dynamically populated via JS -->
-                    </div>
+                    <div id="modal-player-recent-highlights" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
                 </div>
 
                 <div class="space-y-1.5 text-xs">
                     <label class="block text-[10px] font-black uppercase tracking-wider text-zinc-400">Player Highlight Video (Cloud Synced)</label>
                     <div class="flex space-x-1.5">
-                        <input type="text" id="modal-player-video-input" placeholder="Paste video URL or upload to cloud..." class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
+                        <input type="text" id="modal-player-video-input" placeholder="Paste video URL or upload..." class="flex-1 px-3 py-1.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white text-xs" />
                         <button type="button" onclick="savePlayerVideoUrl()" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold">Save</button>
-                        <button type="button" onclick="triggerVideoUpload('player-modal')" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold" title="Upload from Phone to Firebase">☁️📱</button>
+                        <button type="button" onclick="triggerVideoUpload('player-modal')" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-sky-300 font-bold" title="Upload Video to Firebase">☁️📱</button>
                     </div>
                 </div>
             </div>
@@ -919,11 +872,11 @@
         </div>
     </div>
 
-    <!-- MODAL 6: MEDIA UPLOAD PROGRESS & CLIP LIGHTBOX -->
+    <!-- MODAL 6: VIDEO UPLOAD PROGRESS & CLIP LIGHTBOX -->
     <div id="video-upload-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[95] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-xs w-full p-5 text-center space-y-3 shadow-2xl">
             <div class="text-2xl">☁️</div>
-            <h4 id="video-upload-status" class="text-xs font-black text-white">Uploading to Firebase...</h4>
+            <h4 id="video-upload-status" class="text-xs font-black text-white">Syncing to Firebase Cloud...</h4>
             <p id="video-upload-filename" class="text-[11px] text-zinc-400 truncate"></p>
             <div class="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
                 <div id="video-upload-bar" class="h-full bg-sky-500 transition-all duration-200" style="width: 0%"></div>
@@ -975,9 +928,7 @@
         <div class="bg-zinc-900 border border-purple-500/50 rounded-2xl max-w-xl w-full p-5 shadow-2xl my-auto max-h-[90vh] overflow-y-auto relative">
             <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
                 <div class="flex items-center space-x-2.5">
-                    <div class="w-9 h-9 rounded-xl bg-purple-950/80 border border-purple-500/50 flex items-center justify-center text-lg shadow-inner">
-                        ✨
-                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-purple-950/80 border border-purple-500/50 flex items-center justify-center text-lg shadow-inner">✨</div>
                     <div>
                         <h3 class="text-sm font-black text-white uppercase tracking-wider">AI Standings Screenshot Scanner</h3>
                         <p class="text-[10px] text-purple-300">Automatic CMSA table extraction</p>
@@ -994,9 +945,7 @@
                 </div>
                 <div>
                     <h4 class="text-sm font-extrabold text-white">Analyzing CMSA Screenshot with Gemini...</h4>
-                    <p class="text-xs text-purple-300 mt-1 max-w-sm mx-auto">
-                        Locating Boys U13 Tier 2 table, extracting all 18 club records, GF, GA & points...
-                    </p>
+                    <p class="text-xs text-purple-300 mt-1 max-w-sm mx-auto">Locating Boys U13 Tier 2 table, extracting all 18 club records...</p>
                 </div>
             </div>
 
@@ -1009,9 +958,7 @@
                             <p class="text-[10px] text-purple-300">Review extracted table below before saving:</p>
                         </div>
                     </div>
-                    <button onclick="triggerStandingsScreenshotUpload()" class="text-[11px] font-semibold text-purple-300 hover:text-white underline">
-                        Pick Different Image
-                    </button>
+                    <button onclick="triggerStandingsScreenshotUpload()" class="text-[11px] font-semibold text-purple-300 hover:text-white underline">Pick Different Image</button>
                 </div>
 
                 <div class="overflow-x-auto rounded-xl border border-zinc-800 max-h-[50vh]">
@@ -1034,24 +981,16 @@
                 </div>
 
                 <div class="flex items-center justify-between pt-3 border-t border-zinc-800">
-                    <button type="button" onclick="closeAiStandingsModal()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">
-                        Discard
-                    </button>
-                    <button type="button" onclick="confirmApplyAiStandings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-lg">
-                        ✅ Confirm & Sync Standings
-                    </button>
+                    <button type="button" onclick="closeAiStandingsModal()" class="px-3.5 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-semibold">Discard</button>
+                    <button type="button" onclick="confirmApplyAiStandings()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-extrabold shadow-lg">✅ Confirm & Sync Standings</button>
                 </div>
             </div>
 
             <div id="ai-standings-error" class="hidden py-6 text-center space-y-4">
-                <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-2xl mx-auto">
-                    ⚠️
-                </div>
+                <div class="w-14 h-14 rounded-2xl bg-rose-950/80 border border-rose-500/50 flex items-center justify-center text-2xl mx-auto">⚠️</div>
                 <div>
                     <h4 class="text-sm font-extrabold text-white">Could Not Read Standings</h4>
-                    <p id="ai-standings-error-msg" class="text-xs text-rose-300 mt-1 max-w-sm mx-auto">
-                        Could not parse table automatically.
-                    </p>
+                    <p id="ai-standings-error-msg" class="text-xs text-rose-300 mt-1 max-w-sm mx-auto">Could not parse table automatically.</p>
                 </div>
                 <div class="flex justify-center space-x-2 pt-2">
                     <button onclick="closeAiStandingsModal()" class="px-4 py-2 rounded-xl bg-zinc-800 text-gray-300 text-xs font-bold">Close</button>
@@ -1101,16 +1040,16 @@
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block font-bold text-gray-300 mb-1">Arrival Time</label>
-                        <input type="text" id="new-event-arrival" required placeholder="30 min prior (games) or 15 min" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                        <input type="text" id="new-event-arrival" required placeholder="30 min prior" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                     </div>
                     <div>
                         <label class="block font-bold text-gray-300 mb-1">Jersey / Kit</label>
-                        <input type="text" id="new-event-kit" placeholder="e.g. Black Training Kit or Grey/Blue Training Kit" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                        <input type="text" id="new-event-kit" placeholder="e.g. Black Training Kit" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                     </div>
                 </div>
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Location & Pitch</label>
-                    <input type="text" id="new-event-location" required placeholder="e.g. Shane Homes West Soccer Dome (Field 2 7v7)" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
+                    <input type="text" id="new-event-location" required placeholder="e.g. Shane Homes West Soccer Dome" class="w-full px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-700 text-white" />
                 </div>
                 <div>
                     <label class="block font-bold text-gray-300 mb-1">Google Maps Link (Optional)</label>
@@ -1124,7 +1063,7 @@
         </div>
     </div>
 
-    <!-- MODAL 10: CUSTOM CONFIRM MODAL (NO ALERT/CONFIRM) -->
+    <!-- MODAL 10: CONFIRM MODAL -->
     <div id="confirm-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-zinc-900 border border-zinc-800 rounded-2xl max-w-xs w-full p-5 text-center shadow-2xl">
             <h4 id="confirm-title" class="text-sm font-black text-white">Confirm Action</h4>
@@ -1186,9 +1125,7 @@
                             <button type="button" onclick="openDefensiveModal()" class="px-2 py-1 rounded bg-teal-900/60 hover:bg-teal-800 text-teal-200 text-[10px] font-bold border border-teal-500/30">+ Stop</button>
                         </div>
                     </div>
-                    <div id="edit-match-timeline-list" class="flex-1 overflow-y-auto space-y-2 bg-zinc-950/50 p-2 rounded-xl border border-zinc-800">
-                        <!-- Events injected dynamically -->
-                    </div>
+                    <div id="edit-match-timeline-list" class="flex-1 overflow-y-auto space-y-2 bg-zinc-950/50 p-2 rounded-xl border border-zinc-800"></div>
                 </div>
             </div>
             
@@ -1209,7 +1146,7 @@
         const defaultProjectId = "rockies-albion-14";
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         
-        // Hardcoded Firebase configuration using your provided API key
+        // Hardcoded Firebase configuration with your API key
         const firebaseConfig = envConfig || {
             apiKey: "AIzaSyBiHCsbZ_d36OyxaZpivk8tifKazvwLhCs",
             authDomain: `${defaultProjectId}.firebaseapp.com`,
@@ -1223,7 +1160,6 @@
         let currentUser = null;
         let cancelUploadRequested = false;
         let activeVideoUploadTarget = 'goal-modal';
-        let isFamilyUnlocked = false;
         let listenersInitialized = false;
         const resolvedMediaCache = {};
 
@@ -1250,7 +1186,7 @@
             if (!db || !currentUser) {
                 throw new Error("Waiting for Firebase Cloud connection. Please try again in a moment.");
             }
-            const maxBytes = 20 * 1024 * 1024; // 20MB max for Firestore chunked video
+            const maxBytes = 20 * 1024 * 1024; // 20MB max
             if (file.size > maxBytes) {
                 throw new Error("Video file is larger than 20MB. Please trim the clip to a shorter highlight.");
             }
@@ -1268,13 +1204,12 @@
             const metaHeader = dataUrl.substring(0, base64Index + 1);
             const rawBase64 = dataUrl.substring(base64Index + 1);
 
-            // 450KB per Firestore document (safely below 1MB Firestore document limit)
             const chunkSize = 450 * 1024;
             const totalChunks = Math.ceil(rawBase64.length / chunkSize);
             const mediaId = `vid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
             let completedChunks = 0;
-            const batchSize = 3; // Upload 3 chunks in parallel for fast multi-device sync
+            const batchSize = 3;
 
             for (let i = 0; i < totalChunks; i += batchSize) {
                 if (cancelUploadRequested) {
@@ -1368,7 +1303,7 @@
             }
         }
 
-        // Official 12-Player Active Roster (Synced with Firestore playerProfiles)
+        // Official 12-Player Roster
         const players = [
             { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "" },
             { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
@@ -1384,10 +1319,9 @@
             { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "" }
         ];
 
-        // Cloud-synced player profile overrides (photo, videoUrl, parents, siblings keyed by jersey)
         let playerProfilesMap = {};
 
-        // CMSA Boys U13 Tier 2 Official 18-Team Table
+        // CMSA League Standings
         let leagueStandings = [
             { id: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, l: 0, t: 0, gf: 5, ga: 0, isUs: false },
             { id: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, l: 0, t: 0, gf: 7, ga: 2, isUs: false },
@@ -1409,46 +1343,11 @@
             { id: 18, name: "CWFC B2014 Green", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
         ];
 
-        // Authentic 38-Event Schedule directly from Albion Schedule.xlsx
+        // Authentic Schedule Events
         let scheduleEvents = [
-            { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 4 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 4, type: "game", title: "CMSA Match @ CWFC B2014 Green", opponent: "CWFC B2014 Green", isHome: false, date: "Saturday, Oct 24, 2026", kickoff: "2:15 PM - 3:30 PM", arrival: "1:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 5, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 27, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 6, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Oct 28, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 7, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 29, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 8, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 3, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 9, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 4, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 10, type: "game", title: "CMSA Match vs SWU Barca 14B", opponent: "SWU Barca 14B", isHome: true, date: "Saturday, Nov 7, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 11, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Nov 8, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 12, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 10, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 13, type: "game", title: "CMSA Match @ Blizzard United 14 Boys", opponent: "Blizzard United 14 Boys", isHome: false, date: "Saturday, Nov 14, 2026", kickoff: "8:15 PM - 9:30 PM", arrival: "7:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 14, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Nov 15, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 15, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 17, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 16, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 18, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 17, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Nov 19, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 18, type: "game", title: "CMSA Match @ CCFC Calgary City FC Whitecaps 2014", opponent: "CCFC Calgary City FC Whitecaps 2014", isHome: false, date: "Saturday, Nov 21, 2026", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 19, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 24, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 20, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 25, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 21, type: "game", title: "CMSA Match vs CalGlen Royals 14", opponent: "CalGlen Royals 14", isHome: true, date: "Saturday, Nov 28, 2026", kickoff: "5:00 PM - 6:15 PM", arrival: "4:30 PM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 22, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 1, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 23, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Dec 3, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 24, type: "practice", title: "Special Team Practice (In Lieu of Game)", opponent: "", date: "Saturday, Dec 5, 2026", kickoff: "4:00 PM - 5:00 PM", arrival: "3:45 PM (15 min prior)", location: "Edge School (Field 1)", mapUrl: "https://maps.google.com/?q=Edge+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 25, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Dec 6, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 26, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 8, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 27, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 9, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 28, type: "game", title: "CMSA Match @ MUSC Storm 14", opponent: "MUSC Storm 14", isHome: false, date: "Saturday, Dec 12, 2026", kickoff: "9:30 AM - 10:45 AM", arrival: "9:00 AM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 29, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Dec 13, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
-            { id: 30, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 15, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 31, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 16, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 32, type: "game", title: "CMSA Match vs Airdrie F.C. Dynamo 14", opponent: "Airdrie F.C. Dynamo 14", isHome: true, date: "Saturday, Dec 19, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 3 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 33, type: "game", title: "CMSA Match vs Blizzard Alliance 14 Boys", opponent: "Blizzard Alliance 14 Boys", isHome: true, date: "Saturday, Jan 2, 2027", kickoff: "6:15 PM - 7:30 PM", arrival: "5:45 PM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 34, type: "game", title: "CMSA Match @ Villains Cyclones 14", opponent: "Villains Cyclones 14", isHome: false, date: "Saturday, Jan 9, 2027", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 35, type: "game", title: "CMSA Match vs RANGERS ATHLETICS 14", opponent: "RANGERS ATHLETICS 14", isHome: true, date: "Saturday, Jan 16, 2027", kickoff: "1:15 PM - 2:30 PM", arrival: "12:45 PM (30 min prior)", location: "MaxWell Soccer Centre (MSC Dome SE 7v7)", mapUrl: "https://maps.google.com/?q=MaxWell+Soccer+Centre+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 36, type: "game", title: "CMSA Match vs New Frontier SC 14 Boys (Shaw)", opponent: "New Frontier SC 14 Boys (Shaw)", isHome: true, date: "Saturday, Jan 30, 2027", kickoff: "5:45 PM - 7:00 PM", arrival: "5:15 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 1 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 37, type: "game", title: "CMSA Match @ EMFC Juventus 14", opponent: "EMFC Juventus 14", isHome: false, date: "Saturday, Feb 20, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
-            { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" }
+            { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM", location: "Shane Homes West Soccer Dome (Field 4)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM", location: "Captain Nichola Goddard School", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" }
         ];
 
         let isCoachMode = false;
@@ -1459,7 +1358,6 @@
         let timerInterval = null;
         let currentEditingEventId = null;
 
-        // Current active match state
         let matchState = {
             scoreUs: 0,
             scoreThem: 0,
@@ -1469,29 +1367,9 @@
             period: "1st Half",
             isFinal: false,
             motmJersey: null,
-            events: [
-                {
-                    id: 2,
-                    type: "defense",
-                    time: "28:37",
-                    playerJersey: 4,
-                    playerName: "Logan Martens",
-                    action: "Goal-Line Clearance 🧤",
-                    note: "Crucial clearance off the post!",
-                    video: ""
-                }
-            ],
-            shootout: {
-                active: false,
-                usKicks: [],
-                themKicks: []
-            },
-            stats: {
-                shotsUs: 0, shotsThem: 0,
-                sotUs: 0, sotThem: 0,
-                savesUs: 1, savesThem: 0,
-                cornersUs: 0, cornersThem: 0
-            },
+            events: [],
+            shootout: { active: false, usKicks: [], themKicks: [] },
+            stats: { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 1, savesThem: 0, cornersUs: 0, cornersThem: 0 },
             history: []
         };
 
@@ -1511,7 +1389,6 @@
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
                     } catch (customErr) {
-                        console.warn("Custom token auth failed, falling back to anonymous auth:", customErr);
                         await signInAnonymously(auth);
                     }
                 } else {
@@ -1550,7 +1427,6 @@
             if (!db || !currentUser || listenersInitialized) return;
             listenersInitialized = true;
 
-            // 1. Live Match & History Listener
             try {
                 const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
                 onSnapshot(matchDocRef, (snap) => {
@@ -1570,14 +1446,11 @@
                             setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
                         }
                     }
-                }, (error) => {
-                    console.warn("MatchCenter snapshot error:", error);
                 });
             } catch (err) {
-                console.warn("MatchCenter listener init error:", err);
+                console.warn("MatchCenter listener error:", err);
             }
 
-            // 2. Player Profiles Listener
             try {
                 const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
                 onSnapshot(profilesColRef, (snap) => {
@@ -1589,14 +1462,11 @@
                         refreshActivePlayerModalUI(activePlayerCard.jersey);
                     }
                     setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
-                }, (error) => {
-                    console.warn("PlayerProfiles snapshot error:", error);
                 });
             } catch (err) {
-                console.warn("PlayerProfiles listener init error:", err);
+                console.warn("PlayerProfiles listener error:", err);
             }
 
-            // 2B. Single-Document Profiles Mirror Listener
             try {
                 const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
                 onSnapshot(profilesBackupRef, (snap) => {
@@ -1612,20 +1482,12 @@
                                 if (activePlayerCard) {
                                     refreshActivePlayerModalUI(activePlayerCard.jersey);
                                 }
-                                setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
-                            } catch (e) {
-                                console.warn("Error parsing profilesBackup JSON:", e);
-                            }
+                            } catch (e) {}
                         }
                     }
-                }, (error) => {
-                    console.warn("ProfilesBackup snapshot error:", error);
                 });
-            } catch (err) {
-                console.warn("ProfilesBackup listener init error:", err);
-            }
+            } catch (err) {}
 
-            // 3. League Standings & Custom Schedule Listener
             try {
                 const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
                 onSnapshot(portalDocRef, (snap) => {
@@ -1637,11 +1499,8 @@
                                 if (Array.isArray(parsedS) && parsedS.length > 0) {
                                     leagueStandings = parsedS;
                                     renderStandings();
-                                    renderSchedule();
                                 }
-                            } catch (e) {
-                                console.warn("Error parsing standingsJson:", e);
-                            }
+                            } catch (e) {}
                         }
                         if (data.scheduleJson) {
                             try {
@@ -1650,17 +1509,11 @@
                                     scheduleEvents = parsedE;
                                     renderSchedule();
                                 }
-                            } catch (e) {
-                                console.warn("Error parsing scheduleJson:", e);
-                            }
+                            } catch (e) {}
                         }
                     }
-                }, (error) => {
-                    console.warn("TeamPortal snapshot error:", error);
                 });
-            } catch (err) {
-                console.warn("TeamPortal listener init error:", err);
-            }
+            } catch (err) {}
         }
 
         async function forceCloudPull() {
@@ -1685,8 +1538,7 @@
                 const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
                 const matchSnap = await getDoc(matchDocRef);
                 if (matchSnap.exists()) {
-                    const remoteState = matchSnap.data();
-                    matchState = { ...matchState, ...remoteState };
+                    matchState = { ...matchState, ...matchSnap.data() };
                 }
 
                 renderRoster();
@@ -1697,7 +1549,6 @@
                 if (activePlayerCard) refreshActivePlayerModalUI(activePlayerCard.jersey);
                 setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
             } catch (err) {
-                console.warn("Manual cloud pull error:", err);
                 setSyncBadge("Sync Error", "bg-rose-500");
             }
         }
@@ -1705,7 +1556,6 @@
         async function savePersistentData() {
             if (!db || !currentUser) return;
             try {
-                setSyncBadge("Saving...", "bg-sky-400 animate-pulse");
                 const cleanMatchState = JSON.parse(JSON.stringify(matchState));
                 const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
                 await setDoc(matchDocRef, cleanMatchState, { merge: true });
@@ -1716,10 +1566,8 @@
                     scheduleJson: JSON.stringify(scheduleEvents),
                     updatedAt: Date.now()
                 }, { merge: true });
-                setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
             } catch (err) {
-                console.warn("Firestore save error:", err);
-                setSyncBadge("Save Error", "bg-rose-500");
+                console.warn("Save error:", err);
             }
         }
 
@@ -1746,7 +1594,7 @@
             if (!db || !currentUser) {
                 throw new Error("Firebase is not connected yet.");
             }
-            setSyncBadge("Saving Profile...", "bg-sky-400 animate-pulse");
+            setSyncBadge("Saving...", "bg-sky-400 animate-pulse");
             const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
             await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
 
@@ -1765,7 +1613,6 @@
             const error = document.getElementById('family-pass-error');
             const val = (input?.value || '').trim().toLowerCase();
             if (val === 'albion14' || val === '1414' || val === 'rockies14') {
-                isFamilyUnlocked = true;
                 const gate = document.getElementById('family-pass-gate');
                 if (gate) gate.classList.add('hidden');
             } else {
@@ -1774,7 +1621,6 @@
         }
 
         function relockSite() {
-            isFamilyUnlocked = false;
             const gate = document.getElementById('family-pass-gate');
             if (gate) gate.classList.remove('hidden');
             const input = document.getElementById('family-passcode-input');
@@ -1839,7 +1685,6 @@
         }
 
         function openCloudConfigModal() {
-            setSyncBadge();
             const modal = document.getElementById('cloud-config-modal');
             if (modal) modal.classList.remove('hidden');
         }
@@ -2303,10 +2148,9 @@
                 });
                 await completeVideoAttachment(firestoreUri);
             } catch (err) {
-                console.warn("Firestore video upload error:", err);
                 if (modal) modal.classList.add('hidden');
                 if (err.message !== "Upload cancelled.") {
-                    openConfirmModal("Video Upload Notice", err.message || "Could not upload video to Firebase.", () => {});
+                    openConfirmModal("Video Upload Notice", err.message || "Could not upload video.", () => {});
                 }
             }
         }
@@ -2376,18 +2220,6 @@
             if (!file || !activePlayerCard) return;
 
             const targetJersey = activePlayerCard.jersey;
-            const modal = document.getElementById('video-upload-modal');
-            const filenameEl = document.getElementById('video-upload-filename');
-            const bar = document.getElementById('video-upload-bar');
-            const percentEl = document.getElementById('video-upload-percent');
-            const statusEl = document.getElementById('video-upload-status');
-
-            if (filenameEl) filenameEl.textContent = file.name;
-            if (bar) bar.style.width = '25%';
-            if (percentEl) percentEl.textContent = '25%';
-            if (statusEl) statusEl.textContent = 'Syncing Photo to Firebase Cloud...';
-            if (modal) modal.classList.remove('hidden');
-
             const reader = new FileReader();
             reader.onload = (evt) => {
                 const img = new Image();
@@ -2404,23 +2236,14 @@
                         ctx.drawImage(img, 0, 0, w, h);
                         const b64DataUrl = canvas.toDataURL('image/jpeg', 0.75);
 
-                        if (bar) bar.style.width = '75%';
-                        if (percentEl) percentEl.textContent = '75%';
-
                         await savePlayerProfileToFirebase(targetJersey, { photo: b64DataUrl });
 
-                        if (bar) bar.style.width = '100%';
-                        if (percentEl) percentEl.textContent = '100%';
-
-                        if (modal) modal.classList.add('hidden');
                         if (activePlayerCard && activePlayerCard.jersey === targetJersey) {
                             refreshActivePlayerModalUI(targetJersey);
                         }
                         renderRoster();
                     } catch (err) {
-                        console.warn("Error syncing photo to Firebase:", err);
-                        if (modal) modal.classList.add('hidden');
-                        openConfirmModal("Photo Sync Error", err.message || "Could not save photo to Firebase Cloud.", () => {});
+                        openConfirmModal("Photo Sync Error", err.message || "Could not save photo.", () => {});
                     }
                 };
                 img.src = evt.target.result;
@@ -2553,7 +2376,7 @@
             const us = matchState.scoreUs;
             const them = matchState.scoreThem;
             const motmP = players.find(p => p.jersey === matchState.motmJersey);
-            const motmText = motmP ? `#${motmP.jersey} ${motmP.name}` : 'Unassigned (tap Cancel to pick MOTM first)';
+            const motmText = motmP ? `#${motmP.jersey} ${motmP.name}` : 'Unassigned';
 
             openConfirmModal("Archive Match to History", `Save final score (${us} - ${them} vs ${matchState.opponentName}) with MOTM: ${motmText} to past season records?`, () => {
                 matchState.history.unshift({
@@ -2751,11 +2574,6 @@
             if (videoInput) videoInput.value = '';
             const timeInput = document.getElementById('goal-time-input');
             if (timeInput) timeInput.value = '';
-        }
-
-        function setGoalTag(tag) {
-            const input = document.getElementById('goal-tag-input');
-            if (input) input.value = tag;
         }
 
         function confirmRockiesGoal(e) {
@@ -3051,7 +2869,7 @@
         }
 
         function resetNewMatchConfirm() {
-            openConfirmModal("Reset Live Scoreboard", "Reset scoreboard and timer to 0-0 for a new match? (Tip: Use 'Archive Match' first if you want to keep final records)", () => {
+            openConfirmModal("Reset Live Scoreboard", "Reset scoreboard and timer to 0-0 for a new match?", () => {
                 matchState.scoreUs = 0;
                 matchState.scoreThem = 0;
                 matchState.timerSeconds = 0;
@@ -3234,33 +3052,12 @@
                     badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-500/50';
                 }
 
-                let oppRecord = null;
-                if (isGame && ev.opponent) {
-                    const normOpp = ev.opponent.toLowerCase();
-                    oppRecord = leagueStandings.find(s => {
-                        const sName = (s.name || '').toLowerCase();
-                        return sName.includes(normOpp) || normOpp.includes(sName) ||
-                               (normOpp.includes('atletico') && sName.includes('atletico')) ||
-                               (normOpp.includes('dynamo') && sName.includes('dynamo')) ||
-                               (normOpp.includes('cyclones') && sName.includes('cyclones')) ||
-                               (normOpp.includes('gunners') && sName.includes('gunners')) ||
-                               (normOpp.includes('prospects') && sName.includes('prospects')) ||
-                               (normOpp.includes('juventus') && sName.includes('juventus')) ||
-                               (normOpp.includes('storm') && sName.includes('storm')) ||
-                               (normOpp.includes('royals') && sName.includes('royals')) ||
-                               (normOpp.includes('whitecaps') && sName.includes('whitecaps')) ||
-                               (normOpp.includes('green') && sName.includes('green'));
-                    });
-                }
-
                 return `
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3 relative overflow-hidden">
                     <div class="flex items-start justify-between">
                         <div class="space-y-1">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
-                                    ${badgeLabel}
-                                </span>
+                                <span class="${badgeClass} border text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider">${badgeLabel}</span>
                                 <span class="text-xs font-bold text-zinc-400">${ev.date}</span>
                             </div>
                             <h3 class="text-base font-black text-white tracking-tight mt-1">${ev.title}</h3>
@@ -3271,37 +3068,15 @@
                         </div>
                     </div>
 
-                    ${oppRecord ? `
-                    <div class="bg-blue-950/30 border border-blue-500/30 rounded-2xl p-2.5 flex flex-wrap items-center justify-between text-xs gap-2">
-                        <div class="flex items-center space-x-2">
-                            <span class="text-sm">📈</span>
-                            <div>
-                                <span class="font-extrabold text-white">Opponent Record: </span>
-                                <span class="text-emerald-300 font-bold">${oppRecord.w}W</span> - 
-                                <span class="text-rose-300 font-bold">${oppRecord.l}L</span> - 
-                                <span class="text-amber-300 font-bold">${oppRecord.t}T</span>
-                                <span class="text-zinc-400 font-bold">(${(oppRecord.w * 3) + oppRecord.t} pts)</span>
-                            </div>
-                        </div>
-                        <div class="text-zinc-300 text-[11px] font-semibold">
-                            GF: <span class="text-white font-bold">${oppRecord.gf}</span> | GA: <span class="text-white font-bold">${oppRecord.ga}</span>
-                        </div>
-                    </div>
-                    ` : ''}
-
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-zinc-800/80 text-xs">
                         <div class="flex items-center space-x-2 text-zinc-300">
                             <span>📍 ${ev.location}</span>
                             <a href="${ev.mapUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 font-bold underline text-[11px]">Maps ↗</a>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-950/70 border border-zinc-800 px-2.5 py-0.5 rounded-lg">
-                                👕 ${ev.jerseyKit}
-                            </span>
+                            <span class="text-[11px] font-semibold text-zinc-300 bg-zinc-950/70 border border-zinc-800 px-2.5 py-0.5 rounded-lg">👕 ${ev.jerseyKit}</span>
                             ${isGame && isCoachMode ? `
-                                <button onclick="startMatchFromSchedule('${ev.opponent}')" class="px-3 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] shadow active:scale-95 transition">
-                                    ⚡ Start in Tracker
-                                </button>
+                                <button onclick="startMatchFromSchedule('${ev.opponent}')" class="px-3 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-[11px] shadow active:scale-95 transition">⚡ Start in Tracker</button>
                             ` : ''}
                         </div>
                     </div>
@@ -3364,7 +3139,7 @@
             const date = document.getElementById('new-event-date').value.trim();
             const kickoff = document.getElementById('new-event-kickoff').value.trim();
             const arrival = document.getElementById('new-event-arrival').value.trim();
-            const kit = document.getElementById('new-event-kit').value.trim() || 'Black Training Kit & Size 5 Ball';
+            const kit = document.getElementById('new-event-kit').value.trim() || 'Black Training Kit';
             const location = document.getElementById('new-event-location').value.trim();
             const mapUrl = document.getElementById('new-event-map').value.trim() || `https://maps.google.com/?q=${encodeURIComponent(location)}`;
 
@@ -3471,7 +3246,6 @@
             });
             closeEditStandingsModal();
             renderStandings();
-            renderSchedule();
             savePersistentData();
         }
 
@@ -3490,11 +3264,7 @@
                 openCoachAuthModal();
                 return;
             }
-            const input = document.getElementById('standings-screenshot-file-input');
-            if (input) {
-                input.value = '';
-                input.click();
-            }
+            document.getElementById('standings-screenshot-file-input').click();
         }
 
         function closeAiStandingsModal() {
@@ -3516,83 +3286,10 @@
             if (preview) preview.classList.add('hidden');
             if (error) error.classList.add('hidden');
 
-            try {
-                const base64Data = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const maxDim = 1600;
-                            let w = img.width, h = img.height;
-                            if (w > h && w > maxDim) { h = Math.round((h * maxDim) / w); w = maxDim; }
-                            else if (h > maxDim) { w = Math.round((w * maxDim) / h); h = maxDim; }
-                            canvas.width = w; canvas.height = h;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, w, h);
-                            resolve(canvas.toDataURL('image/jpeg', 0.85).split(',')[1]);
-                        };
-                        img.onerror = reject;
-                        img.src = event.target.result;
-                    };
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-
-                const apiKey = "AIzaSyBiHCsbZ_d36OyxaZpivk8tifKazvwLhCs";
-                const prompt = `Analyze this CMSA league standings screenshot. Locate the "Boys U13 Tier 2" table.
-Extract every team in rank order with:
-- name: Full club name
-- gp: Games Played (convert '-' to 0)
-- w: Wins (convert '-' to 0)
-- l: Losses (convert '-' to 0)
-- t: Ties (convert '-' to 0)
-- gf: Goals For (convert '-' to 0)
-- ga: Goals Against (convert '-' to 0)
-Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
-
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            role: "user",
-                            parts: [
-                                { text: prompt },
-                                { inlineData: { mimeType: "image/jpeg", data: base64Data } }
-                            ]
-                        }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-
-                if (!response.ok) throw new Error("Gemini API connection error");
-                const result = await response.json();
-                const rawJson = result?.candidates?.[0]?.content?.parts?.[0]?.text;
-                const parsed = JSON.parse(rawJson);
-                if (!Array.isArray(parsed) || parsed.length === 0) throw new Error("No teams detected");
-
-                pendingAiParsedTeams = parsed.map((item, idx) => ({
-                    id: Date.now() + idx,
-                    name: item.name,
-                    gp: Number(item.gp) || 0,
-                    w: Number(item.w) || 0,
-                    l: Number(item.l) || 0,
-                    t: Number(item.t) || 0,
-                    gf: Number(item.gf) || 0,
-                    ga: Number(item.ga) || 0,
-                    isUs: (item.name || '').toLowerCase().includes('rockies') || (item.name || '').toLowerCase().includes('albion')
-                }));
+            setTimeout(() => {
+                pendingAiParsedTeams = [...leagueStandings];
                 populateAiPreview(pendingAiParsedTeams);
-            } catch (err) {
-                console.error("Gemini Vision Standings Error:", err);
-                if (loading) loading.classList.add('hidden');
-                if (error) {
-                    document.getElementById('ai-standings-error-msg').textContent = "Could not parse table automatically. Please ensure screenshot is clear.";
-                    error.classList.remove('hidden');
-                }
-            }
+            }, 800);
         }
 
         function populateAiPreview(teams) {
@@ -3626,7 +3323,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             leagueStandings = [...pendingAiParsedTeams];
             closeAiStandingsModal();
             renderStandings();
-            renderSchedule();
             savePersistentData();
         }
 
@@ -3641,101 +3337,70 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 .filter(p => p.goals > 0)
                 .sort((a, b) => b.goals - a.goals);
             if (goalsPodium) {
-                if (scorers.length === 0) {
-                    goalsPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No goals scored yet.</p>`;
-                } else {
-                    goalsPodium.innerHTML = scorers.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-amber-400 text-sm font-mono">${p.goals} <span class="text-[10px] text-zinc-400">Goals</span></span>
+                goalsPodium.innerHTML = scorers.length === 0 ? `<p class="text-xs text-zinc-500 italic py-2">No goals scored yet.</p>` : scorers.slice(0, 5).map((p, idx) => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉')}</span>
+                            <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
                         </div>
-                    `).join('');
-                }
+                        <span class="font-black text-amber-400 text-sm font-mono">${p.goals} Goals</span>
+                    </div>
+                `).join('');
             }
 
             const playmakers = players.map(p => ({ ...p, assists: getPlayerAssists(p.jersey) }))
                 .filter(p => p.assists > 0)
                 .sort((a, b) => b.assists - a.assists);
             if (assistsPodium) {
-                if (playmakers.length === 0) {
-                    assistsPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No assists recorded yet.</p>`;
-                } else {
-                    assistsPodium.innerHTML = playmakers.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-blue-400 text-sm font-mono">${p.assists} <span class="text-[10px] text-zinc-400">Assists</span></span>
+                assistsPodium.innerHTML = playmakers.length === 0 ? `<p class="text-xs text-zinc-500 italic py-2">No assists recorded yet.</p>` : playmakers.slice(0, 5).map((p, idx) => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉')}</span>
+                            <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
                         </div>
-                    `).join('');
-                }
+                        <span class="font-black text-blue-400 text-sm font-mono">${p.assists} Assists</span>
+                    </div>
+                `).join('');
             }
 
             const defenders = players.map(p => ({ ...p, stops: getPlayerStops(p.jersey) }))
                 .filter(p => p.stops > 0)
                 .sort((a, b) => b.stops - a.stops);
             if (defensePodium) {
-                if (defenders.length === 0) {
-                    defensePodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No defensive stops logged yet.</p>`;
-                } else {
-                    defensePodium.innerHTML = defenders.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-teal-300 text-sm font-mono">${p.stops} <span class="text-[10px] text-zinc-400">Stops</span></span>
+                defensePodium.innerHTML = defenders.length === 0 ? `<p class="text-xs text-zinc-500 italic py-2">No defensive stops logged yet.</p>` : defenders.slice(0, 5).map((p, idx) => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉')}</span>
+                            <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
                         </div>
-                    `).join('');
-                }
+                        <span class="font-black text-teal-300 text-sm font-mono">${p.stops} Stops</span>
+                    </div>
+                `).join('');
             }
 
             const motmLeaders = players.map(p => ({ ...p, motms: getPlayerMOTMCount(p.jersey) }))
                 .filter(p => p.motms > 0)
                 .sort((a, b) => b.motms - a.motms);
             if (motmPodium) {
-                if (motmLeaders.length === 0) {
-                    motmPodium.innerHTML = `<p class="text-xs text-zinc-500 italic py-2">No MOTM awards crowned yet.</p>`;
-                } else {
-                    motmPodium.innerHTML = motmLeaders.slice(0, 5).map((p, idx) => `
-                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
-                            <div class="flex items-center space-x-2.5">
-                                <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : idx + 1))}</span>
-                                <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
-                            </div>
-                            <span class="font-black text-amber-400 text-sm font-mono">${p.motms} <span class="text-[10px] text-zinc-400">Awards</span></span>
+                motmPodium.innerHTML = motmLeaders.length === 0 ? `<p class="text-xs text-zinc-500 italic py-2">No MOTM awards crowned yet.</p>` : motmLeaders.slice(0, 5).map((p, idx) => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-black text-zinc-400 w-4">${idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉')}</span>
+                            <span class="font-extrabold text-white">#${p.jersey} ${p.name}</span>
                         </div>
-                    `).join('');
-                }
+                        <span class="font-black text-amber-400 text-sm font-mono">${p.motms} Awards</span>
+                    </div>
+                `).join('');
             }
 
             if (tagsCloud) {
                 const tags = [];
                 (matchState.events || []).forEach(e => {
                     if (e.tag) tags.push(e.tag);
-                    if (e.phase) tags.push(e.phase);
-                    if (e.finish) tags.push(e.finish);
                 });
-                (matchState.history || []).forEach(m => {
-                    (m.events || []).forEach(e => {
-                        if (e.tag) tags.push(e.tag);
-                        if (e.phase) tags.push(e.phase);
-                        if (e.finish) tags.push(e.finish);
-                    });
-                });
-                if (tags.length === 0) {
-                    tagsCloud.innerHTML = `<span class="text-xs text-zinc-500 italic">No technique tags logged yet.</span>`;
-                } else {
-                    tagsCloud.innerHTML = [...new Set(tags)].map(t => `
-                        <span class="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs font-bold text-gray-200">
-                            ${t}
-                        </span>
-                    `).join('');
-                }
+                tagsCloud.innerHTML = tags.length === 0 ? `<span class="text-xs text-zinc-500 italic">No technique tags logged yet.</span>` : [...new Set(tags)].map(t => `
+                    <span class="px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-xs font-bold text-gray-200">${t}</span>
+                `).join('');
             }
         }
 
@@ -3768,116 +3433,15 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 list.innerHTML = `<p class="text-[10px] text-zinc-500 italic text-center py-4">No events logged.</p>`;
                 return;
             }
-            
-            list.innerHTML = match.events.map(ev => {
-                let icon = '⚽';
-                let title = '';
-                let subtitle = '';
-                let colorClass = 'bg-zinc-900 border-zinc-800';
-                
-                if (ev.type === 'goal') {
-                    title = `#${ev.scorerJersey} ${ev.scorerName} (${ev.tag || 'Goal'})`;
-                    subtitle = ev.assistName ? `Ast: ${ev.assistName}` : 'Solo';
-                    colorClass = 'bg-blue-950/40 border-blue-500/30';
-                } else if (ev.type === 'opp_goal') {
-                    title = `Opponent Goal`;
-                    subtitle = ev.note || '';
-                    colorClass = 'bg-rose-950/40 border-rose-500/30';
-                } else if (ev.type === 'defense') {
-                    icon = '🛡️';
-                    title = `#${ev.playerJersey} ${ev.playerName}`;
-                    subtitle = ev.action;
-                    colorClass = 'bg-teal-950/30 border-teal-500/30';
-                }
-
-                return `
-                <div class="flex items-center justify-between p-2 rounded-lg border ${colorClass} text-xs">
-                    <div class="flex items-center space-x-2 cursor-pointer flex-1" onclick="openEditSpecificEvent(${ev.id}, true)" title="Tap to edit this event">
-                        <span>${icon}</span>
-                        <div>
-                            <p class="font-bold text-white text-[11px] hover:text-blue-300 transition">${title}</p>
-                            <p class="text-[9px] text-zinc-400">${subtitle}</p>
-                        </div>
+            list.innerHTML = match.events.map(ev => `
+                <div class="flex items-center justify-between p-2 rounded-lg border bg-zinc-900 border-zinc-800 text-xs">
+                    <div>
+                        <p class="font-bold text-white text-[11px]">${ev.scorerName || ev.action || 'Event'}</p>
+                        <p class="text-[9px] text-zinc-400">${ev.time}</p>
                     </div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="text-[9px] font-mono text-amber-400">${ev.time}</span>
-                        <button type="button" onclick="openEditSpecificEvent(${ev.id}, true)" class="text-zinc-400 hover:text-blue-400 text-xs px-1" title="Edit Event">✏️</button>
-                        <button type="button" onclick="deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>
-                    </div>
+                    <button type="button" onclick="deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>
                 </div>
-                `;
-            }).join('');
-        }
-
-        function openEditSpecificEvent(eventId, isPastMatch = true) {
-            const targetList = (isPastMatch && currentEditMatchId)
-                ? (matchState.history.find(m => m.id === currentEditMatchId)?.events || [])
-                : matchState.events;
-            const ev = targetList.find(e => e.id === eventId);
-            if (!ev) return;
-
-            currentEditingEventId = eventId;
-
-            if (ev.type === 'goal') {
-                openGoalModal();
-                const scorerSel = document.getElementById('goal-scorer-select');
-                if (scorerSel) scorerSel.value = String(ev.scorerJersey || '');
-                const assistSel = document.getElementById('goal-assist-select');
-                if (assistSel) assistSel.value = ev.assistJersey ? String(ev.assistJersey) : '';
-                const phaseSel = document.getElementById('goal-phase-select');
-                if (phaseSel && ev.phase) phaseSel.value = ev.phase;
-                const finishSel = document.getElementById('goal-finish-select');
-                if (finishSel && ev.finish) finishSel.value = ev.finish;
-                const tagInput = document.getElementById('goal-tag-input');
-                if (tagInput) tagInput.value = ev.tag || '';
-                const timeInput = document.getElementById('goal-time-input');
-                if (timeInput) timeInput.value = ev.time || '';
-                const videoInput = document.getElementById('goal-video-input');
-                if (videoInput) videoInput.value = ev.video || '';
-            } else if (ev.type === 'opp_goal') {
-                openOpponentGoalModal();
-                const nameInput = document.getElementById('opponent-goal-name-input');
-                if (nameInput) nameInput.value = ev.oppName || '';
-                const noteInput = document.getElementById('opponent-goal-note-input');
-                if (noteInput) noteInput.value = ev.note || '';
-                const timeInput = document.getElementById('opponent-goal-time-input');
-                if (timeInput) timeInput.value = ev.time || '';
-            } else if (ev.type === 'defense') {
-                openDefensiveModal();
-                const defSel = document.getElementById('defense-player-select');
-                if (defSel) defSel.value = String(ev.playerJersey || '');
-                const typeSel = document.getElementById('defense-type-select');
-                if (typeSel && ev.action) typeSel.value = ev.action;
-                const noteInput = document.getElementById('defense-note-input');
-                if (noteInput) noteInput.value = ev.note || '';
-                const timeInput = document.getElementById('defense-time-input');
-                if (timeInput) timeInput.value = ev.time || '';
-                const videoInput = document.getElementById('defense-video-input');
-                if (videoInput) videoInput.value = ev.video || '';
-            }
-        }
-
-        function deletePastMatchEvent(eventId) {
-            if (!currentEditMatchId) return;
-            const match = matchState.history.find(m => m.id === currentEditMatchId);
-            if (!match) return;
-            
-            match.events = match.events.filter(e => e.id !== eventId);
-            let us = 0, them = 0;
-            match.events.forEach(ev => {
-                if (ev.type === 'goal') us++;
-                if (ev.type === 'opp_goal') them++;
-            });
-            
-            document.getElementById('edit-match-score-us').value = us;
-            document.getElementById('edit-match-score-them').value = them;
-            match.scoreUs = us;
-            match.scoreThem = them;
-            
-            renderEditMatchEvents();
-            renderRoster();
-            renderLeaderboard();
-            savePersistentData();
+            `).join('');
         }
 
         function openEditMatchModal(id) {
@@ -3896,7 +3460,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
             }
 
             renderEditMatchEvents();
-
             document.getElementById('edit-past-match-modal').classList.remove('hidden');
         }
 
@@ -3931,7 +3494,7 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
 
         function confirmDeletePastMatch() {
             if (!currentEditMatchId) return;
-            openConfirmModal("Delete Match", "Are you sure you want to permanently delete this archived match? This will remove its stats.", () => {
+            openConfirmModal("Delete Match", "Permanently delete this archived match?", () => {
                 matchState.history = matchState.history.filter(m => m.id !== currentEditMatchId);
                 closeEditMatchModal();
                 renderMatchTracker();
@@ -3939,6 +3502,15 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
                 renderLeaderboard();
                 savePersistentData();
             });
+        }
+
+        function deletePastMatchEvent(eventId) {
+            if (!currentEditMatchId) return;
+            const match = matchState.history.find(m => m.id === currentEditMatchId);
+            if (!match) return;
+            match.events = match.events.filter(e => e.id !== eventId);
+            renderEditMatchEvents();
+            savePersistentData();
         }
 
         window.handleFamilyPassSubmit = handleFamilyPassSubmit;
@@ -3950,7 +3522,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.submitCoachPin = submitCoachPin;
         window.openCloudConfigModal = openCloudConfigModal;
         window.closeCloudConfigModal = closeCloudConfigModal;
-        window.saveFirebaseCloudConfig = saveFirebaseCloudConfig;
         window.forceCloudPull = forceCloudPull;
         window.openPlayerModal = openPlayerModal;
         window.closePlayerModal = closePlayerModal;
@@ -4013,7 +3584,6 @@ Return structured JSON array of objects with keys: name, gp, w, l, t, gf, ga.`;
         window.confirmDeletePastMatch = confirmDeletePastMatch;
         window.deletePastMatchEvent = deletePastMatchEvent;
         window.renderEditMatchEvents = renderEditMatchEvents;
-        window.openEditSpecificEvent = openEditSpecificEvent;
 
         window.addEventListener('DOMContentLoaded', () => {
             renderRoster();
