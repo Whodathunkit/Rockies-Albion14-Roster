@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,13 +53,12 @@
             <form onsubmit="handleFamilyPassSubmit(event)" class="space-y-4">
                 <div>
                     <input type="password" id="family-passcode-input" autofocus autocomplete="current-password" placeholder="Enter Team Passcode..." class="w-full text-center px-4 py-3 rounded-xl bg-zinc-950/90 border border-zinc-700 text-white placeholder-zinc-500 text-base font-bold tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner">
-                    <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">Incorrect passcode. Try <code class="text-zinc-300">albion14</code>, <code class="text-zinc-300">1414</code>, or <code class="text-zinc-300">rockies14</code>.</p>
+                    <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">Incorrect passcode. Please try again.</p>
                 </div>
                 <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-[#003C71] hover:from-blue-600 hover:to-blue-700 text-white text-sm font-extrabold uppercase tracking-wider shadow-lg active:scale-98 transition">
                     Unlock Team Site →
                 </button>
             </form>
-            <p class="text-[11px] text-zinc-500 mt-5">Hint for families: Use <code class="text-zinc-400 font-bold">albion14</code>, <code class="text-zinc-400 font-bold">1414</code>, or <code class="text-zinc-400 font-bold">rockies14</code></p>
         </div>
     </div>
 
@@ -609,7 +609,7 @@
             <form onsubmit="submitCoachPin(event)" class="space-y-3">
                 <div>
                     <input type="password" id="coach-pin-input" placeholder="Enter Coach PIN..." class="w-full text-center px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-bold tracking-widest focus:outline-none focus:border-blue-500" />
-                    <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Incorrect PIN. Try <code class="text-zinc-300">1414</code> or <code class="text-zinc-300">albion14</code>.</p>
+                    <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-semibold mt-1.5">Incorrect PIN. Please try again.</p>
                 </div>
                 <div class="flex space-x-2 pt-2">
                     <button type="button" onclick="closeCoachAuthModal()" class="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs font-bold transition">Cancel</button>
@@ -1328,16 +1328,16 @@
         // Official 12-Player Roster
         const players = [
             { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "" },
-            { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "Goalkeeper", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
+            { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
             { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "" },
             { id: 5, jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", photo: "", videoUrl: "" },
             { id: 11, jersey: 11, name: "Tristan D'Mello", position: "Winger/Striker", parents: "Melvin & Charlotte", siblings: "", photo: "", videoUrl: "" },
             { id: 22, jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "" },
             { id: 35, jersey: 35, name: "Nyle Zachary", position: "Midfield/Forward", parents: "Hug Saleh", siblings: "", photo: "", videoUrl: "" },
             { id: 52, jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Scot & Luba", siblings: "", photo: "", videoUrl: "" },
-            { id: 58, jersey: 58, name: "Harrison (Harry) Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", photo: "", videoUrl: "" },
+            { id: 58, jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", photo: "", videoUrl: "" },
             { id: 62, jersey: 62, name: "Elnathan (Nathan) Udoh", position: "Defense/Midfield", parents: "Emmanuel & Dépéjú", siblings: "", photo: "", videoUrl: "" },
-            { id: 65, jersey: 65, name: "Nicholas (Nic) Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", photo: "", videoUrl: "" },
+            { id: 65, jersey: 65, name: "Nicholas Lai", position: "Defense", parents: "Andy & Bonnie", siblings: "", photo: "", videoUrl: "" },
             { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "" }
         ];
 
@@ -1365,11 +1365,46 @@
             { id: 18, name: "CWFC B2014 Green", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
         ];
 
-        // Authentic Schedule Events
+        // Full 38-Event Authentic Season Schedule
         let scheduleEvents = [
-            { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM", location: "Shane Homes West Soccer Dome (Field 4)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
-            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
-            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM", location: "Captain Nichola Goddard School", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" }
+            { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 4 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 4, type: "game", title: "CMSA Match @ CWFC B2014 Green", opponent: "CWFC B2014 Green", isHome: false, date: "Saturday, Oct 24, 2026", kickoff: "2:15 PM - 3:30 PM", arrival: "1:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 5, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 27, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 6, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Oct 28, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 7, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 29, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 8, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 3, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 9, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 4, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 10, type: "game", title: "CMSA Match vs SWU Barca 14B", opponent: "SWU Barca 14B", isHome: true, date: "Saturday, Nov 7, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 11, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Nov 8, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 12, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 10, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 13, type: "game", title: "CMSA Match @ Blizzard United 14 Boys", opponent: "Blizzard United 14 Boys", isHome: false, date: "Saturday, Nov 14, 2026", kickoff: "8:15 PM - 9:30 PM", arrival: "7:45 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 2 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 14, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Nov 15, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 15, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 17, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 16, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 18, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 17, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Nov 19, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 18, type: "game", title: "CMSA Match @ CCFC Calgary City FC Whitecaps 2014", opponent: "CCFC Calgary City FC Whitecaps 2014", isHome: false, date: "Saturday, Nov 21, 2026", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 19, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Nov 24, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 20, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Nov 25, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 21, type: "game", title: "CMSA Match vs CalGlen Royals 14", opponent: "CalGlen Royals 14", isHome: true, date: "Saturday, Nov 28, 2026", kickoff: "5:00 PM - 6:15 PM", arrival: "4:30 PM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 22, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 1, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 23, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Dec 3, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 24, type: "practice", title: "Special Team Practice (In Lieu of Game)", opponent: "", date: "Saturday, Dec 5, 2026", kickoff: "4:00 PM - 5:00 PM", arrival: "3:45 PM (15 min prior)", location: "Edge School (Field 1)", mapUrl: "https://maps.google.com/?q=Edge+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 25, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Sunday, Dec 6, 2026", kickoff: "5:00 PM - 6:00 PM", arrival: "4:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 26, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 8, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 27, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 9, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 28, type: "game", title: "CMSA Match @ MUSC Storm 14", opponent: "MUSC Storm 14", isHome: false, date: "Saturday, Dec 12, 2026", kickoff: "9:30 AM - 10:45 AM", arrival: "9:00 AM (30 min prior)", location: "Shouldice Athletic Park (#01/NW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 29, type: "practice", title: "Team Practice (Makeup for Gym Closure)", opponent: "", date: "Sunday, Dec 13, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Bearspaw Community Association Gym", mapUrl: "https://maps.google.com/?q=Bearspaw+Community+Association", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
+            { id: 30, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Dec 15, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 31, type: "performance", title: "Rockies Performance Session", opponent: "", date: "Wednesday, Dec 16, 2026", kickoff: "6:00 PM - 7:00 PM", arrival: "5:45 PM (15 min prior)", location: "Calgary West Soccer Centre (Field 2a)", mapUrl: "https://maps.google.com/?q=Calgary+West+Soccer+Centre", jerseyKit: "Black Training Kit & Size 5 Ball" },
+            { id: 32, type: "game", title: "CMSA Match vs Airdrie F.C. Dynamo 14", opponent: "Airdrie F.C. Dynamo 14", isHome: true, date: "Saturday, Dec 19, 2026", kickoff: "12:00 PM - 1:15 PM", arrival: "11:30 AM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 3 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 33, type: "game", title: "CMSA Match vs Blizzard Alliance 14 Boys", opponent: "Blizzard Alliance 14 Boys", isHome: true, date: "Saturday, Jan 2, 2027", kickoff: "6:15 PM - 7:30 PM", arrival: "5:45 PM (30 min prior)", location: "Shouldice Athletic Park (#02/SW Field)", mapUrl: "https://maps.google.com/?q=Shouldice+Athletic+Park+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 34, type: "game", title: "CMSA Match @ Villains Cyclones 14", opponent: "Villains Cyclones 14", isHome: false, date: "Saturday, Jan 9, 2027", kickoff: "10:30 AM - 11:45 AM", arrival: "10:00 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 35, type: "game", title: "CMSA Match vs RANGERS ATHLETICS 14", opponent: "RANGERS ATHLETICS 14", isHome: true, date: "Saturday, Jan 16, 2027", kickoff: "1:15 PM - 2:30 PM", arrival: "12:45 PM (30 min prior)", location: "MaxWell Soccer Centre (MSC Dome SE 7v7)", mapUrl: "https://maps.google.com/?q=MaxWell+Soccer+Centre+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 36, type: "game", title: "CMSA Match vs New Frontier SC 14 Boys (Shaw)", opponent: "New Frontier SC 14 Boys (Shaw)", isHome: true, date: "Saturday, Jan 30, 2027", kickoff: "5:45 PM - 7:00 PM", arrival: "5:15 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 1 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Royal Blue Kit (Home)" },
+            { id: 37, type: "game", title: "CMSA Match @ EMFC Juventus 14", opponent: "EMFC Juventus 14", isHome: false, date: "Saturday, Feb 20, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" },
+            { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit (Away Alternate)" }
         ];
 
         let isCoachMode = false;
@@ -1422,6 +1457,7 @@
                     if (user) {
                         setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
                         setupRealtimeSync();
+                        checkCloudUserUnlock(user.uid);
                     } else {
                         setSyncBadge("Disconnected", "bg-amber-400");
                     }
@@ -1527,7 +1563,7 @@
                         if (data.scheduleJson) {
                             try {
                                 const parsedE = JSON.parse(data.scheduleJson);
-                                if (Array.isArray(parsedE) && parsedE.length > 0) {
+                                if (Array.isArray(parsedE) && parsedE.length >= 10) {
                                     scheduleEvents = parsedE;
                                     renderSchedule();
                                 }
@@ -1536,6 +1572,45 @@
                     }
                 });
             } catch (err) {}
+        }
+
+        function setUnlockCookie(unlocked) {
+            if (unlocked) {
+                document.cookie = "rfc14_unlocked=1; max-age=31536000; path=/; SameSite=Lax";
+            } else {
+                document.cookie = "rfc14_unlocked=; max-age=0; path=/; SameSite=Lax";
+            }
+        }
+
+        function hasUnlockCookie() {
+            return document.cookie.split(';').some(c => c.trim().startsWith('rfc14_unlocked=1'));
+        }
+
+        async function checkCloudUserUnlock(uid) {
+            if (hasUnlockCookie()) {
+                const gate = document.getElementById('family-pass-gate');
+                if (gate) gate.classList.add('hidden');
+                return;
+            }
+            if (!db || !uid) return;
+            try {
+                const sessionRef = doc(db, 'artifacts', appId, 'users', uid, 'preferences', 'session');
+                const snap = await getDoc(sessionRef);
+                if (snap.exists() && snap.data().unlocked === true) {
+                    setUnlockCookie(true);
+                    const gate = document.getElementById('family-pass-gate');
+                    if (gate) gate.classList.add('hidden');
+                }
+            } catch (e) {}
+        }
+
+        async function saveCloudUserUnlock(unlocked) {
+            setUnlockCookie(unlocked);
+            if (!db || !currentUser) return;
+            try {
+                const sessionRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'session');
+                await setDoc(sessionRef, { unlocked, updatedAt: Date.now() }, { merge: true });
+            } catch (e) {}
         }
 
         async function forceCloudPull() {
@@ -1637,12 +1712,15 @@
             if (val === 'albion14' || val === '1414' || val === 'rockies14') {
                 const gate = document.getElementById('family-pass-gate');
                 if (gate) gate.classList.add('hidden');
+                if (error) error.classList.add('hidden');
+                saveCloudUserUnlock(true);
             } else {
                 if (error) error.classList.remove('hidden');
             }
         }
 
         function relockSite() {
+            saveCloudUserUnlock(false);
             const gate = document.getElementById('family-pass-gate');
             if (gate) gate.classList.remove('hidden');
             const input = document.getElementById('family-passcode-input');
@@ -3041,16 +3119,32 @@
             }).join('');
         }
 
+        function isFutureOrTodayEvent(dateStr) {
+            if (!dateStr) return true;
+            const cleaned = dateStr.replace(/^[A-Za-z]+,\s*/, '').trim();
+            const parsed = new Date(cleaned);
+            if (isNaN(parsed.getTime())) return true;
+            // Keep events from today until the end of the day (23:59:59)
+            const eventEndOfDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
+            return eventEndOfDay >= new Date();
+        }
+
         function renderSchedule() {
             const list = document.getElementById('schedule-cards-list');
             if (!list) return;
 
             const filtered = scheduleEvents.filter(ev => {
+                if (!isFutureOrTodayEvent(ev.date)) return false;
                 if (currentScheduleFilter === 'all') return true;
                 if (currentScheduleFilter === 'game') return ev.type === 'game';
                 if (currentScheduleFilter === 'practice') return ev.type === 'practice' || ev.type === 'pdp' || ev.type === 'performance';
                 return ev.type === currentScheduleFilter;
             });
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-6">No upcoming events match this filter.</p>`;
+                return;
+            }
 
             list.innerHTML = filtered.map(ev => {
                 const isGame = ev.type === 'game';
@@ -3604,6 +3698,10 @@
         window.renderEditMatchEvents = renderEditMatchEvents;
 
         window.addEventListener('DOMContentLoaded', () => {
+            if (hasUnlockCookie()) {
+                const gate = document.getElementById('family-pass-gate');
+                if (gate) gate.classList.add('hidden');
+            }
             renderRoster();
             renderMatchTracker();
             renderSchedule();
