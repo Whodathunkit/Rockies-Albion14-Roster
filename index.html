@@ -116,7 +116,7 @@
         <!-- ================= STREAMING_CHUNK:Rendering Roster view... ================= -->
         <section id="view-roster" class="space-y-6">
 
-            <!-- Team Officials & Staff Card (Kevin contact info removed per request) -->
+            <!-- Team Officials & Staff Card -->
             <div class="bg-gradient-to-r from-zinc-900 to-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2.5">
                     <div class="flex items-center space-x-2">
@@ -1196,7 +1196,6 @@
             const dot = document.getElementById('connection-status-dot');
             const text = document.getElementById('connection-status-text');
             const modalDetail = document.getElementById('cloud-modal-status-detail');
-            const countsDetail = document.getElementById('cloud-modal-counts-detail');
 
             if (dot && dotColorClass) dot.className = `w-1.5 h-1.5 rounded-full ${dotColorClass}`;
             if (text && statusText) text.textContent = statusText;
@@ -1556,6 +1555,7 @@
                                 if (Array.isArray(parsedS) && parsedS.length > 0) {
                                     leagueStandings = parsedS;
                                     renderStandings();
+                                    renderSchedule();
                                 }
                             } catch (e) {}
                         }
@@ -3128,6 +3128,45 @@
             return eventEndOfDay >= new Date();
         }
 
+        // Look up an opponent's current standings record (Rank, GP, PTS, W, L, T, GF, GA, GD)
+        function getOpponentStanding(opponentName) {
+            if (!opponentName) return null;
+            const sorted = [...leagueStandings].sort((a, b) => {
+                const ptsA = (a.w * 3) + a.t;
+                const ptsB = (b.w * 3) + b.t;
+                if (ptsB !== ptsA) return ptsB - ptsA;
+                const gdA = a.gf - a.ga;
+                const gdB = b.gf - b.ga;
+                if (gdB !== gdA) return gdB - gdA;
+                return b.gf - a.gf;
+            });
+
+            const norm = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+            const target = norm(opponentName);
+            if (!target) return null;
+
+            let idx = sorted.findIndex(t => norm(t.name) === target);
+            if (idx === -1) {
+                idx = sorted.findIndex(t => norm(t.name).includes(target) || target.includes(norm(t.name)));
+            }
+            if (idx === -1) return null;
+
+            const team = sorted[idx];
+            const gp = team.gp !== undefined ? team.gp : (team.w + team.l + team.t);
+            const pts = (team.w * 3) + team.t;
+            const gd = team.gf - team.ga;
+            const gdDisplay = gd > 0 ? `+${gd}` : `${gd}`;
+
+            return {
+                ...team,
+                rank: idx + 1,
+                gp,
+                pts,
+                gd,
+                gdDisplay
+            };
+        }
+
         function renderSchedule() {
             const list = document.getElementById('schedule-cards-list');
             if (!list) return;
@@ -3164,6 +3203,8 @@
                     badgeClass = 'bg-emerald-950 text-emerald-300 border-emerald-500/50';
                 }
 
+                const oppStats = isGame ? getOpponentStanding(ev.opponent || ev.title) : null;
+
                 return `
                 <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3 relative overflow-hidden">
                     <div class="flex items-start justify-between">
@@ -3179,6 +3220,52 @@
                             <p class="text-[10px] text-zinc-400 font-semibold">Arrive: <strong class="text-white">${ev.arrival}</strong></p>
                         </div>
                     </div>
+
+                    ${isGame && oppStats ? `
+                    <div class="bg-zinc-950/90 border border-zinc-800/90 rounded-2xl p-3 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 shadow-inner">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="switchTab('standings')" class="px-2 py-0.5 rounded-lg bg-amber-950/70 hover:bg-amber-900/80 border border-amber-500/40 text-[10px] font-black text-amber-300 uppercase tracking-wider transition" title="View Full Standings">
+                                🏆 Rank #${oppStats.rank}
+                            </button>
+                            <span class="text-[11px] font-black uppercase tracking-wider text-zinc-400">Opposition Record:</span>
+                            <span class="text-xs font-extrabold text-white">${oppStats.name}</span>
+                        </div>
+                        <div class="grid grid-cols-8 gap-1 sm:gap-1.5 text-center font-mono text-[11px]">
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">GP</div>
+                                <div class="font-bold text-zinc-200">${oppStats.gp}</div>
+                            </div>
+                            <div class="bg-blue-950/50 border border-blue-500/30 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-black text-blue-400 uppercase">PTS</div>
+                                <div class="font-black text-white">${oppStats.pts}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">W</div>
+                                <div class="font-bold text-emerald-400">${oppStats.w}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">L</div>
+                                <div class="font-bold text-rose-400">${oppStats.l}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">T</div>
+                                <div class="font-bold text-amber-300">${oppStats.t}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">GF</div>
+                                <div class="font-bold text-zinc-200">${oppStats.gf}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">GA</div>
+                                <div class="font-bold text-zinc-200">${oppStats.ga}</div>
+                            </div>
+                            <div class="bg-zinc-900 border border-zinc-800 rounded-lg px-1.5 py-1">
+                                <div class="text-[9px] font-sans font-bold text-zinc-500 uppercase">GD</div>
+                                <div class="font-bold ${oppStats.gd > 0 ? 'text-emerald-400' : (oppStats.gd < 0 ? 'text-rose-400' : 'text-zinc-400')}">${oppStats.gdDisplay}</div>
+                            </div>
+                        </div>
+                    </div>
+                    ` : ''}
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-zinc-800/80 text-xs">
                         <div class="flex items-center space-x-2 text-zinc-300">
@@ -3358,6 +3445,7 @@
             });
             closeEditStandingsModal();
             renderStandings();
+            renderSchedule();
             savePersistentData();
         }
 
@@ -3435,6 +3523,7 @@
             leagueStandings = [...pendingAiParsedTeams];
             closeAiStandingsModal();
             renderStandings();
+            renderSchedule();
             savePersistentData();
         }
 
