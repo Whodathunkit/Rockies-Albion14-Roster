@@ -35,12 +35,12 @@
             <h2 class="text-2xl font-black text-white tracking-tight">Rockies Albion 14</h2>
             <p class="text-xs text-gray-400 mt-1 mb-6">Enter team passcode to view the season schedule, roster, and live tracker.</p>
 
-            <form onsubmit="handleFamilyPassSubmit(event)" class="space-y-4">
+            <form id="family-pass-form" onsubmit="handleFamilyPassSubmit(event)" class="space-y-4">
                 <div>
                     <input type="password" id="family-passcode-input" autofocus autocomplete="current-password" placeholder="Enter Team Passcode..." class="w-full text-center px-4 py-3 rounded-xl bg-zinc-950/90 border border-zinc-700 text-white placeholder-zinc-500 text-base font-bold tracking-widest focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition shadow-inner">
                     <p id="family-pass-error" class="hidden text-xs text-rose-400 font-semibold mt-2">Incorrect passcode. Please try again.</p>
                 </div>
-                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-[#003C71] hover:from-blue-600 hover:to-blue-700 text-white text-sm font-extrabold uppercase tracking-wider shadow-lg active:scale-98 transition">
+                <button type="submit" id="btn-family-pass-submit" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-700 to-[#003C71] hover:from-blue-600 hover:to-blue-700 text-white text-sm font-extrabold uppercase tracking-wider shadow-lg active:scale-98 transition">
                     Unlock Team Site &rarr;
                 </button>
             </form>
@@ -215,11 +215,11 @@
                     <!-- Center Match Clock -->
                     <div class="col-span-1 flex flex-col items-center justify-center space-y-2">
                         <div id="timer-display" class="text-2xl sm:text-3xl font-black text-amber-400 font-mono tracking-wider">00:00</div>
-                        <div class="flex flex-col space-y-1">
+                        <div id="match-timer-controls" class="flex flex-col space-y-1">
                             <button id="btn-toggle-timer" onclick="toggleMatchTimer()" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold shadow transition">
                                 ▶ Start
                             </button>
-                            <button onclick="resetTimer()" class="text-[10px] text-zinc-400 hover:text-zinc-200 transition">Reset</button>
+                            <button id="btn-reset-timer" onclick="resetTimer()" class="text-[10px] text-zinc-400 hover:text-zinc-200 transition">Reset</button>
                         </div>
                     </div>
 
@@ -239,7 +239,7 @@
                     <span id="motm-name-display" class="text-xs font-bold text-amber-300 flex items-center space-x-1.5">
                         <span>🎖️</span> <span>Man of the Match: Not Crowned Yet</span>
                     </span>
-                    <div class="flex items-center space-x-2">
+                    <div id="motm-select-container" class="flex items-center space-x-2">
                         <select id="motm-player-select" onchange="window.setMatchMOTM(this.value)" class="bg-zinc-900 border border-zinc-700 text-white text-[11px] rounded-lg px-2.5 py-1">
                             <option value="">Assign MOTM...</option>
                         </select>
@@ -280,14 +280,14 @@
                     </h3>
                     <div class="flex items-center space-x-2">
                         <span id="shootout-score-display" class="font-mono text-sm font-black text-white">0 - 0</span>
-                        <button onclick="resetShootout()" class="text-xs text-zinc-400 hover:text-zinc-200">Reset</button>
+                        <button id="btn-reset-shootout" onclick="resetShootout()" class="text-xs text-zinc-400 hover:text-zinc-200">Reset</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-extrabold text-blue-400">Rockies Albion 14</span>
-                            <div class="space-x-1">
+                            <div id="pk-coach-buttons-us" class="space-x-1">
                                 <button onclick="recordShootoutKick('us', true)" class="px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white">✓ Goal</button>
                                 <button onclick="recordShootoutKick('us', false)" class="px-2 py-0.5 rounded bg-rose-600 text-[10px] font-bold text-white">✗ Miss</button>
                             </div>
@@ -297,7 +297,7 @@
                     <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
                         <div class="flex items-center justify-between">
                             <span class="text-xs font-extrabold text-amber-400">Opponent</span>
-                            <div class="space-x-1">
+                            <div id="pk-coach-buttons-them" class="space-x-1">
                                 <button onclick="recordShootoutKick('them', true)" class="px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white">✓ Goal</button>
                                 <button onclick="recordShootoutKick('them', false)" class="px-2 py-0.5 rounded bg-rose-600 text-[10px] font-bold text-white">✗ Miss</button>
                             </div>
@@ -378,7 +378,7 @@
                         <span>⏱️ Play-by-Play Match Events</span>
                         <span id="match-event-count" class="text-xs text-zinc-500 font-normal"></span>
                     </h3>
-                    <div class="flex items-center space-x-2">
+                    <div id="match-archive-controls" class="flex items-center space-x-2">
                         <button type="button" onclick="archiveMatchToHistory()" class="px-3 py-1 rounded-lg bg-blue-900/60 hover:bg-blue-800 border border-blue-400/40 text-xs font-bold text-blue-200">
                             <span id="btn-end-match-label">End Match</span>
                         </button>
@@ -570,6 +570,38 @@
 
     </main>
 
+    <!-- Footer with Instant Site Relocking & Team Information -->
+    <footer class="mt-auto border-t border-zinc-800/80 bg-zinc-950/95 backdrop-blur-md text-zinc-400 text-xs py-7">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 text-center sm:text-left">
+                <div class="w-10 h-10 rounded-xl bg-[#003C71] flex items-center justify-center p-1.5 border border-blue-400/30 shadow">
+                    <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="RFC Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
+                </div>
+                <div>
+                    <p class="font-black text-white text-sm tracking-tight">Calgary Rockies FC Albion 14</p>
+                    <p class="text-[11px] text-zinc-400 font-medium">CMSA Boys U13 Tier 2 • 2026-2027 Indoor Season</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center gap-2.5">
+                <span id="footer-mode-indicator" class="px-3 py-1.5 rounded-full text-[11px] font-bold bg-zinc-900 border border-zinc-700 text-zinc-300">
+                    Mode: Spectator Mode 🔒
+                </span>
+                <button type="button" id="btn-footer-coach-toggle" onclick="toggleCoachMode()" class="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-zinc-700 hover:border-amber-500/40 text-xs font-bold transition shadow-sm active:scale-95">
+                    <span>⚡ Coach Mode</span>
+                </button>
+                <button type="button" id="btn-footer-relock" onclick="relockSite()" class="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-rose-950/80 hover:bg-rose-900 text-rose-200 border border-rose-500/40 text-xs font-bold transition shadow-sm active:scale-95" title="Instantly lock portal and require team passcode again">
+                    <span>🔒</span>
+                    <span>Relock Portal</span>
+                </button>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto px-4 mt-4 pt-3.5 border-t border-zinc-900/80 text-[11px] text-zinc-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>Protected Team Portal for Rockies Albion 14 Players, Coaches & Families.</p>
+            <p class="text-zinc-400">Head Coach: Kevin Diaz Lizama • Manager: Tyler Martens</p>
+        </div>
+    </footer>
+
     <!-- ================= MODALS & OVERLAYS ================= -->
 
     <!-- Coach PIN Modal -->
@@ -577,7 +609,7 @@
         <div class="max-w-xs w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl text-center space-y-4">
             <h3 class="text-base font-extrabold text-white">Enter Coach PIN</h3>
             <p class="text-xs text-zinc-400">Enter the 4-digit PIN to enable match recording and admin controls.</p>
-            <form onsubmit="submitCoachPin(event)" class="space-y-3">
+            <form id="coach-pin-form" onsubmit="submitCoachPin(event)" class="space-y-3">
                 <input type="password" id="coach-pin-input" autofocus placeholder="PIN..." class="w-full text-center px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-700 text-white font-mono text-lg font-bold tracking-widest focus:outline-none focus:border-amber-500">
                 <p id="coach-pin-error" class="hidden text-xs text-rose-400 font-semibold">Incorrect PIN. Try again.</p>
                 <div class="flex space-x-2">

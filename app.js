@@ -88,15 +88,82 @@ import {
     renderLeaderboard 
 } from './standings.js';
 
-// Application State
-export let isCoachMode = (() => {
+// --- Storage & Cookie Session Persistence Helpers ---
+function getCookie(name) {
     try {
-        return sessionStorage.getItem('rfc14_coach_mode') === 'true';
+        const matches = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+        return matches ? decodeURIComponent(matches[1]) : null;
     } catch {
-        return false;
+        return null;
     }
-})();
+}
 
+function setCookie(name, value, days = 30) {
+    try {
+        const expires = new Date(Date.now() + days * 864e5).toUTCString();
+        document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+    } catch {}
+}
+
+function deleteCookie(name) {
+    try {
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+        document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
+    } catch {}
+}
+
+export function isPasscodeUnlocked() {
+    try {
+        if (localStorage.getItem('rfc14_pass_unlocked') === 'true') return true;
+    } catch {}
+    try {
+        if (sessionStorage.getItem('rfc14_pass_unlocked') === 'true') return true;
+    } catch {}
+    try {
+        if (getCookie('rfc14_pass_unlocked') === 'true') return true;
+    } catch {}
+    return false;
+}
+
+export function setPasscodeUnlocked(unlocked) {
+    if (unlocked) {
+        try { localStorage.setItem('rfc14_pass_unlocked', 'true'); } catch {}
+        try { sessionStorage.setItem('rfc14_pass_unlocked', 'true'); } catch {}
+        setCookie('rfc14_pass_unlocked', 'true', 30);
+    } else {
+        try { localStorage.removeItem('rfc14_pass_unlocked'); } catch {}
+        try { sessionStorage.removeItem('rfc14_pass_unlocked'); } catch {}
+        deleteCookie('rfc14_pass_unlocked');
+    }
+}
+
+export function getSavedCoachMode() {
+    try {
+        if (localStorage.getItem('rfc14_coach_mode') === 'true') return true;
+    } catch {}
+    try {
+        if (sessionStorage.getItem('rfc14_coach_mode') === 'true') return true;
+    } catch {}
+    try {
+        if (getCookie('rfc14_coach_mode') === 'true') return true;
+    } catch {}
+    return false;
+}
+
+export function setSavedCoachMode(active) {
+    if (active) {
+        try { localStorage.setItem('rfc14_coach_mode', 'true'); } catch {}
+        try { sessionStorage.setItem('rfc14_coach_mode', 'true'); } catch {}
+        setCookie('rfc14_coach_mode', 'true', 7);
+    } else {
+        try { localStorage.removeItem('rfc14_coach_mode'); } catch {}
+        try { sessionStorage.removeItem('rfc14_coach_mode'); } catch {}
+        deleteCookie('rfc14_coach_mode');
+    }
+}
+
+// Application State
+export let isCoachMode = getSavedCoachMode();
 export let currentTab = 'roster';
 
 // Update full application UI
@@ -110,12 +177,6 @@ export function updateAllViews() {
     renderStandings(isCoachMode);
     renderLeaderboard(matchState);
     updateModeToggleButton();
-
-    // Toggle coach action buttons
-    const trackerActions = document.getElementById('tracker-coach-actions');
-    const periodControls = document.getElementById('match-period-controls');
-    if (trackerActions) trackerActions.style.display = isCoachMode ? 'grid' : 'none';
-    if (periodControls) periodControls.style.display = isCoachMode ? 'flex' : 'none';
 }
 
 // Tab Switching Logic
@@ -155,30 +216,51 @@ export function switchTab(tabName) {
 
 // Passcode Gate Logic
 export function handleFamilyPassSubmit(event) {
-    if (event) event.preventDefault();
+    if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
     const input = document.getElementById('family-passcode-input');
     const errorEl = document.getElementById('family-pass-error');
     const gate = document.getElementById('family-pass-gate');
 
     const entered = (input?.value || '').trim().toLowerCase();
-    const validCodes = ['albion14', '1414', 'rockies14', 'rockies'];
+    // Valid passcodes: albion14, 1414, rockies14 (and friendly variations)
+    const validCodes = ['albion14', '1414', 'rockies14'];
 
     if (validCodes.includes(entered)) {
-        sessionStorage.setItem('rfc14_pass_unlocked', 'true');
-        if (gate) gate.classList.add('hidden');
+        setPasscodeUnlocked(true);
+        if (gate) {
+            gate.classList.add('hidden');
+            gate.style.display = 'none';
+        }
         if (errorEl) errorEl.classList.add('hidden');
     } else {
         if (errorEl) errorEl.classList.remove('hidden');
-        if (input) input.value = '';
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
     }
+    return false;
 }
 
 export function relockSite() {
-    sessionStorage.removeItem('rfc14_pass_unlocked');
-    sessionStorage.removeItem('rfc14_coach_mode');
+    setPasscodeUnlocked(false);
+    setSavedCoachMode(false);
     isCoachMode = false;
     const gate = document.getElementById('family-pass-gate');
-    if (gate) gate.classList.remove('hidden');
+    const input = document.getElementById('family-passcode-input');
+    const errorEl = document.getElementById('family-pass-error');
+    if (errorEl) errorEl.classList.add('hidden');
+    if (gate) {
+        gate.classList.remove('hidden');
+        gate.style.display = 'flex';
+    }
+    if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 100);
+    }
     updateAllViews();
 }
 
@@ -187,22 +269,63 @@ export function updateModeToggleButton() {
     const icon = document.getElementById('mode-toggle-icon');
     const label = document.getElementById('mode-toggle-label');
     const btn = document.getElementById('btn-mode-toggle');
+    const footerIndicator = document.getElementById('footer-mode-indicator');
+    const footerCoachBtn = document.getElementById('btn-footer-coach-toggle');
 
     if (isCoachMode) {
         if (icon) icon.textContent = "⚡";
         if (label) label.textContent = "Coach Mode (Active)";
         if (btn) btn.className = "inline-flex items-center space-x-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-3 py-1.5 rounded-full text-[11px] font-bold text-amber-300 transition shadow backdrop-blur-sm active:scale-95";
+        if (footerIndicator) {
+            footerIndicator.textContent = "Mode: Coach Mode ⚡";
+            footerIndicator.className = "px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-950/80 border border-amber-500/40 text-amber-300";
+        }
+        if (footerCoachBtn) {
+            footerCoachBtn.innerHTML = `<span>🔒 Exit Coach Mode</span>`;
+            footerCoachBtn.className = "inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 text-xs font-bold transition shadow-sm active:scale-95";
+        }
     } else {
         if (icon) icon.textContent = "🔒";
         if (label) label.textContent = "Spectator Mode";
         if (btn) btn.className = "inline-flex items-center space-x-1.5 bg-black/60 hover:bg-black/80 border border-white/15 px-3 py-1.5 rounded-full text-[11px] font-bold text-gray-300 transition shadow backdrop-blur-sm active:scale-95";
+        if (footerIndicator) {
+            footerIndicator.textContent = "Mode: Spectator Mode 🔒";
+            footerIndicator.className = "px-3 py-1.5 rounded-full text-[11px] font-bold bg-zinc-900 border border-zinc-700 text-zinc-400";
+        }
+        if (footerCoachBtn) {
+            footerCoachBtn.innerHTML = `<span>⚡ Coach Mode</span>`;
+            footerCoachBtn.className = "inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-zinc-700 hover:border-amber-500/40 text-xs font-bold transition shadow-sm active:scale-95";
+        }
     }
+
+    // Toggle coach action buttons and controls across views
+    const trackerActions = document.getElementById('tracker-coach-actions');
+    const periodControls = document.getElementById('match-period-controls');
+    const timerControls = document.getElementById('match-timer-controls');
+    const archiveControls = document.getElementById('match-archive-controls');
+    const motmSelectContainer = document.getElementById('motm-select-container');
+    const pkUsControls = document.getElementById('pk-coach-buttons-us');
+    const pkThemControls = document.getElementById('pk-coach-buttons-them');
+    const resetPkBtn = document.getElementById('btn-reset-shootout');
+    const addEventBtn = document.getElementById('btn-add-event') || document.getElementById('btn-open-add-event');
+    const editStandingsBtn = document.getElementById('btn-open-edit-standings');
+
+    if (trackerActions) trackerActions.style.display = isCoachMode ? 'grid' : 'none';
+    if (periodControls) periodControls.style.display = isCoachMode ? 'flex' : 'none';
+    if (timerControls) timerControls.style.display = isCoachMode ? 'flex' : 'none';
+    if (archiveControls) archiveControls.style.display = isCoachMode ? 'flex' : 'none';
+    if (motmSelectContainer) motmSelectContainer.style.display = isCoachMode ? 'flex' : 'none';
+    if (pkUsControls) pkUsControls.style.display = isCoachMode ? 'block' : 'none';
+    if (pkThemControls) pkThemControls.style.display = isCoachMode ? 'block' : 'none';
+    if (resetPkBtn) resetPkBtn.style.display = isCoachMode ? 'inline-block' : 'none';
+    if (addEventBtn) addEventBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
+    if (editStandingsBtn) editStandingsBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
 }
 
 export function toggleCoachMode() {
     if (isCoachMode) {
         isCoachMode = false;
-        sessionStorage.setItem('rfc14_coach_mode', 'false');
+        setSavedCoachMode(false);
         updateAllViews();
     } else {
         openCoachPinModal();
@@ -227,20 +350,27 @@ export function closeCoachPinModal() {
 }
 
 export function submitCoachPin(event) {
-    if (event) event.preventDefault();
+    if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
     const input = document.getElementById('coach-pin-input');
     const err = document.getElementById('coach-pin-error');
     const pin = (input?.value || '').trim();
 
-    if (pin === '1414' || pin.toLowerCase() === 'albion14') {
+    if (pin === '1414') {
         isCoachMode = true;
-        sessionStorage.setItem('rfc14_coach_mode', 'true');
+        setSavedCoachMode(true);
         closeCoachPinModal();
         updateAllViews();
     } else {
         if (err) err.classList.remove('hidden');
-        if (input) input.value = '';
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
     }
+    return false;
 }
 
 // Cloud Config Modal Logic
@@ -365,15 +495,83 @@ window.confirmApplyAiStandings = () => confirmApplyAiStandings(matchState, sched
 window.openCloudConfigModal = openCloudConfigModal;
 window.closeCloudConfigModal = closeCloudConfigModal;
 window.applyCustomFirebaseConfig = applyCustomFirebaseConfig;
+window.updateAllViews = updateAllViews;
+
+function setupDomEventListeners() {
+    // Programmatic event listener bindings to guarantee form handling
+    const passForm = document.getElementById('family-pass-form');
+    if (passForm) {
+        passForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleFamilyPassSubmit(e);
+        });
+    }
+
+    const passBtn = document.getElementById('btn-family-pass-submit');
+    if (passBtn) {
+        passBtn.addEventListener('click', (e) => {
+            const form = document.getElementById('family-pass-form');
+            if (form) {
+                e.preventDefault();
+                handleFamilyPassSubmit(e);
+            }
+        });
+    }
+
+    const coachPinForm = document.getElementById('coach-pin-form');
+    if (coachPinForm) {
+        coachPinForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            submitCoachPin(e);
+        });
+    }
+
+    const modeBtn = document.getElementById('btn-mode-toggle');
+    if (modeBtn) {
+        modeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleCoachMode();
+        });
+    }
+
+    const relockBtn = document.getElementById('btn-footer-relock');
+    if (relockBtn) {
+        relockBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            relockSite();
+        });
+    }
+
+    const footerCoachBtn = document.getElementById('btn-footer-coach-toggle');
+    if (footerCoachBtn) {
+        footerCoachBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleCoachMode();
+        });
+    }
+}
+
+export function syncGateVisibility() {
+    const unlocked = isPasscodeUnlocked();
+    const gate = document.getElementById('family-pass-gate');
+    if (gate) {
+        if (unlocked) {
+            gate.classList.add('hidden');
+            gate.style.display = 'none';
+        } else {
+            gate.classList.remove('hidden');
+            gate.style.display = 'flex';
+        }
+    }
+}
 
 // Initialize on DOM Ready
-document.addEventListener('DOMContentLoaded', () => {
-    // Check if passcode is already unlocked
-    const unlocked = sessionStorage.getItem('rfc14_pass_unlocked') === 'true';
-    const gate = document.getElementById('family-pass-gate');
-    if (unlocked && gate) {
-        gate.classList.add('hidden');
-    }
+function onAppInit() {
+    // Check if passcode is already unlocked via localStorage, cookie, or sessionStorage
+    syncGateVisibility();
+
+    // Setup direct event listeners
+    setupDomEventListeners();
 
     // Initialize Firebase Realtime Sync
     initFirebase({
@@ -414,4 +612,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render of all views
     updateAllViews();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', onAppInit);
+} else {
+    onAppInit();
+}
+
