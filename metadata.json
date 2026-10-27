@@ -1,0 +1,8 @@
+{
+  "name": "Rockies Albion 14 Portal",
+  "description": "Calgary Rockies FC Albion 14 Boys U13 team portal, match center, schedule, standings, and leaderboard.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
