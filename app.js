@@ -329,17 +329,6 @@ export function updateModeToggleButton() {
     if (resetPkBtn) resetPkBtn.style.display = isCoachMode ? 'inline-block' : 'none';
     if (addEventBtn) addEventBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
     if (editStandingsBtn) editStandingsBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
-
-    const rosterModeBadge = document.getElementById('roster-mode-badge');
-    if (rosterModeBadge) {
-        if (isCoachMode) {
-            rosterModeBadge.textContent = "⚡ Coach Controls Active";
-            rosterModeBadge.className = "hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
-        } else {
-            rosterModeBadge.textContent = "🔒 Enter PIN 1414 to Edit";
-            rosterModeBadge.className = "hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700";
-        }
-    }
 }
 
 export function toggleCoachMode() {
