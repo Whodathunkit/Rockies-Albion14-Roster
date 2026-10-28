@@ -16,6 +16,139 @@ export const players = [
     { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "" }
 ];
 
+export let guestPlayers = (() => {
+    try {
+        const saved = localStorage.getItem('rfc14_guest_players');
+        return saved ? JSON.parse(saved) : [];
+    } catch {
+        return [];
+    }
+})();
+
+export let playerAttendanceMap = (() => {
+    try {
+        const saved = localStorage.getItem('rfc14_player_attendance');
+        return saved ? JSON.parse(saved) : {};
+    } catch {
+        return {};
+    }
+})();
+
+export function getAllRosterPlayers(matchState) {
+    const activeGuests = (matchState?.guestPlayers && Array.isArray(matchState.guestPlayers))
+        ? matchState.guestPlayers
+        : guestPlayers;
+    return [...players, ...activeGuests];
+}
+
+export function isPlayerAvailable(jersey, matchState) {
+    const jNum = Number(jersey);
+    if (matchState?.attendance && matchState.attendance[jNum] !== undefined) {
+        return matchState.attendance[jNum] !== 'absent';
+    }
+    if (playerAttendanceMap[jNum] !== undefined) {
+        return playerAttendanceMap[jNum] !== 'absent';
+    }
+    return true; // Default to available
+}
+
+export function getAvailablePlayers(matchState) {
+    return getAllRosterPlayers(matchState).filter(p => isPlayerAvailable(p.jersey, matchState));
+}
+
+export function togglePlayerAttendance(jersey, matchState, onUpdate) {
+    const jNum = Number(jersey);
+    const currentlyAvailable = isPlayerAvailable(jNum, matchState);
+    const nextStatus = currentlyAvailable ? 'absent' : 'attending';
+
+    playerAttendanceMap[jNum] = nextStatus;
+    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+
+    if (matchState) {
+        if (!matchState.attendance) matchState.attendance = {};
+        matchState.attendance[jNum] = nextStatus;
+    }
+
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+export function markAllAttendance(status, matchState, onUpdate) {
+    const all = getAllRosterPlayers(matchState);
+    all.forEach(p => {
+        const jNum = Number(p.jersey);
+        playerAttendanceMap[jNum] = status;
+        if (matchState) {
+            if (!matchState.attendance) matchState.attendance = {};
+            matchState.attendance[jNum] = status;
+        }
+    });
+    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+export function addGuestPlayer(guestData, matchState, onUpdate) {
+    const jersey = parseInt(guestData.jersey, 10);
+    if (isNaN(jersey) || jersey < 0) {
+        alert('Please enter a valid jersey number.');
+        return false;
+    }
+    const name = (guestData.name || '').trim();
+    if (!name) {
+        alert('Please enter a player name.');
+        return false;
+    }
+
+    const all = getAllRosterPlayers(matchState);
+    if (all.some(p => Number(p.jersey) === jersey)) {
+        const existing = all.find(p => Number(p.jersey) === jersey);
+        alert(`Jersey #${jersey} is already in use by ${existing.name}. Please select a different number.`);
+        return false;
+    }
+
+    const newGuest = {
+        id: Date.now(),
+        jersey,
+        name,
+        position: guestData.position || 'Guest Player',
+        parents: guestData.notes ? `Call-Up: ${guestData.notes}` : 'Call-Up Guest Player',
+        siblings: '',
+        photo: '',
+        videoUrl: '',
+        isGuest: true,
+        notes: guestData.notes || 'Call-Up Player'
+    };
+
+    guestPlayers.push(newGuest);
+    try { localStorage.setItem('rfc14_guest_players', JSON.stringify(guestPlayers)); } catch {}
+
+    if (matchState) {
+        if (!Array.isArray(matchState.guestPlayers)) matchState.guestPlayers = [];
+        matchState.guestPlayers.push(newGuest);
+        if (!matchState.attendance) matchState.attendance = {};
+        matchState.attendance[jersey] = 'attending';
+    }
+    playerAttendanceMap[jersey] = 'attending';
+    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+
+    if (typeof onUpdate === 'function') onUpdate();
+    return true;
+}
+
+export function removeGuestPlayer(jersey, matchState, onUpdate) {
+    const jNum = Number(jersey);
+    guestPlayers = guestPlayers.filter(p => Number(p.jersey) !== jNum);
+    try { localStorage.setItem('rfc14_guest_players', JSON.stringify(guestPlayers)); } catch {}
+
+    if (matchState && Array.isArray(matchState.guestPlayers)) {
+        matchState.guestPlayers = matchState.guestPlayers.filter(p => Number(p.jersey) !== jNum);
+        if (matchState.attendance) delete matchState.attendance[jNum];
+    }
+    delete playerAttendanceMap[jNum];
+    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
 export let playerProfilesMap = (() => {
     try {
         const saved = localStorage.getItem('rfc14_player_profiles');
@@ -131,7 +264,8 @@ export function getPlayerRecentHighlights(jersey, matchState) {
     const items = [];
     const activeOpp = matchState?.opponentName || 'Opponent';
     const jNum = Number(jersey);
-    const player = players.find(p => p.jersey === jNum);
+    const allPlayers = getAllRosterPlayers(matchState);
+    const player = allPlayers.find(p => p.jersey === jNum);
 
     if (Number(matchState?.motmJersey) === jNum) {
         items.push({
@@ -247,11 +381,22 @@ export function getPlayerRecentHighlights(jersey, matchState) {
 }
 
 // Render Roster Grid
-export function renderRoster(matchState) {
+export function renderRoster(matchState, isCoachMode = false) {
     const grid = document.getElementById('roster-grid');
     if (!grid) return;
 
-    grid.innerHTML = players.map(p => {
+    const all = getAllRosterPlayers(matchState);
+
+    let availableCount = 0;
+    let absentCount = 0;
+    let guestCount = 0;
+
+    grid.innerHTML = all.map(p => {
+        const isAvailable = isPlayerAvailable(p.jersey, matchState);
+        if (isAvailable) availableCount++;
+        else absentCount++;
+        if (p.isGuest) guestCount++;
+
         const goals = getPlayerGoals(p.jersey, matchState);
         const assists = getPlayerAssists(p.jersey, matchState);
         const stops = getPlayerStops(p.jersey, matchState);
@@ -265,23 +410,42 @@ export function renderRoster(matchState) {
         const recentHighlights = getPlayerRecentHighlights(p.jersey, matchState).slice(0, 2);
 
         return `
-        <div onclick="window.openPlayerModal(${p.jersey})" class="bg-zinc-900 border border-zinc-800/90 hover:border-blue-500/50 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
+        <div onclick="window.openPlayerModal(${p.jersey})" class="bg-zinc-900 border ${isAvailable ? 'border-zinc-800/90 hover:border-blue-500/50' : 'border-dashed border-rose-900/50 opacity-75'} rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
             <div class="flex items-start justify-between">
                 <div class="pr-2">
-                    <div class="flex items-center space-x-1.5">
+                    <div class="flex flex-wrap items-center gap-1.5">
                         <h3 class="text-sm font-extrabold text-white group-hover:text-blue-400 transition">${p.name}</h3>
+                        ${p.isGuest ? `<span class="text-[9px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-1.5 py-0.2 rounded font-black tracking-wider uppercase">★ Call-Up</span>` : ''}
                         ${customVideo ? `<span class="text-[10px] bg-blue-950 border border-blue-500/40 text-blue-300 px-1.5 py-0.2 rounded font-bold">▶ Clip</span>` : ''}
                     </div>
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${p.position}</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${p.position}${p.notes ? ` • ${p.notes}` : ''}</p>
                     <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${parentsText}</p>
                 </div>
-                <div class="w-10 h-10 rounded-xl bg-[#003C71] border border-blue-400/40 flex items-center justify-center text-sm font-black text-white shadow-md flex-shrink-0">
-                    #${p.jersey}
+                <div class="flex flex-col items-end space-y-1 flex-shrink-0">
+                    <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[#003C71] border border-blue-400/40'} flex items-center justify-center text-sm font-black text-white shadow-md">
+                        #${p.jersey}
+                    </div>
                 </div>
             </div>
 
+            <!-- Attendance Check-In Status Bar -->
+            <div class="mt-3 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between">
+                <div class="flex items-center space-x-1.5">
+                    <span class="text-[9px] font-black uppercase tracking-wider text-zinc-500">Status:</span>
+                    <button type="button" onclick="event.stopPropagation(); window.togglePlayerAttendance(${p.jersey})" class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold transition active:scale-95 cursor-pointer shadow-sm ${isAvailable ? 'bg-emerald-950 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-900' : 'bg-rose-950 text-rose-300 border border-rose-500/50 hover:bg-rose-900'}" title="Click to toggle Available / Absent">
+                        <span>${isAvailable ? '✓ Available' : '✕ Absent'}</span>
+                        <span class="text-[9px] opacity-75">⇄</span>
+                    </button>
+                </div>
+                ${p.isGuest ? `
+                    <button type="button" onclick="event.stopPropagation(); window.removeGuestPlayer(${p.jersey})" class="text-[10px] text-rose-400 hover:text-rose-300 underline font-semibold transition" title="Remove this guest call-up">
+                        Remove
+                    </button>
+                ` : ''}
+            </div>
+
             ${recentHighlights.length > 0 ? `
-            <div class="mt-3 pt-2.5 border-t border-zinc-800/60 space-y-1.5">
+            <div class="mt-2.5 pt-2 border-t border-zinc-800/60 space-y-1.5">
                 <p class="text-[9px] font-black uppercase tracking-wider text-zinc-500">Recent Highlights</p>
                 ${recentHighlights.map(h => `
                     <div class="flex items-center justify-between px-2 py-1 rounded-lg border ${h.badgeClass} text-[10px]">
@@ -312,13 +476,36 @@ export function renderRoster(matchState) {
         `;
     }).join('');
 
+    // Update Attendance Summary Badges
     const countEl = document.getElementById('roster-player-count');
-    if (countEl) countEl.textContent = `${players.length} Players`;
+    if (countEl) {
+        countEl.textContent = `${all.length} Players (${availableCount} Available${guestCount > 0 ? `, ${guestCount} Guest` : ''})`;
+    }
+
+    const availableBadge = document.getElementById('count-available');
+    if (availableBadge) availableBadge.textContent = availableCount;
+
+    const absentBadge = document.getElementById('count-absent');
+    if (absentBadge) absentBadge.textContent = absentCount;
+
+    const guestsBadge = document.getElementById('count-guests');
+    const guestContainer = document.getElementById('roster-stat-guests');
+    if (guestsBadge) guestsBadge.textContent = guestCount;
+    if (guestContainer) {
+        if (guestCount > 0) guestContainer.classList.remove('hidden');
+        else guestContainer.classList.add('hidden');
+    }
+
+    const coachControls = document.getElementById('roster-coach-controls');
+    if (coachControls) {
+        coachControls.style.display = 'flex';
+    }
 }
 
 // Player Modal Management
 export function openPlayerModal(jersey, matchState) {
-    const player = players.find(p => p.jersey === jersey);
+    const all = getAllRosterPlayers(matchState);
+    const player = all.find(p => p.jersey === Number(jersey));
     if (!player) return;
     activePlayerCard = player;
     refreshActivePlayerModalUI(jersey, matchState);
@@ -333,7 +520,8 @@ export function closePlayerModal() {
 }
 
 export function refreshActivePlayerModalUI(jersey, matchState) {
-    const player = players.find(p => p.jersey === jersey);
+    const all = getAllRosterPlayers(matchState);
+    const player = all.find(p => p.jersey === Number(jersey));
     if (!player) return;
     const prof = playerProfilesMap[jersey] || {};
 
@@ -348,13 +536,22 @@ export function refreshActivePlayerModalUI(jersey, matchState) {
     const csEl = document.getElementById('modal-stat-cs');
     const statsGrid = document.getElementById('modal-stats-grid');
 
-    if (nameEl) nameEl.textContent = player.name;
-    if (posEl) posEl.textContent = player.position;
+    if (nameEl) nameEl.textContent = player.name + (player.isGuest ? ' (Guest Call-Up)' : '');
+    if (posEl) posEl.textContent = player.position + (player.notes ? ` • ${player.notes}` : '');
     if (jerEl) jerEl.textContent = `#${player.jersey}`;
     if (goalsEl) goalsEl.textContent = getPlayerGoals(player.jersey, matchState);
     if (assistsEl) assistsEl.textContent = getPlayerAssists(player.jersey, matchState);
     if (stopsEl) stopsEl.textContent = getPlayerStops(player.jersey, matchState);
     if (motmEl) motmEl.textContent = getPlayerMOTMCount(player.jersey, matchState);
+
+    const isAvail = isPlayerAvailable(player.jersey, matchState);
+    const modalAttBadge = document.getElementById('modal-player-attendance-badge');
+    if (modalAttBadge) {
+        modalAttBadge.textContent = isAvail ? '✓ Available for Match' : '✕ Marked Absent';
+        modalAttBadge.className = isAvail 
+            ? 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-500/40'
+            : 'px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-950 text-rose-300 border border-rose-500/40';
+    }
 
     const isDef = isDefenderOrGK(player.position);
     if (csBox && csEl) {

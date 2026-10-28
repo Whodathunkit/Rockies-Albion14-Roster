@@ -1,4 +1,4 @@
-import { players } from './roster.js';
+import { players, getAllRosterPlayers } from './roster.js';
 import { savePersistentData } from './firebase.js';
 
 // Default CMSA Boys U13 Tier 2 Standings (18 Teams - Exact Original Imported Table)
@@ -427,8 +427,8 @@ export function renderLeaderboard(matchState) {
         return false;
     };
 
-    // Aggregate stats for all 12 players
-    const statsList = players.map(p => {
+    // Aggregate stats for all players (including active call-ups)
+    const statsList = getAllRosterPlayers(matchState).map(p => {
         let goals = 0;
         let assists = 0;
         let stops = 0;

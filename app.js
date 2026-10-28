@@ -20,7 +20,15 @@ import {
     closeEditFamilyModal, 
     saveFamilyDetails, 
     processFamilyPhotoFile, 
-    savePlayerVideoUrl 
+    savePlayerVideoUrl,
+    getAllRosterPlayers,
+    getAvailablePlayers,
+    isPlayerAvailable,
+    togglePlayerAttendance,
+    markAllAttendance,
+    addGuestPlayer,
+    removeGuestPlayer,
+    activePlayerCard
 } from './roster.js';
 
 import { 
@@ -165,10 +173,11 @@ export function setSavedCoachMode(active) {
 // Application State
 export let isCoachMode = getSavedCoachMode();
 export let currentTab = 'roster';
+export let pendingCoachAction = null;
 
 // Update full application UI
 export function updateAllViews() {
-    renderRoster(matchState);
+    renderRoster(matchState, isCoachMode);
     renderMatchTracker(isCoachMode);
     renderStatsComparison();
     renderShootout();
@@ -205,7 +214,7 @@ export function switchTab(tabName) {
     if (tabName === 'standings') renderStandings(isCoachMode);
     if (tabName === 'leaderboard') renderLeaderboard(matchState);
     if (tabName === 'schedule') renderSchedule(leagueStandings, isCoachMode);
-    if (tabName === 'roster') renderRoster(matchState);
+    if (tabName === 'roster') renderRoster(matchState, isCoachMode);
     if (tabName === 'tracker') {
         renderMatchTracker(isCoachMode);
         renderStatsComparison();
@@ -311,7 +320,7 @@ export function updateModeToggleButton() {
     const editStandingsBtn = document.getElementById('btn-open-edit-standings');
 
     if (trackerActions) trackerActions.style.display = isCoachMode ? 'grid' : 'none';
-    if (periodControls) periodControls.style.display = isCoachMode ? 'flex' : 'none';
+    if (periodControls) periodControls.style.display = 'flex';
     if (timerControls) timerControls.style.display = isCoachMode ? 'flex' : 'none';
     if (archiveControls) archiveControls.style.display = isCoachMode ? 'flex' : 'none';
     if (motmSelectContainer) motmSelectContainer.style.display = isCoachMode ? 'flex' : 'none';
@@ -320,6 +329,17 @@ export function updateModeToggleButton() {
     if (resetPkBtn) resetPkBtn.style.display = isCoachMode ? 'inline-block' : 'none';
     if (addEventBtn) addEventBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
     if (editStandingsBtn) editStandingsBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
+
+    const rosterModeBadge = document.getElementById('roster-mode-badge');
+    if (rosterModeBadge) {
+        if (isCoachMode) {
+            rosterModeBadge.textContent = "⚡ Coach Controls Active";
+            rosterModeBadge.className = "hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40";
+        } else {
+            rosterModeBadge.textContent = "🔒 Enter PIN 1414 to Edit";
+            rosterModeBadge.className = "hidden sm:inline-flex items-center px-2.5 py-1 rounded-xl text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700";
+        }
+    }
 }
 
 export function toggleCoachMode() {
@@ -332,7 +352,10 @@ export function toggleCoachMode() {
     }
 }
 
-export function openCoachPinModal() {
+export function openCoachPinModal(onSuccess) {
+    if (typeof onSuccess === 'function') {
+        pendingCoachAction = onSuccess;
+    }
     const modal = document.getElementById('coach-pin-modal');
     const input = document.getElementById('coach-pin-input');
     const err = document.getElementById('coach-pin-error');
@@ -363,6 +386,15 @@ export function submitCoachPin(event) {
         setSavedCoachMode(true);
         closeCoachPinModal();
         updateAllViews();
+        if (typeof pendingCoachAction === 'function') {
+            const act = pendingCoachAction;
+            pendingCoachAction = null;
+            act();
+        } else if (pendingCoachAction === 'openPreGameRosterModal') {
+            pendingCoachAction = null;
+            setMatchPeriod('Pre-Game', leagueStandings, scheduleEvents);
+            openPreGameRosterModal();
+        }
     } else {
         if (err) err.classList.remove('hidden');
         if (input) {
@@ -407,6 +439,52 @@ export function toggleVideoMute() {
     }
 }
 
+// Guest Player Modal Handlers
+export function openAddGuestModal() {
+    const modal = document.getElementById('add-guest-modal');
+    if (modal) modal.classList.remove('hidden');
+    const jerseyInput = document.getElementById('guest-jersey-input');
+    if (jerseyInput) {
+        jerseyInput.value = '';
+        setTimeout(() => jerseyInput.focus(), 100);
+    }
+}
+
+export function closeAddGuestModal() {
+    const modal = document.getElementById('add-guest-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function submitAddGuestPlayer(e) {
+    if (e) {
+        if (typeof e.preventDefault === 'function') e.preventDefault();
+        if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    }
+    const jerseyInput = document.getElementById('guest-jersey-input');
+    const nameInput = document.getElementById('guest-name-input');
+    const posInput = document.getElementById('guest-position-select');
+    const notesInput = document.getElementById('guest-notes-input');
+
+    const jersey = jerseyInput?.value?.trim();
+    const name = nameInput?.value?.trim();
+    const position = posInput?.value?.trim();
+    const notes = notesInput?.value?.trim();
+
+    const success = addGuestPlayer({ jersey, name, position, notes }, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        updateAllViews();
+        renderPreGameRosterModalList();
+    });
+
+    if (success) {
+        if (jerseyInput) jerseyInput.value = '';
+        if (nameInput) nameInput.value = '';
+        if (notesInput) notesInput.value = '';
+        closeAddGuestModal();
+    }
+    return false;
+}
+
 // Expose Global Helper Methods to window for HTML event bindings
 window.switchTab = switchTab;
 window.handleFamilyPassSubmit = handleFamilyPassSubmit;
@@ -417,7 +495,7 @@ window.closeCoachPinModal = closeCoachPinModal;
 window.submitCoachPin = submitCoachPin;
 window.toggleVideoMute = toggleVideoMute;
 
-// Roster window bindings
+// Roster & Attendance window bindings
 window.openPlayerModal = (jersey) => openPlayerModal(jersey, matchState);
 window.closePlayerModal = closePlayerModal;
 window.openFamilyPhotoLightbox = openFamilyPhotoLightbox;
@@ -430,6 +508,205 @@ window.handleProfilePhotoUpload = (e) => {
     if (file) processFamilyPhotoFile(file, matchState);
 };
 window.savePlayerVideoUrl = () => savePlayerVideoUrl(matchState);
+
+export function handlePreGameButtonClick() {
+    if (!isCoachMode) {
+        pendingCoachAction = 'openPreGameRosterModal';
+        openCoachPinModal();
+        return;
+    }
+    setMatchPeriod('Pre-Game', leagueStandings, scheduleEvents);
+    openPreGameRosterModal();
+}
+
+export function handlePeriodSelect(period) {
+    if (!isCoachMode) {
+        pendingCoachAction = () => setMatchPeriod(period, leagueStandings, scheduleEvents);
+        openCoachPinModal();
+        return;
+    }
+    setMatchPeriod(period, leagueStandings, scheduleEvents);
+}
+
+export function manageAvailabilityAndCallUps() {
+    if (!isCoachMode) {
+        pendingCoachAction = 'openPreGameRosterModal';
+        openCoachPinModal();
+        return;
+    }
+    openPreGameRosterModal();
+}
+
+export function openPreGameRosterModal() {
+    renderPreGameRosterModalList();
+    const modal = document.getElementById('pre-game-roster-modal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+export function closePreGameRosterModal() {
+    const modal = document.getElementById('pre-game-roster-modal');
+    if (modal) modal.classList.add('hidden');
+    updateAllViews();
+}
+
+export function renderPreGameRosterModalList() {
+    const listEl = document.getElementById('pregame-player-list');
+    const countAvailEl = document.getElementById('pregame-count-available');
+    const countAbsentEl = document.getElementById('pregame-count-absent');
+    const countGuestsEl = document.getElementById('pregame-count-guests');
+
+    const allPlayers = getAllRosterPlayers(matchState);
+    const availablePlayers = getAvailablePlayers(matchState);
+    const availCount = availablePlayers.length;
+    const absentCount = allPlayers.length - availCount;
+    const guestCount = allPlayers.filter(p => p.isGuest).length;
+
+    if (countAvailEl) countAvailEl.textContent = `${availCount} Available`;
+    if (countAbsentEl) countAbsentEl.textContent = `${absentCount} Absent`;
+    if (countGuestsEl) countGuestsEl.textContent = `${guestCount} Call-Up${guestCount === 1 ? '' : 's'}`;
+
+    if (!listEl) return;
+
+    if (allPlayers.length === 0) {
+        listEl.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-6">No players registered on the roster.</p>`;
+        return;
+    }
+
+    listEl.innerHTML = allPlayers.map(p => {
+        const isAvail = isPlayerAvailable(p.jersey, matchState);
+        const resolvedPhoto = p.photo ? resolveFirebaseMediaUrl(p.photo) : null;
+        return `
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700/80 transition">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-[#003C71] text-white flex items-center justify-center font-black text-sm border border-blue-400/30 flex-shrink-0 overflow-hidden">
+                    ${resolvedPhoto 
+                        ? `<img src="${resolvedPhoto}" alt="${p.name}" class="w-full h-full object-cover">` 
+                        : `#${p.jersey}`}
+                </div>
+                <div class="min-w-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-xs sm:text-sm text-white truncate">#${p.jersey} ${p.name}</span>
+                        ${p.isGuest 
+                            ? `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">⭐ Call-Up</span>` 
+                            : `<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400">Official</span>`}
+                    </div>
+                    <div class="flex items-center space-x-2 text-[10px] text-zinc-400 mt-0.5">
+                        <span class="text-blue-300 font-semibold">${p.position}</span>
+                        ${p.notes ? `<span>•</span><span class="truncate italic text-zinc-500">${p.notes}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2 flex-shrink-0">
+                <button type="button" onclick="window.togglePreGamePlayerAttendance(${p.jersey})" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 active:scale-95 ${
+                    isAvail 
+                        ? 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm' 
+                        : 'bg-zinc-800 hover:bg-rose-950/70 border border-zinc-700 hover:border-rose-500/50 text-zinc-400 hover:text-rose-200'
+                }">
+                    <span>${isAvail ? '✓' : '✕'}</span>
+                    <span>${isAvail ? 'Available' : 'Absent'}</span>
+                </button>
+                ${p.isGuest ? `
+                    <button type="button" onclick="window.removeGuestPlayer(${p.jersey})" class="p-1.5 rounded-xl bg-zinc-800 hover:bg-rose-950 border border-zinc-700 hover:border-rose-500/50 text-zinc-400 hover:text-rose-300 text-xs font-bold transition" title="Remove Call-Up">
+                        &times;
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+        `;
+    }).join('');
+}
+
+export function togglePreGamePlayerAttendance(jersey) {
+    if (!isCoachMode) {
+        pendingCoachAction = () => togglePreGamePlayerAttendance(jersey);
+        openCoachPinModal();
+        return;
+    }
+    togglePlayerAttendance(jersey, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        renderPreGameRosterModalList();
+        updateAllViews();
+    });
+}
+
+export function markAllPreGameAttendance(status) {
+    if (!isCoachMode) {
+        pendingCoachAction = () => markAllPreGameAttendance(status);
+        openCoachPinModal();
+        return;
+    }
+    markAllAttendance(status, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        renderPreGameRosterModalList();
+        updateAllViews();
+    });
+}
+
+export function toggleCurrentModalPlayerAttendance() {
+    if (!activePlayerCard) return;
+    window.togglePlayerAttendance(activePlayerCard.jersey);
+}
+
+window.handlePreGameButtonClick = handlePreGameButtonClick;
+window.handlePeriodSelect = handlePeriodSelect;
+window.manageAvailabilityAndCallUps = manageAvailabilityAndCallUps;
+window.openPreGameRosterModal = openPreGameRosterModal;
+window.closePreGameRosterModal = closePreGameRosterModal;
+window.renderPreGameRosterModalList = renderPreGameRosterModalList;
+window.togglePreGamePlayerAttendance = togglePreGamePlayerAttendance;
+window.markAllPreGameAttendance = markAllPreGameAttendance;
+window.toggleCurrentModalPlayerAttendance = toggleCurrentModalPlayerAttendance;
+
+window.togglePlayerAttendance = (jersey) => {
+    if (!isCoachMode) {
+        openCoachPinModal();
+        return;
+    }
+    togglePlayerAttendance(jersey, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        updateAllViews();
+        renderPreGameRosterModalList();
+        if (activePlayerCard && activePlayerCard.jersey === jersey) {
+            refreshActivePlayerModalUI(jersey, matchState);
+        }
+    });
+};
+
+window.markAllAttendance = (status) => {
+    if (!isCoachMode) {
+        openCoachPinModal();
+        return;
+    }
+    markAllAttendance(status, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        updateAllViews();
+        renderPreGameRosterModalList();
+    });
+};
+
+window.openAddGuestModal = () => {
+    if (!isCoachMode) {
+        openCoachPinModal();
+        return;
+    }
+    openAddGuestModal();
+};
+
+window.closeAddGuestModal = closeAddGuestModal;
+window.submitAddGuestPlayer = submitAddGuestPlayer;
+
+window.removeGuestPlayer = (jersey) => {
+    if (!isCoachMode) {
+        openCoachPinModal();
+        return;
+    }
+    removeGuestPlayer(jersey, matchState, () => {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        updateAllViews();
+        renderPreGameRosterModalList();
+    });
+};
 
 // Match Tracker window bindings
 window.toggleMatchTimer = () => toggleMatchTimer(leagueStandings, scheduleEvents);
@@ -605,7 +882,7 @@ function onAppInit() {
             profiles.forEach(p => {
                 applyProfileDocToRoster(p.id, p);
             });
-            renderRoster(matchState);
+            renderRoster(matchState, isCoachMode);
             renderLeaderboard(matchState);
         }
     });

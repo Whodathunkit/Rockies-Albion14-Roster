@@ -1,4 +1,4 @@
-import { players } from './roster.js';
+import { players, getAllRosterPlayers, getAvailablePlayers, isPlayerAvailable } from './roster.js';
 import { savePersistentData, resolveFirebaseMediaUrl } from './firebase.js';
 
 export const initialPastMatches = [
@@ -215,12 +215,20 @@ export let matchState = (() => {
             events: [],
             shootout: { active: false, usKicks: [], themKicks: [] },
             stats: { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 },
-            history: JSON.parse(JSON.stringify(initialPastMatches))
+            history: JSON.parse(JSON.stringify(initialPastMatches)),
+            attendance: {},
+            guestPlayers: []
         };
     }
 
     if (!Array.isArray(state.history) || state.history.length === 0) {
         state.history = JSON.parse(JSON.stringify(initialPastMatches));
+    }
+    if (!state.attendance || typeof state.attendance !== 'object') {
+        state.attendance = {};
+    }
+    if (!Array.isArray(state.guestPlayers)) {
+        state.guestPlayers = [];
     }
     return state;
 })();
@@ -239,10 +247,45 @@ export function formatTimer(sec) {
     return `${m}:${s}`;
 }
 
+export function updatePeriodButtonsHighlight(currentPeriod) {
+    const periodButtons = [
+        { id: 'btn-period-pregame', period: 'Pre-Game', activeClass: 'bg-amber-500 text-zinc-950 font-black shadow-md ring-2 ring-amber-400' },
+        { id: 'btn-period-1st-half', period: '1st Half', activeClass: 'bg-[#003C71] text-white font-black shadow-md ring-2 ring-blue-400' },
+        { id: 'btn-period-halftime', period: 'Halftime', activeClass: 'bg-zinc-700 text-white font-black shadow-md ring-2 ring-zinc-400' },
+        { id: 'btn-period-2nd-half', period: '2nd Half', activeClass: 'bg-[#003C71] text-white font-black shadow-md ring-2 ring-blue-400' },
+        { id: 'btn-period-penalties', period: 'Penalties', activeClass: 'bg-purple-700 text-white font-black shadow-md ring-2 ring-purple-400' },
+        { id: 'btn-period-full-time', period: 'Full Time', activeClass: 'bg-emerald-700 text-white font-black shadow-md ring-2 ring-emerald-400' }
+    ];
+
+    periodButtons.forEach(btnInfo => {
+        const el = document.getElementById(btnInfo.id);
+        if (!el) return;
+        if (!el.dataset.defaultClass) {
+            el.dataset.defaultClass = el.className;
+        }
+        if (btnInfo.period === currentPeriod) {
+            el.className = `px-3.5 py-1.5 rounded-lg text-xs transition active:scale-95 ${btnInfo.activeClass}`;
+        } else {
+            el.className = el.dataset.defaultClass;
+        }
+    });
+}
+
 export function setMatchPeriod(period, leagueStandings, scheduleEvents) {
     matchState.period = period;
     const badge = document.getElementById('match-period-badge');
-    if (badge) badge.textContent = period;
+    if (badge) {
+        badge.textContent = period;
+        if (period === 'Pre-Game') {
+            badge.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-amber-500/20 border border-amber-500/50 text-amber-300";
+        } else if (period === 'Penalties') {
+            badge.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-purple-900/80 border border-purple-400/40 text-purple-200";
+        } else if (period === 'Full Time') {
+            badge.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-900/80 border border-emerald-400/40 text-emerald-200";
+        } else {
+            badge.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-blue-900/80 border border-blue-400/40 text-blue-200";
+        }
+    }
 
     const shootoutCard = document.getElementById('shootout-card');
     if (period === 'Penalties') {
@@ -253,7 +296,10 @@ export function setMatchPeriod(period, leagueStandings, scheduleEvents) {
         if (shootoutCard) shootoutCard.classList.add('hidden');
     }
 
-    if (period === '2nd Half' && matchState.timerSeconds < 35 * 60) {
+    if (period === 'Pre-Game') {
+        pauseTimer();
+        matchState.isFinal = false;
+    } else if (period === '2nd Half' && matchState.timerSeconds < 35 * 60) {
         matchState.timerSeconds = 35 * 60;
         const display = document.getElementById('timer-display');
         if (display) display.textContent = formatTimer(matchState.timerSeconds);
@@ -264,6 +310,7 @@ export function setMatchPeriod(period, leagueStandings, scheduleEvents) {
         matchState.isFinal = true;
     }
 
+    updatePeriodButtonsHighlight(period);
     updateMatchFinalBanner();
     savePersistentData(matchState, leagueStandings, scheduleEvents);
 }
@@ -421,7 +468,8 @@ export function setMatchMOTM(jersey, leagueStandings, scheduleEvents) {
     const motmBox = document.getElementById('motm-name-display');
     if (motmBox) {
         if (matchState.motmJersey) {
-            const p = players.find(r => r.jersey === matchState.motmJersey);
+            const allPlayers = getAllRosterPlayers(matchState);
+            const p = allPlayers.find(r => r.jersey === matchState.motmJersey);
             motmBox.textContent = p ? `Man of the Match: #${p.jersey} ${p.name} 🎖️` : 'Man of the Match: Assigned';
         } else {
             motmBox.textContent = "Man of the Match: Not Crowned Yet";
@@ -468,24 +516,63 @@ export function renderMatchTracker(isCoachMode) {
     if (scoreUsEl) scoreUsEl.textContent = matchState.scoreUs;
     if (scoreThemEl) scoreThemEl.textContent = matchState.scoreThem;
     if (oppNameEl) oppNameEl.textContent = matchState.opponentName;
-    if (timerDisplayEl) timerDisplayEl.textContent = formatTimer(matchState.timerSeconds);
-    if (periodBadgeEl) periodBadgeEl.textContent = matchState.period || "1st Half";
+    const currentPeriod = matchState.period || "1st Half";
+    if (periodBadgeEl) {
+        periodBadgeEl.textContent = currentPeriod;
+        if (currentPeriod === 'Pre-Game') {
+            periodBadgeEl.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-amber-500/20 border border-amber-500/50 text-amber-300";
+        } else if (currentPeriod === 'Penalties') {
+            periodBadgeEl.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-purple-900/80 border border-purple-400/40 text-purple-200";
+        } else if (currentPeriod === 'Full Time') {
+            periodBadgeEl.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-emerald-900/80 border border-emerald-400/40 text-emerald-200";
+        } else {
+            periodBadgeEl.className = "px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-blue-900/80 border border-blue-400/40 text-blue-200";
+        }
+    }
+    updatePeriodButtonsHighlight(currentPeriod);
 
-    updateMatchFinalBanner();
+    const allPlayers = getAllRosterPlayers(matchState);
+    const availablePlayers = getAvailablePlayers(matchState);
+
+    // Update Game Squad Header Bar in Tracker
+    const squadCountEl = document.getElementById('tracker-squad-count');
+    const absentCountEl = document.getElementById('tracker-absent-count');
+    if (squadCountEl) {
+        if (availablePlayers.length === 0) {
+            squadCountEl.className = "px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 border border-rose-500/40 text-[11px] font-bold";
+            squadCountEl.textContent = "0 Available (All Absent)";
+        } else {
+            squadCountEl.className = "px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold";
+            squadCountEl.textContent = `${availablePlayers.length} Available`;
+        }
+    }
+    if (absentCountEl) {
+        const total = allPlayers.length;
+        const absent = total - availablePlayers.length;
+        const guestCount = allPlayers.filter(p => p.isGuest).length;
+        absentCountEl.textContent = `${absent} Absent${guestCount > 0 ? ` • ${guestCount} Guest Call-Up(s)` : ''}`;
+    }
 
     const motmBox = document.getElementById('motm-name-display');
     if (motmBox) {
         if (matchState.motmJersey) {
-            const p = players.find(r => r.jersey === matchState.motmJersey);
+            const p = allPlayers.find(r => r.jersey === matchState.motmJersey);
             motmBox.textContent = p ? `Man of the Match: #${p.jersey} ${p.name} 🎖️` : 'Man of the Match: Assigned';
         } else {
             motmBox.textContent = "Man of the Match: Not Crowned Yet";
         }
     }
 
+    // MOTM Select: STRICTLY available players only
     const motmSelect = document.getElementById('motm-player-select');
     if (motmSelect) {
-        motmSelect.innerHTML = '<option value="">Select MOTM...</option>' + players.map(p => `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
+        if (availablePlayers.length === 0) {
+            motmSelect.innerHTML = '<option value="">⚠️ No players marked available</option>';
+        } else {
+            motmSelect.innerHTML = '<option value="">Select MOTM...</option>' + availablePlayers.map(p => 
+                `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}${p.isGuest ? ' (Guest)' : ''}</option>`
+            ).join('');
+        }
     }
 
     const timeline = document.getElementById('match-timeline-list');
@@ -604,11 +691,21 @@ export function renderPastMatches(isCoachMode) {
 export function openGoalModal() {
     const selScorer = document.getElementById('goal-scorer-select');
     const selAssist = document.getElementById('goal-assist-select');
+    const availablePlayers = getAvailablePlayers(matchState);
+
     if (selScorer) {
-        selScorer.innerHTML = players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})</option>`).join('');
+        if (availablePlayers.length === 0) {
+            selScorer.innerHTML = '<option value="">⚠️ No players marked available (Check in on Roster)</option>';
+        } else {
+            selScorer.innerHTML = availablePlayers.map(p => 
+                `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+            ).join('');
+        }
     }
     if (selAssist) {
-        selAssist.innerHTML = '<option value="">None (Solo / Unassisted)</option>' + players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name}</option>`).join('');
+        selAssist.innerHTML = '<option value="">None (Solo / Unassisted)</option>' + availablePlayers.map(p => 
+            `<option value="${p.jersey}">#${p.jersey} ${p.name}${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+        ).join('');
     }
     const modal = document.getElementById('goal-modal');
     if (modal) modal.classList.remove('hidden');
@@ -631,8 +728,9 @@ export function confirmRockiesGoal(e, leagueStandings, scheduleEvents, onUpdate)
     const video = document.getElementById('goal-video-input').value.trim();
     const manualTime = document.getElementById('goal-time-input')?.value.trim();
 
-    const scorer = players.find(p => p.jersey === scorerJersey);
-    const assist = assistJersey ? players.find(p => p.jersey === assistJersey) : null;
+    const allPlayers = getAllRosterPlayers(matchState);
+    const scorer = allPlayers.find(p => p.jersey === scorerJersey);
+    const assist = assistJersey ? allPlayers.find(p => p.jersey === assistJersey) : null;
     const timeString = manualTime || formatTimer(matchState.timerSeconds);
 
     const newEvent = {
@@ -700,8 +798,16 @@ export function confirmOpponentGoal(e, leagueStandings, scheduleEvents, onUpdate
 // Defensive Play Recording
 export function openDefensiveModal() {
     const selDef = document.getElementById('defense-player-select');
+    const availablePlayers = getAvailablePlayers(matchState);
+
     if (selDef) {
-        selDef.innerHTML = players.map(p => `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})</option>`).join('');
+        if (availablePlayers.length === 0) {
+            selDef.innerHTML = '<option value="">⚠️ No players marked available (Check in on Roster)</option>';
+        } else {
+            selDef.innerHTML = availablePlayers.map(p => 
+                `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+            ).join('');
+        }
     }
     const modal = document.getElementById('defensive-modal');
     if (modal) modal.classList.remove('hidden');
@@ -719,7 +825,9 @@ export function confirmDefensiveStop(e, leagueStandings, scheduleEvents, onUpdat
     const note = document.getElementById('defense-note-input').value.trim();
     const video = document.getElementById('defense-video-input')?.value.trim() || '';
     const manualTime = document.getElementById('defense-time-input')?.value.trim();
-    const p = players.find(r => r.jersey === playerJersey);
+    
+    const allPlayers = getAllRosterPlayers(matchState);
+    const p = allPlayers.find(r => r.jersey === playerJersey);
     const timeString = manualTime || formatTimer(matchState.timerSeconds);
 
     const newEvent = {
@@ -757,7 +865,8 @@ export function deleteMatchEvent(id, leagueStandings, scheduleEvents, onUpdate) 
 
 // Archive Match
 export function archiveMatchToHistory(leagueStandings, scheduleEvents, onUpdate) {
-    const motmP = players.find(p => p.jersey === matchState.motmJersey);
+    const allPlayers = getAllRosterPlayers(matchState);
+    const motmP = allPlayers.find(p => p.jersey === matchState.motmJersey);
     matchState.history.unshift({
         id: Date.now(),
         opponent: matchState.opponentName || 'Opponent',
@@ -854,7 +963,8 @@ export function openEditMatchModal(id) {
     if (scoreThemInput) scoreThemInput.value = match.scoreThem;
 
     if (motmSelect) {
-        motmSelect.innerHTML = '<option value="">None</option>' + players.map(p => `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}</option>`).join('');
+        const allPlayers = getAllRosterPlayers(matchState);
+        motmSelect.innerHTML = '<option value="">None</option>' + allPlayers.map(p => `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}${p.isGuest ? ' (Guest)' : ''}</option>`).join('');
     }
 
     renderEditMatchEvents();
@@ -913,7 +1023,8 @@ export function saveEditedMatch(e, leagueStandings, scheduleEvents, onUpdate) {
         match.scoreUs = us;
         match.scoreThem = them;
         match.motmJersey = motmVal ? parseInt(motmVal, 10) : null;
-        const motmP = players.find(p => p.jersey === match.motmJersey);
+        const allPlayers = getAllRosterPlayers(matchState);
+        const motmP = allPlayers.find(p => p.jersey === match.motmJersey);
         match.motmName = motmP ? motmP.name : 'Unassigned';
     }
 
