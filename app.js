@@ -574,14 +574,11 @@ export function renderPreGameRosterModalList() {
 
     listEl.innerHTML = allPlayers.map(p => {
         const isAvail = isPlayerAvailable(p.jersey, matchState);
-        const resolvedPhoto = p.photo ? resolveFirebaseMediaUrl(p.photo) : null;
         return `
         <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700/80 transition">
             <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-[#003C71] text-white flex items-center justify-center font-black text-sm border border-blue-400/30 flex-shrink-0 overflow-hidden">
-                    ${resolvedPhoto 
-                        ? `<img src="${resolvedPhoto}" alt="${p.name}" class="w-full h-full object-cover">` 
-                        : `#${p.jersey}`}
+                <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[#003C71] border border-blue-400/40'} text-white flex items-center justify-center font-black text-sm shadow-md flex-shrink-0">
+                    #${p.jersey}
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center space-x-2">
