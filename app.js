@@ -92,6 +92,8 @@ import {
     addStandingsTeam, 
     deleteStandingsTeam, 
     handleStandingsScreenshotUpload, 
+    handlePasteStandingsText,
+    syncOfficialCmsaStandings,
     confirmApplyAiStandings, 
     renderLeaderboard 
 } from './standings.js';
@@ -752,6 +754,8 @@ window.saveEditedStandings = () => saveEditedStandings(matchState, scheduleEvent
 window.addStandingsTeam = addStandingsTeam;
 window.deleteStandingsTeam = deleteStandingsTeam;
 window.handleStandingsScreenshotUpload = handleStandingsScreenshotUpload;
+window.handlePasteStandingsText = handlePasteStandingsText;
+window.syncOfficialCmsaStandings = syncOfficialCmsaStandings;
 window.confirmApplyAiStandings = () => confirmApplyAiStandings(matchState, scheduleEvents, updateAllViews);
 
 // Cloud window bindings

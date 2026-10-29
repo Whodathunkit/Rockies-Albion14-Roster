@@ -1072,22 +1072,66 @@
                 </div>
             </div>
 
-            <!-- AI Screenshot Scanner Section -->
-            <div class="p-3.5 bg-zinc-950 border border-dashed border-zinc-700 rounded-xl space-y-2">
-                <div class="flex items-center justify-between">
+            <!-- Standings Import & Scanner Section -->
+            <div class="p-3.5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <span class="text-xs font-bold text-blue-400">📷 AI Standings Screenshot Scanner</span>
-                        <p class="text-[10px] text-zinc-400">Upload a screenshot of the CMSA website table to extract standings.</p>
+                        <span class="text-xs font-bold text-white flex items-center space-x-1.5">
+                            <span>📊</span> <span>Update Standings Table</span>
+                        </span>
+                        <p class="text-[10px] text-zinc-400">Choose your preferred import method for CMSA league data:</p>
                     </div>
-                    <label class="cursor-pointer px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 border border-zinc-600">
-                        Upload Image
-                        <input type="file" accept="image/*" onchange="handleStandingsScreenshotUpload(event)" class="hidden">
-                    </label>
+                    <div class="flex items-center space-x-2">
+                        <button type="button" onclick="syncOfficialCmsaStandings()" class="px-2.5 py-1.5 rounded-xl bg-blue-900/80 hover:bg-blue-800 border border-blue-500/50 text-[11px] font-bold text-blue-200 transition shadow flex items-center space-x-1">
+                            <span>⚡</span> <span>Sync Official CMSA (18 Teams)</span>
+                        </button>
+                    </div>
                 </div>
-                <div id="ai-scanner-status" class="text-xs text-zinc-400"></div>
+
+                <!-- Tabs: Image Upload vs Text Paste -->
+                <div class="grid grid-cols-2 gap-2 pt-1 border-t border-zinc-800/80">
+                    <!-- Photo Option -->
+                    <div class="p-2.5 rounded-lg bg-zinc-900/70 border border-zinc-800 flex flex-col justify-between space-y-2">
+                        <div>
+                            <span class="text-[11px] font-bold text-zinc-300 block">📷 Photo AI Scanner</span>
+                            <span class="text-[10px] text-zinc-500 block leading-tight">Extract from screenshot (works in local dev & Node environments).</span>
+                        </div>
+                        <label class="cursor-pointer text-center px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 border border-zinc-600 block transition">
+                            Upload Screenshot
+                            <input type="file" accept="image/*" onchange="handleStandingsScreenshotUpload(event)" class="hidden">
+                        </label>
+                    </div>
+
+                    <!-- Instant Text Paste Option (Static Host / GitHub Pages Friendly) -->
+                    <div class="p-2.5 rounded-lg bg-zinc-900/70 border border-zinc-800 flex flex-col justify-between space-y-2">
+                        <div>
+                            <span class="text-[11px] font-bold text-emerald-400 block">📋 Paste CMSA Text</span>
+                            <span class="text-[10px] text-zinc-500 block leading-tight">Works everywhere (mobile & GitHub Pages). No server needed.</span>
+                        </div>
+                        <button type="button" onclick="document.getElementById('cmsa-paste-container')?.classList.toggle('hidden')" class="px-3 py-1.5 rounded-lg bg-emerald-950/70 hover:bg-emerald-900/90 text-xs font-bold text-emerald-300 border border-emerald-500/40 transition">
+                            Open Paste Box
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Collapsible Paste Box -->
+                <div id="cmsa-paste-container" class="hidden p-3 bg-zinc-900 border border-emerald-500/30 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <label class="text-[11px] font-bold text-emerald-300">Copy table rows from CMSA website and paste below:</label>
+                        <span class="text-[10px] text-zinc-400">e.g. 1. Blizzard Alliance 14 Boys 2 2 0 0 6 11 4 7</span>
+                    </div>
+                    <textarea id="cmsa-paste-textarea" rows="4" placeholder="1. Blizzard Alliance 14 Boys 2 2 0 0 6 11 4 7&#10;2. Foothills 2014 Prospects 2 2 0 0 6 9 4 5&#10;... paste all lines here" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg p-2 text-xs font-mono text-zinc-200 focus:outline-none focus:border-emerald-500"></textarea>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="document.getElementById('cmsa-paste-textarea').value=''" class="px-2.5 py-1 text-xs text-zinc-400 hover:text-zinc-200">Clear</button>
+                        <button type="button" onclick="handlePasteStandingsText()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow transition">Parse Pasted Table</button>
+                    </div>
+                </div>
+
+                <!-- Status & Preview -->
+                <div id="ai-scanner-status"></div>
                 <div id="ai-scanned-preview" class="hidden"></div>
-                <button type="button" id="btn-apply-ai-standings" onclick="confirmApplyAiStandings()" class="hidden w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow">
-                    Apply Scanned Table
+                <button type="button" id="btn-apply-ai-standings" onclick="confirmApplyAiStandings()" class="hidden w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-extrabold text-white shadow-lg transition">
+                    ✓ Apply Scanned Table to League Standings
                 </button>
             </div>
 

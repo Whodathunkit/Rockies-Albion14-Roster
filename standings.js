@@ -297,8 +297,190 @@ export function saveEditedStandings(matchState, scheduleEvents, onUpdate) {
     if (typeof onUpdate === 'function') onUpdate();
 }
 
-// AI Standings Scanner
+// Standings Scanners & Import
 let pendingScannedStandings = null;
+
+export function renderPendingStandingsPreview(teams, sourceLabel = 'Extracted Table') {
+    const previewContainer = document.getElementById('ai-scanned-preview');
+    const applyBtn = document.getElementById('btn-apply-ai-standings');
+    const statusEl = document.getElementById('ai-scanner-status');
+
+    if (statusEl) {
+        statusEl.innerHTML = `
+            <div class="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 py-1">
+                <span>✓</span> <span>Successfully loaded ${teams.length} teams from ${sourceLabel}!</span>
+            </div>
+        `;
+    }
+
+    if (previewContainer) {
+        previewContainer.classList.remove('hidden');
+        previewContainer.innerHTML = `
+            <div class="p-3 bg-zinc-950 border border-emerald-500/40 rounded-xl space-y-2 max-h-60 overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+                    <span class="text-xs font-bold text-emerald-400">Preview: ${teams.length} Teams (${sourceLabel})</span>
+                    <span class="text-[10px] text-zinc-400">Click "Apply Scanned Table" below to save</span>
+                </div>
+                <table class="w-full text-left text-[11px]">
+                    <thead>
+                        <tr class="text-zinc-500 border-b border-zinc-800 text-[10px]">
+                            <th class="py-1 px-1">#</th>
+                            <th class="py-1 px-1">Team</th>
+                            <th class="py-1 px-1 text-center">GP</th>
+                            <th class="py-1 px-1 text-center">W</th>
+                            <th class="py-1 px-1 text-center">T</th>
+                            <th class="py-1 px-1 text-center">L</th>
+                            <th class="py-1 px-1 text-center font-bold text-amber-400">PTS</th>
+                            <th class="py-1 px-1 text-center">GF</th>
+                            <th class="py-1 px-1 text-center">GA</th>
+                            <th class="py-1 px-1 text-center">GD</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-900">
+                        ${teams.map(t => {
+                            const isRockies = t.isUs || (t.team && t.team.toLowerCase().includes('rockies'));
+                            return `
+                            <tr class="${isRockies ? 'bg-blue-950/60 font-bold text-blue-200' : 'text-zinc-300'}">
+                                <td class="py-1 px-1 text-zinc-500">${t.rank}</td>
+                                <td class="py-1 px-1 font-semibold truncate max-w-[150px]">${t.team}</td>
+                                <td class="py-1 px-1 text-center font-mono text-zinc-300">${t.gp}</td>
+                                <td class="py-1 px-1 text-center font-mono text-emerald-400">${t.w}</td>
+                                <td class="py-1 px-1 text-center font-mono text-amber-400">${t.t}</td>
+                                <td class="py-1 px-1 text-center font-mono text-rose-400">${t.l}</td>
+                                <td class="py-1 px-1 text-center font-mono font-black text-amber-300">${t.pts}</td>
+                                <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.gf}</td>
+                                <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.ga}</td>
+                                <td class="py-1 px-1 text-center font-mono ${t.gd > 0 ? 'text-emerald-400' : (t.gd < 0 ? 'text-rose-400' : 'text-zinc-400')}">
+                                    ${t.gd > 0 ? `+${t.gd}` : t.gd}
+                                </td>
+                            </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    if (applyBtn) {
+        applyBtn.classList.remove('hidden');
+        applyBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+export function parseCmsaTextTable(rawText) {
+    if (!rawText || !rawText.trim()) return [];
+    const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    const parsedTeams = [];
+
+    for (const rawLine of lines) {
+        let line = rawLine;
+        // Ignore table header lines
+        if (/^(rank|team|club|gp|played|pts|points|w|wins|t|ties|l|losses|gf|ga|gd)/i.test(line)) {
+            continue;
+        }
+
+        // Strip common leading ranking numbers: "1." or "1\t" or "1 "
+        let rank = null;
+        const rankMatch = line.match(/^(\d+)[\.\s\t]+/);
+        if (rankMatch) {
+            rank = parseInt(rankMatch[1], 10);
+            line = line.slice(rankMatch[0].length).trim();
+        }
+
+        // Try tab-separated tokens first
+        const tabParts = line.split(/[\t]+/).map(p => p.trim()).filter(Boolean);
+        if (tabParts.length >= 6) {
+            const teamName = tabParts[0];
+            const numParts = tabParts.slice(1).map(n => parseInt(n, 10));
+            if (numParts.length >= 5 && !isNaN(numParts[0])) {
+                const gp = numParts[0] || 0;
+                const w = numParts[1] || 0;
+                const t = numParts[2] || 0;
+                const l = numParts[3] || 0;
+                const pts = numParts[4] || 0;
+                const gf = numParts[5] !== undefined ? numParts[5] : 0;
+                const ga = numParts[6] !== undefined ? numParts[6] : 0;
+                const gd = numParts[7] !== undefined ? numParts[7] : (gf - ga);
+                const isUs = teamName.toLowerCase().includes('rockies') || teamName.toLowerCase().includes('albion');
+                parsedTeams.push(normalizeStandingItem({
+                    rank: rank || (parsedTeams.length + 1),
+                    team: teamName,
+                    name: teamName,
+                    gp, w, t, l, pts, gf, ga, gd, isUs
+                }, parsedTeams.length));
+                continue;
+            }
+        }
+
+        // Try space-separated tokens
+        const tokens = line.split(/\s+/);
+        if (tokens.length < 6) continue;
+
+        let statCount = 0;
+        if (tokens.length >= 9 && tokens.slice(-8).every(t => /^-?\d+$/.test(t))) {
+            statCount = 8;
+        } else if (tokens.length >= 6 && tokens.slice(-5).every(t => /^-?\d+$/.test(t))) {
+            statCount = 5;
+        }
+        if (!statCount) continue;
+
+        const teamName = tokens.slice(0, tokens.length - statCount).join(' ').trim();
+        if (!teamName) continue;
+        const nums = tokens.slice(-statCount).map(n => parseInt(n, 10));
+
+        const gp = nums[0] || 0;
+        const w = nums[1] || 0;
+        const t = nums[2] || 0;
+        const l = nums[3] || 0;
+        const pts = nums[4] || 0;
+        const gf = statCount === 8 ? nums[5] : 0;
+        const ga = statCount === 8 ? nums[6] : 0;
+        const gd = statCount === 8 ? nums[7] : (gf - ga);
+        const isUs = teamName.toLowerCase().includes('rockies') || teamName.toLowerCase().includes('albion');
+
+        parsedTeams.push(normalizeStandingItem({
+            rank: rank || (parsedTeams.length + 1),
+            team: teamName,
+            name: teamName,
+            gp, w, t, l, pts, gf, ga, gd, isUs
+        }, parsedTeams.length));
+    }
+    return parsedTeams;
+}
+
+export function handlePasteStandingsText() {
+    const textarea = document.getElementById('cmsa-paste-textarea');
+    const statusEl = document.getElementById('ai-scanner-status');
+    const text = textarea?.value || '';
+
+    if (!text.trim()) {
+        if (statusEl) {
+            statusEl.innerHTML = `<div class="text-xs text-rose-400 font-semibold py-1">Please paste text from CMSA standings first.</div>`;
+        }
+        return;
+    }
+
+    const parsed = parseCmsaTextTable(text);
+    if (!parsed || parsed.length === 0) {
+        if (statusEl) {
+            statusEl.innerHTML = `
+                <div class="text-xs text-rose-400 font-semibold py-1">
+                    Could not identify teams in pasted text. Format rows as: "1. Blizzard Alliance 14 Boys 2 2 0 0 6 11 4 7"
+                </div>
+            `;
+        }
+        return;
+    }
+
+    pendingScannedStandings = parsed;
+    renderPendingStandingsPreview(parsed, 'Pasted Text');
+}
+
+export function syncOfficialCmsaStandings() {
+    pendingScannedStandings = initialLeagueStandings.map((t, idx) => normalizeStandingItem(t, idx));
+    renderPendingStandingsPreview(pendingScannedStandings, 'Official CMSA Table');
+}
 
 export async function handleStandingsScreenshotUpload(event) {
     const file = event.target.files?.[0];
@@ -332,89 +514,50 @@ export async function handleStandingsScreenshotUpload(event) {
         reader.readAsDataURL(file);
         const dataUrl = await base64Promise;
 
-        const response = await fetch('/api/parse-standings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                imageBase64: dataUrl,
-                mimeType: file.type || 'image/jpeg'
-            })
-        });
+        let response;
+        try {
+            response = await fetch('/api/parse-standings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageBase64: dataUrl,
+                    mimeType: file.type || 'image/jpeg'
+                })
+            });
+        } catch (netErr) {
+            throw new Error('Network request failed: ' + (netErr?.message || 'Check your internet connection.'));
+        }
+
+        const contentType = response.headers?.get('content-type') || '';
+        // If deployed to GitHub Pages or static host, /api/parse-standings returns 404 HTML
+        if (!response.ok || !contentType.includes('application/json')) {
+            const rawBody = await response.text();
+            if (rawBody.trim().startsWith('<') || response.status === 404) {
+                throw new Error('Image parsing requires a Node.js backend server, which is not available on static GitHub Pages. Please use "📋 Paste CMSA Table" or "⚡ Sync Official CMSA Table" below to update instantly!');
+            }
+            throw new Error(`Server returned HTTP ${response.status}: ${rawBody.slice(0, 100)}`);
+        }
 
         const data = await response.json();
-        if (!response.ok || !data.success || !Array.isArray(data.standings)) {
+        if (!data.success || !Array.isArray(data.standings)) {
             throw new Error(data.error || 'Failed to extract standings from screenshot.');
         }
 
         pendingScannedStandings = data.standings.map((t, idx) => normalizeStandingItem(t, idx));
-
-        if (statusEl) {
-            statusEl.innerHTML = `
-                <div class="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 py-1">
-                    <span>✓</span> <span>Successfully extracted ${pendingScannedStandings.length} teams from CMSA screenshot!</span>
-                </div>
-            `;
-        }
-
-        if (previewContainer) {
-            previewContainer.classList.remove('hidden');
-            previewContainer.innerHTML = `
-                <div class="p-3 bg-zinc-950 border border-emerald-500/40 rounded-xl space-y-2 max-h-60 overflow-y-auto">
-                    <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
-                        <span class="text-xs font-bold text-emerald-400">Preview of AI Extracted Table (${pendingScannedStandings.length} Teams):</span>
-                        <span class="text-[10px] text-zinc-400">Click "Apply Scanned Table" below to save</span>
-                    </div>
-                    <table class="w-full text-left text-[11px]">
-                        <thead>
-                            <tr class="text-zinc-500 border-b border-zinc-800 text-[10px]">
-                                <th class="py-1 px-1">#</th>
-                                <th class="py-1 px-1">Team</th>
-                                <th class="py-1 px-1 text-center">GP</th>
-                                <th class="py-1 px-1 text-center">W</th>
-                                <th class="py-1 px-1 text-center">T</th>
-                                <th class="py-1 px-1 text-center">L</th>
-                                <th class="py-1 px-1 text-center font-bold text-amber-400">PTS</th>
-                                <th class="py-1 px-1 text-center">GF</th>
-                                <th class="py-1 px-1 text-center">GA</th>
-                                <th class="py-1 px-1 text-center">GD</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-zinc-900">
-                            ${pendingScannedStandings.map(t => {
-                                const isRockies = t.isUs || t.team.toLowerCase().includes('rockies');
-                                return `
-                                <tr class="${isRockies ? 'bg-blue-950/60 font-bold text-blue-200' : 'text-zinc-300'}">
-                                    <td class="py-1 px-1 text-zinc-500">${t.rank}</td>
-                                    <td class="py-1 px-1 font-semibold truncate max-w-[150px]">${t.team}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-zinc-300">${t.gp}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-emerald-400">${t.w}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-amber-400">${t.t}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-rose-400">${t.l}</td>
-                                    <td class="py-1 px-1 text-center font-mono font-black text-amber-300">${t.pts}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.gf}</td>
-                                    <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.ga}</td>
-                                    <td class="py-1 px-1 text-center font-mono ${t.gd > 0 ? 'text-emerald-400' : (t.gd < 0 ? 'text-rose-400' : 'text-zinc-400')}">
-                                        ${t.gd > 0 ? `+${t.gd}` : t.gd}
-                                    </td>
-                                </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-
-        if (applyBtn) {
-            applyBtn.classList.remove('hidden');
-            applyBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        renderPendingStandingsPreview(pendingScannedStandings, 'CMSA Screenshot');
     } catch (err) {
         console.error('AI Standings extraction error:', err);
         if (statusEl) {
             statusEl.innerHTML = `
-                <div class="text-xs text-rose-400 font-semibold flex items-center space-x-1.5 py-1">
-                    <span>✕</span> <span>${err.message || 'Error parsing table from image'}. Please try again.</span>
+                <div class="p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-xs text-rose-300 space-y-1 my-1">
+                    <div class="font-bold flex items-center space-x-1.5 text-rose-200">
+                        <span>✕</span> <span>Standings Photo Parser Notice:</span>
+                    </div>
+                    <p class="text-[11px] leading-relaxed">${err.message || 'Error parsing table from image.'}</p>
+                    <div class="pt-1.5 flex flex-wrap gap-2">
+                        <button type="button" onclick="window.syncOfficialCmsaStandings()" class="px-2.5 py-1 rounded-lg bg-blue-700 hover:bg-blue-600 text-white font-bold text-[10px] shadow">⚡ Sync Official CMSA Table Now</button>
+                        <button type="button" onclick="document.getElementById('cmsa-paste-container')?.classList.toggle('hidden')" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold text-[10px] border border-zinc-600">📋 Paste CMSA Text</button>
+                    </div>
                 </div>
             `;
         }
@@ -424,8 +567,10 @@ export async function handleStandingsScreenshotUpload(event) {
 export function confirmApplyAiStandings(matchState, scheduleEvents, onUpdate) {
     if (pendingScannedStandings && pendingScannedStandings.length > 0) {
         leagueStandings = pendingScannedStandings.map((t, idx) => normalizeStandingItem(t, idx));
-        saveLeagueStandings();
-        savePersistentData(matchState, leagueStandings, scheduleEvents);
+        saveLeagueStandings(matchState, scheduleEvents);
+        if (matchState && scheduleEvents) {
+            savePersistentData(matchState, leagueStandings, scheduleEvents);
+        }
         pendingScannedStandings = null;
         closeEditStandingsModal();
         if (typeof onUpdate === 'function') onUpdate();

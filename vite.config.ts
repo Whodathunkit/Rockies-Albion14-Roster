@@ -90,6 +90,16 @@ Output ONLY a raw JSON array.`;
 function standingsApiMiddleware(req: any, res: any, next: any) {
   const url = req.url?.split('?')[0];
   if (url === '/api/parse-standings') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    if (req.method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+
     if (req.method !== 'POST') {
       res.statusCode = 405;
       res.setHeader('Content-Type', 'application/json');
