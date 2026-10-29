@@ -1,26 +1,26 @@
 import { players, getAllRosterPlayers } from './roster.js';
 import { savePersistentData } from './firebase.js';
 
-// Default CMSA Boys U13 Tier 2 Standings (18 Teams - Exact Original Imported Table)
+// Default CMSA Boys U13 Tier 2 Standings (18 Teams - Synced with latest CMSA official table)
 export const initialLeagueStandings = [
-    { id: 1, name: "Blizzard Alliance 14 Boys", gp: 1, w: 1, l: 0, t: 0, gf: 5, ga: 0, isUs: false },
-    { id: 2, name: "Airdrie F.C. Dynamo 14", gp: 1, w: 1, l: 0, t: 0, gf: 7, ga: 2, isUs: false },
-    { id: 3, name: "Villains Cyclones 14", gp: 1, w: 1, l: 0, t: 0, gf: 4, ga: 1, isUs: false },
-    { id: 4, name: "WHU West Hills Gunners 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 3, isUs: false },
-    { id: 5, name: "Foothills 2014 Prospects", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 1, isUs: false },
-    { id: 6, name: "EMFC Juventus 14", gp: 1, w: 1, l: 0, t: 0, gf: 6, ga: 4, isUs: false },
-    { id: 7, name: "MUSC Storm 14", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 2, isUs: false },
-    { id: 8, name: "CalGlen Royals 14", gp: 1, w: 1, l: 0, t: 0, gf: 3, ga: 2, isUs: false },
-    { id: 9, name: "SWU Atletico 14B", gp: 0, w: 0, l: 0, t: 0, gf: 0, ga: 0, isUs: false },
-    { id: 10, name: "Rockies Albion 14", gp: 0, w: 0, l: 0, t: 0, gf: 0, ga: 0, isUs: true },
-    { id: 11, name: "Blizzard United 14 Boys", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 3, isUs: false },
-    { id: 12, name: "SWU Barca 14B", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 3, isUs: false },
-    { id: 13, name: "RANGERS ATHLETICS 14", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 3, isUs: false },
-    { id: 14, name: "New Frontier SC 14 Boys (Shaw)", gp: 1, w: 0, l: 1, t: 0, gf: 4, ga: 6, isUs: false },
-    { id: 15, name: "Chinooks FC Premiers 2014", gp: 1, w: 0, l: 1, t: 0, gf: 1, ga: 4, isUs: false },
-    { id: 16, name: "Spartans Admirals", gp: 1, w: 0, l: 1, t: 0, gf: 3, ga: 6, isUs: false },
-    { id: 17, name: "CCFC Calgary City FC Whitecaps 2014", gp: 1, w: 0, l: 1, t: 0, gf: 0, ga: 5, isUs: false },
-    { id: 18, name: "CWFC B2014 Green", gp: 1, w: 0, l: 1, t: 0, gf: 2, ga: 7, isUs: false }
+    { id: 1, rank: 1, name: "Blizzard Alliance 14 Boys", team: "Blizzard Alliance 14 Boys", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 11, ga: 4, gd: 7, isUs: false },
+    { id: 2, rank: 2, name: "Foothills 2014 Prospects", team: "Foothills 2014 Prospects", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 9, ga: 4, gd: 5, isUs: false },
+    { id: 3, rank: 3, name: "Villains Cyclones 14", team: "Villains Cyclones 14", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 9, ga: 5, gd: 4, isUs: false },
+    { id: 4, rank: 4, name: "EMFC Juventus 14", team: "EMFC Juventus 14", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 11, ga: 8, gd: 3, isUs: false },
+    { id: 5, rank: 5, name: "CalGlen Royals 14", team: "CalGlen Royals 14", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 9, ga: 7, gd: 2, isUs: false },
+    { id: 6, rank: 6, name: "SWU Barca 14B", team: "SWU Barca 14B", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 9, ga: 5, gd: 4, isUs: false },
+    { id: 7, rank: 7, name: "SWU Atletico 14B", team: "SWU Atletico 14B", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 9, ga: 7, gd: 2, isUs: false },
+    { id: 8, rank: 8, name: "Blizzard United 14 Boys", team: "Blizzard United 14 Boys", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 6, ga: 5, gd: 1, isUs: false },
+    { id: 9, rank: 9, name: "Rockies Albion 14", team: "Rockies Albion 14", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 7, ga: 6, gd: 1, isUs: true },
+    { id: 10, rank: 10, name: "WHU West Hills Gunners 14", team: "WHU West Hills Gunners 14", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 9, ga: 9, gd: 0, isUs: false },
+    { id: 11, rank: 11, name: "Airdrie F.C. Dynamo 14", team: "Airdrie F.C. Dynamo 14", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 9, ga: 9, gd: 0, isUs: false },
+    { id: 12, rank: 12, name: "MUSC Storm 14", team: "MUSC Storm 14", gp: 2, w: 1, t: 0, l: 1, pts: 3, gf: 5, ga: 6, gd: -1, isUs: false },
+    { id: 13, rank: 13, name: "Chinooks FC Premiers 2014", team: "Chinooks FC Premiers 2014", gp: 2, w: 0, t: 1, l: 1, pts: 1, gf: 3, ga: 5, gd: -2, isUs: false },
+    { id: 14, rank: 14, name: "New Frontier SC 2014 Boys (Keith)", team: "New Frontier SC 2014 Boys (Keith)", gp: 2, w: 0, t: 1, l: 1, pts: 1, gf: 5, ga: 7, gd: -2, isUs: false },
+    { id: 15, rank: 15, name: "RANGERS ATHLETICS 14", team: "RANGERS ATHLETICS 14", gp: 2, w: 0, t: 0, l: 2, pts: 0, gf: 5, ga: 8, gd: -3, isUs: false },
+    { id: 16, rank: 16, name: "Spartans Admirals", team: "Spartans Admirals", gp: 2, w: 0, t: 0, l: 2, pts: 0, gf: 7, ga: 12, gd: -5, isUs: false },
+    { id: 17, rank: 17, name: "CCFC Calgary City FC Whitecaps 2014", team: "CCFC Calgary City FC Whitecaps 2014", gp: 2, w: 0, t: 0, l: 2, pts: 0, gf: 5, ga: 11, gd: -6, isUs: false },
+    { id: 18, rank: 18, name: "CWFC B2014 Green", team: "CWFC B2014 Green", gp: 2, w: 0, t: 0, l: 2, pts: 0, gf: 2, ga: 12, gd: -10, isUs: false }
 ];
 
 export function normalizeStandingItem(team, idx = 0) {
@@ -55,13 +55,14 @@ export function normalizeStandingItem(team, idx = 0) {
 
 export let leagueStandings = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_standings_v3');
+        const saved = localStorage.getItem('rfc14_standings_v4');
         if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].team)) {
                 return parsed.map((item, idx) => normalizeStandingItem(item, idx));
             }
-        }} catch {}
+        }
+    } catch {}
     return initialLeagueStandings.map((item, idx) => normalizeStandingItem(item, idx));
 })();
 
@@ -71,11 +72,14 @@ export function updateLeagueStandings(newStandings) {
     }
 }
 
-export function saveLeagueStandings() {
+export function saveLeagueStandings(matchState, scheduleEvents) {
     try {
-        localStorage.setItem('rfc14_standings_v3', JSON.stringify(leagueStandings));
+        localStorage.setItem('rfc14_standings_v4', JSON.stringify(leagueStandings));
+        localStorage.setItem('rfc14_standings', JSON.stringify(leagueStandings));
     } catch {}
-    savePersistentData('standings', leagueStandings);
+    if (matchState && scheduleEvents) {
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+    }
 }
 
 export function getSortedStandings() {
@@ -296,52 +300,134 @@ export function saveEditedStandings(matchState, scheduleEvents, onUpdate) {
 // AI Standings Scanner
 let pendingScannedStandings = null;
 
-export function handleStandingsScreenshotUpload(event) {
+export async function handleStandingsScreenshotUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const statusEl = document.getElementById('ai-scanner-status');
-    if (statusEl) {
-        statusEl.textContent = "Analyzing CMSA table screenshot...";
-        statusEl.className = "text-xs text-blue-400 font-semibold animate-pulse";
+    const previewContainer = document.getElementById('ai-scanned-preview');
+    const applyBtn = document.getElementById('btn-apply-ai-standings');
+
+    if (applyBtn) applyBtn.classList.add('hidden');
+    if (previewContainer) {
+        previewContainer.classList.add('hidden');
+        previewContainer.innerHTML = '';
     }
 
-    // Process table screenshot simulation with realistic parsing
-    setTimeout(() => {
-        pendingScannedStandings = getSortedStandings().map(t => {
-            const w = t.w + (Math.random() > 0.5 ? 1 : 0);
-            const l = t.l;
-            const pts = (w * 3) + (t.t * 1);
-            return { ...t, w, pts };
+    if (statusEl) {
+        statusEl.innerHTML = `
+            <div class="flex items-center space-x-2 text-blue-400 font-semibold py-1">
+                <span class="inline-block w-3.5 h-3.5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
+                <span>Reading image & parsing table with Gemini AI...</span>
+            </div>
+        `;
+    }
+
+    try {
+        const reader = new FileReader();
+        const base64Promise = new Promise((resolve, reject) => {
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+        });
+        reader.readAsDataURL(file);
+        const dataUrl = await base64Promise;
+
+        const response = await fetch('/api/parse-standings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                imageBase64: dataUrl,
+                mimeType: file.type || 'image/jpeg'
+            })
         });
 
-        if (statusEl) {
-            statusEl.textContent = "Extracted 18 teams from screenshot. Ready to apply.";
-            statusEl.className = "text-xs text-emerald-400 font-semibold";
+        const data = await response.json();
+        if (!response.ok || !data.success || !Array.isArray(data.standings)) {
+            throw new Error(data.error || 'Failed to extract standings from screenshot.');
         }
 
-        const previewContainer = document.getElementById('ai-scanned-preview');
-        if (previewContainer) {
-            previewContainer.classList.remove('hidden');
-            previewContainer.innerHTML = `
-                <div class="p-3 bg-zinc-950 border border-emerald-500/30 rounded-xl">
-                    <p class="text-xs font-bold text-emerald-400 mb-1">Preview of Scanned Table:</p>
-                    <p class="text-[11px] text-zinc-300">Successfully recognized ${pendingScannedStandings.length} teams with updated points and records.</p>
+        pendingScannedStandings = data.standings.map((t, idx) => normalizeStandingItem(t, idx));
+
+        if (statusEl) {
+            statusEl.innerHTML = `
+                <div class="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 py-1">
+                    <span>✓</span> <span>Successfully extracted ${pendingScannedStandings.length} teams from CMSA screenshot!</span>
                 </div>
             `;
         }
 
-        const applyBtn = document.getElementById('btn-apply-ai-standings');
-        if (applyBtn) applyBtn.classList.remove('hidden');
-    }, 1200);
+        if (previewContainer) {
+            previewContainer.classList.remove('hidden');
+            previewContainer.innerHTML = `
+                <div class="p-3 bg-zinc-950 border border-emerald-500/40 rounded-xl space-y-2 max-h-60 overflow-y-auto">
+                    <div class="flex items-center justify-between border-b border-zinc-800 pb-1.5">
+                        <span class="text-xs font-bold text-emerald-400">Preview of AI Extracted Table (${pendingScannedStandings.length} Teams):</span>
+                        <span class="text-[10px] text-zinc-400">Click "Apply Scanned Table" below to save</span>
+                    </div>
+                    <table class="w-full text-left text-[11px]">
+                        <thead>
+                            <tr class="text-zinc-500 border-b border-zinc-800 text-[10px]">
+                                <th class="py-1 px-1">#</th>
+                                <th class="py-1 px-1">Team</th>
+                                <th class="py-1 px-1 text-center">GP</th>
+                                <th class="py-1 px-1 text-center">W</th>
+                                <th class="py-1 px-1 text-center">T</th>
+                                <th class="py-1 px-1 text-center">L</th>
+                                <th class="py-1 px-1 text-center font-bold text-amber-400">PTS</th>
+                                <th class="py-1 px-1 text-center">GF</th>
+                                <th class="py-1 px-1 text-center">GA</th>
+                                <th class="py-1 px-1 text-center">GD</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-900">
+                            ${pendingScannedStandings.map(t => {
+                                const isRockies = t.isUs || t.team.toLowerCase().includes('rockies');
+                                return `
+                                <tr class="${isRockies ? 'bg-blue-950/60 font-bold text-blue-200' : 'text-zinc-300'}">
+                                    <td class="py-1 px-1 text-zinc-500">${t.rank}</td>
+                                    <td class="py-1 px-1 font-semibold truncate max-w-[150px]">${t.team}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-zinc-300">${t.gp}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-emerald-400">${t.w}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-amber-400">${t.t}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-rose-400">${t.l}</td>
+                                    <td class="py-1 px-1 text-center font-mono font-black text-amber-300">${t.pts}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.gf}</td>
+                                    <td class="py-1 px-1 text-center font-mono text-zinc-400">${t.ga}</td>
+                                    <td class="py-1 px-1 text-center font-mono ${t.gd > 0 ? 'text-emerald-400' : (t.gd < 0 ? 'text-rose-400' : 'text-zinc-400')}">
+                                        ${t.gd > 0 ? `+${t.gd}` : t.gd}
+                                    </td>
+                                </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        if (applyBtn) {
+            applyBtn.classList.remove('hidden');
+            applyBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    } catch (err) {
+        console.error('AI Standings extraction error:', err);
+        if (statusEl) {
+            statusEl.innerHTML = `
+                <div class="text-xs text-rose-400 font-semibold flex items-center space-x-1.5 py-1">
+                    <span>✕</span> <span>${err.message || 'Error parsing table from image'}. Please try again.</span>
+                </div>
+            `;
+        }
+    }
 }
 
 export function confirmApplyAiStandings(matchState, scheduleEvents, onUpdate) {
-    if (pendingScannedStandings) {
-        leagueStandings = pendingScannedStandings;
+    if (pendingScannedStandings && pendingScannedStandings.length > 0) {
+        leagueStandings = pendingScannedStandings.map((t, idx) => normalizeStandingItem(t, idx));
+        saveLeagueStandings();
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
         pendingScannedStandings = null;
         closeEditStandingsModal();
-        savePersistentData(matchState, leagueStandings, scheduleEvents);
         if (typeof onUpdate === 'function') onUpdate();
     }
 }

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^2.32.0",
     "firebase": "^11.6.1"
   },
   "devDependencies": {

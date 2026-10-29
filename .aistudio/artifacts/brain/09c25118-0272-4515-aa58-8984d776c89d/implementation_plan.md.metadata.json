@@ -1,6 +1,0 @@
-{
-  "summary":  "Implementation plan for modularizing Rockies Albion 14 into clean, decoupled modules: style.css, firebase.js, roster.js, tracker.js, schedule.js, standings.js, and a streamlined index.html.",
-  "updatedAt":  "2026-10-27T02:53:07.826621260Z",
-  "requestFeedback":  true,
-  "userFacing":  true
-}
