@@ -701,7 +701,15 @@ window.toggleMatchTimer = () => toggleMatchTimer(leagueStandings, scheduleEvents
 window.startTimer = () => startTimer(leagueStandings, scheduleEvents);
 window.pauseTimer = pauseTimer;
 window.resetTimer = () => resetTimer(leagueStandings, scheduleEvents);
-window.adjustStat = (key, amt) => adjustStat(key, amt, leagueStandings, scheduleEvents);
+window.adjustStat = (key, amt) => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => {
+            adjustStat(key, amt, leagueStandings, scheduleEvents);
+        });
+        return;
+    }
+    adjustStat(key, amt, leagueStandings, scheduleEvents);
+};
 window.setMatchPeriod = (period) => setMatchPeriod(period, leagueStandings, scheduleEvents);
 window.resumeMatchFromFinal = () => resumeMatchFromFinal(leagueStandings, scheduleEvents);
 window.recordShootoutKick = (team, scored) => recordShootoutKick(team, scored, leagueStandings, scheduleEvents);

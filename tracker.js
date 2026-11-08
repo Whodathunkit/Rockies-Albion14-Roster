@@ -435,8 +435,8 @@ export function renderStatsComparison() {
 }
 
 function updateBar(usId, themId, usVal, themVal) {
-    const usEl = document.getElementById(usId);
-    const themEl = document.getElementById(themId);
+    const usEl = document.getElementById(usId) || document.getElementById('stat-' + usId);
+    const themEl = document.getElementById(themId) || document.getElementById('stat-' + themId);
     const total = usVal + themVal;
     if (total === 0) {
         if (usEl) usEl.style.width = '50%';

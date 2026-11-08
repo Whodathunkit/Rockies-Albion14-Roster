@@ -342,49 +342,104 @@
                         <span class="text-amber-400">Opponent</span>
                     </div>
                 </div>
-                <div class="space-y-3">
+                <div class="space-y-3.5">
                     <!-- Shots on Target -->
                     <div>
-                        <div class="flex justify-between text-xs font-mono font-bold text-zinc-300 mb-1">
-                            <span id="stat-sot-us">0</span>
-                            <span class="text-[10px] text-zinc-400 font-sans uppercase">Shots On Target</span>
-                            <span id="stat-sot-them">0</span>
+                        <div class="flex items-center justify-between text-xs font-mono font-bold text-zinc-300 mb-1.5">
+                            <!-- Rockies Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('sotUs', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Rockies Shots on Target">−</button>
+                                <span id="stat-sot-us" class="min-w-6 text-center font-black text-sm text-blue-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('sotUs', 1)" class="w-6 h-6 rounded-lg bg-blue-900/80 hover:bg-blue-800 active:scale-95 text-blue-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-blue-500/50 shadow-sm" title="Increase Rockies Shots on Target">+</button>
+                            </div>
+
+                            <!-- Title -->
+                            <span class="text-[11px] text-zinc-400 font-sans uppercase font-bold tracking-wider text-center px-2">Shots On Target</span>
+
+                            <!-- Opponent Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('sotThem', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Opponent Shots on Target">−</button>
+                                <span id="stat-sot-them" class="min-w-6 text-center font-black text-sm text-amber-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('sotThem', 1)" class="w-6 h-6 rounded-lg bg-amber-950/80 hover:bg-amber-900 active:scale-95 text-amber-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-amber-500/50 shadow-sm" title="Increase Opponent Shots on Target">+</button>
+                            </div>
                         </div>
                         <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
                             <div id="stat-bar-sot-us" class="bg-blue-600 h-full transition-all duration-300" style="width: 50%;"></div>
                             <div id="stat-bar-sot-them" class="bg-amber-500 h-full transition-all duration-300" style="width: 50%;"></div>
                         </div>
                     </div>
+
                     <!-- Total Shots -->
                     <div>
-                        <div class="flex justify-between text-xs font-mono font-bold text-zinc-300 mb-1">
-                            <span id="stat-shots-us">0</span>
-                            <span class="text-[10px] text-zinc-400 font-sans uppercase">Total Shots</span>
-                            <span id="stat-shots-them">0</span>
+                        <div class="flex items-center justify-between text-xs font-mono font-bold text-zinc-300 mb-1.5">
+                            <!-- Rockies Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('shotsUs', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Rockies Total Shots">−</button>
+                                <span id="stat-shots-us" class="min-w-6 text-center font-black text-sm text-blue-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('shotsUs', 1)" class="w-6 h-6 rounded-lg bg-blue-900/80 hover:bg-blue-800 active:scale-95 text-blue-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-blue-500/50 shadow-sm" title="Increase Rockies Total Shots">+</button>
+                            </div>
+
+                            <!-- Title -->
+                            <span class="text-[11px] text-zinc-400 font-sans uppercase font-bold tracking-wider text-center px-2">Total Shots</span>
+
+                            <!-- Opponent Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('shotsThem', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Opponent Total Shots">−</button>
+                                <span id="stat-shots-them" class="min-w-6 text-center font-black text-sm text-amber-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('shotsThem', 1)" class="w-6 h-6 rounded-lg bg-amber-950/80 hover:bg-amber-900 active:scale-95 text-amber-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-amber-500/50 shadow-sm" title="Increase Opponent Total Shots">+</button>
+                            </div>
                         </div>
                         <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
                             <div id="stat-bar-shots-us" class="bg-blue-600 h-full transition-all duration-300" style="width: 50%;"></div>
                             <div id="stat-bar-shots-them" class="bg-amber-500 h-full transition-all duration-300" style="width: 50%;"></div>
                         </div>
                     </div>
+
                     <!-- Goalkeeper Saves -->
                     <div>
-                        <div class="flex justify-between text-xs font-mono font-bold text-zinc-300 mb-1">
-                            <span id="stat-saves-us">1</span>
-                            <span class="text-[10px] text-zinc-400 font-sans uppercase">Goalkeeper Saves</span>
-                            <span id="stat-saves-them">0</span>
+                        <div class="flex items-center justify-between text-xs font-mono font-bold text-zinc-300 mb-1.5">
+                            <!-- Rockies Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('savesUs', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Rockies Goalkeeper Saves">−</button>
+                                <span id="stat-saves-us" class="min-w-6 text-center font-black text-sm text-blue-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('savesUs', 1)" class="w-6 h-6 rounded-lg bg-blue-900/80 hover:bg-blue-800 active:scale-95 text-blue-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-blue-500/50 shadow-sm" title="Increase Rockies Goalkeeper Saves">+</button>
+                            </div>
+
+                            <!-- Title -->
+                            <span class="text-[11px] text-zinc-400 font-sans uppercase font-bold tracking-wider text-center px-2">Goalkeeper Saves</span>
+
+                            <!-- Opponent Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('savesThem', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Opponent Goalkeeper Saves">−</button>
+                                <span id="stat-saves-them" class="min-w-6 text-center font-black text-sm text-amber-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('savesThem', 1)" class="w-6 h-6 rounded-lg bg-amber-950/80 hover:bg-amber-900 active:scale-95 text-amber-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-amber-500/50 shadow-sm" title="Increase Opponent Goalkeeper Saves">+</button>
+                            </div>
                         </div>
                         <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
-                            <div id="stat-bar-saves-us" class="bg-blue-600 h-full transition-all duration-300" style="width: 100%;"></div>
-                            <div id="stat-bar-saves-them" class="bg-amber-500 h-full transition-all duration-300" style="width: 0%;"></div>
+                            <div id="stat-bar-saves-us" class="bg-blue-600 h-full transition-all duration-300" style="width: 50%;"></div>
+                            <div id="stat-bar-saves-them" class="bg-amber-500 h-full transition-all duration-300" style="width: 50%;"></div>
                         </div>
                     </div>
+
                     <!-- Corner Kicks -->
                     <div>
-                        <div class="flex justify-between text-xs font-mono font-bold text-zinc-300 mb-1">
-                            <span id="stat-corners-us">0</span>
-                            <span class="text-[10px] text-zinc-400 font-sans uppercase">Corner Kicks</span>
-                            <span id="stat-corners-them">0</span>
+                        <div class="flex items-center justify-between text-xs font-mono font-bold text-zinc-300 mb-1.5">
+                            <!-- Rockies Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('cornersUs', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Rockies Corner Kicks">−</button>
+                                <span id="stat-corners-us" class="min-w-6 text-center font-black text-sm text-blue-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('cornersUs', 1)" class="w-6 h-6 rounded-lg bg-blue-900/80 hover:bg-blue-800 active:scale-95 text-blue-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-blue-500/50 shadow-sm" title="Increase Rockies Corner Kicks">+</button>
+                            </div>
+
+                            <!-- Title -->
+                            <span class="text-[11px] text-zinc-400 font-sans uppercase font-bold tracking-wider text-center px-2">Corner Kicks</span>
+
+                            <!-- Opponent Control -->
+                            <div class="flex items-center space-x-1.5">
+                                <button type="button" onclick="window.adjustStat('cornersThem', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 active:scale-95 text-zinc-300 hover:text-white font-black text-xs flex items-center justify-center transition border border-zinc-700 shadow-sm" title="Decrease Opponent Corner Kicks">−</button>
+                                <span id="stat-corners-them" class="min-w-6 text-center font-black text-sm text-amber-300 font-mono">0</span>
+                                <button type="button" onclick="window.adjustStat('cornersThem', 1)" class="w-6 h-6 rounded-lg bg-amber-950/80 hover:bg-amber-900 active:scale-95 text-amber-200 hover:text-white font-black text-xs flex items-center justify-center transition border border-amber-500/50 shadow-sm" title="Increase Opponent Corner Kicks">+</button>
+                            </div>
                         </div>
                         <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
                             <div id="stat-bar-corners-us" class="bg-blue-600 h-full transition-all duration-300" style="width: 50%;"></div>
