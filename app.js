@@ -77,6 +77,7 @@ import {
     renderSchedule, 
     togglePastEventsSchedule,
     openAddEventModal, 
+    openEditEventModal,
     closeAddEventModal, 
     saveNewScheduleEvent, 
     deleteScheduleEvent,
@@ -753,6 +754,7 @@ window.startMatchFromSchedule = (opp) => {
     switchTab('tracker');
 };
 window.openAddEventModal = openAddEventModal;
+window.openEditEventModal = openEditEventModal;
 window.closeAddEventModal = closeAddEventModal;
 window.handleEventTypeChange = handleEventTypeChange;
 window.handleDatepickerChange = handleDatepickerChange;

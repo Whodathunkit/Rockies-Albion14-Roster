@@ -109,6 +109,22 @@ export function normalizeScheduleEvent(ev, idx = 0) {
         resolvedKit = 'Grey/Blue Training Kit & Size 5 Ball';
     }
 
+    let resolvedAddress = String(ev.address || '').trim();
+    const locLower = String(ev.location || '').toLowerCase();
+    if (!resolvedAddress) {
+        if (locLower.includes('vivo')) resolvedAddress = '11950 Country Village Link NE, Calgary';
+        else if (locLower.includes('royal oak')) resolvedAddress = '9100 Royal Oak Way NW, Calgary';
+        else if (locLower.includes('captain nichola') || locLower.includes('nichola goddard')) resolvedAddress = '405 Panatella Blvd NW, Calgary';
+        else if (locLower.includes('shane homes') || locLower.includes('calgary west') || locLower.includes('cwsc')) resolvedAddress = '11014 Bearspaw Dam Rd NW, Calgary';
+        else if (locLower.includes('bearspaw')) resolvedAddress = '253220 Bearspaw Rd, Calgary';
+        else if (locLower.includes('shouldice')) resolvedAddress = '1515 Home Rd NW, Calgary';
+        else if (locLower.includes('macron') || locLower.includes('foothills')) resolvedAddress = '111 Aerial Place NE, Calgary';
+        else if (locLower.includes('edge school')) resolvedAddress = '33055 Township Rd 250, Calgary';
+    }
+
+    const mapQuery = resolvedAddress || ev.location || 'Calgary';
+    const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(mapQuery)}`;
+
     return {
         id: Number(ev.id) || idx + 1,
         type: ev.type || 'game',
@@ -119,7 +135,8 @@ export function normalizeScheduleEvent(ev, idx = 0) {
         kickoff: String(ev.kickoff || ev.time || 'TBD').trim(),
         arrival: String(ev.arrival || (isGame ? '30 min prior' : '15 min prior')).trim(),
         location: String(ev.location || 'Calgary').trim(),
-        mapUrl: String(ev.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(ev.location || 'Calgary')}`).trim(),
+        address: resolvedAddress,
+        mapUrl: mapUrl,
         jerseyKit: resolvedKit
     };
 }
@@ -268,9 +285,15 @@ export function renderSchedule(leagueStandings, isCoachMode) {
                             Arrive: <strong class="text-white font-bold">${ev.arrival}</strong>
                         </p>
                         ${isCoachMode ? `
-                            <button type="button" onclick="window.deleteScheduleEvent(${ev.id})" class="text-xs text-rose-400 hover:text-rose-300 mt-1 inline-block transition">
-                                &times; Delete
-                            </button>
+                            <div class="flex items-center justify-end space-x-2 mt-1">
+                                <button type="button" onclick="window.openEditEventModal(${ev.id})" class="text-xs text-blue-400 hover:text-blue-300 font-bold transition flex items-center space-x-1" title="Edit this fixture or practice">
+                                    <span>✏️</span> <span>Edit</span>
+                                </button>
+                                <span class="text-zinc-600">•</span>
+                                <button type="button" onclick="window.deleteScheduleEvent(${ev.id})" class="text-xs text-rose-400 hover:text-rose-300 font-bold transition" title="Delete fixture">
+                                    <span>&times; Delete</span>
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 </div>
@@ -331,11 +354,19 @@ export function renderSchedule(leagueStandings, isCoachMode) {
 
                 <!-- Footer: Location & Directions, Uniform Kit, Coach Action -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2.5 border-t border-zinc-800/80 text-xs">
-                    <div class="flex items-center space-x-2 text-zinc-300">
-                        <span class="font-medium">📍 ${ev.location}</span>
-                        <a href="${ev.mapUrl}" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 font-bold underline text-xs transition">
-                            Maps ↗
-                        </a>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1.5 text-zinc-300">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-white">📍 ${ev.location}</span>
+                            <a href="${ev.mapUrl}" target="_blank" rel="noopener noreferrer" class="px-2 py-0.5 rounded-md bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-300 hover:text-white font-bold text-[11px] transition inline-flex items-center space-x-1" title="Open GPS directions in Google Maps">
+                                <span>🗺️</span>
+                                <span>Maps ↗</span>
+                            </a>
+                        </div>
+                        ${ev.address && ev.address !== ev.location ? `
+                            <span class="text-[11px] text-zinc-400 font-medium sm:before:content-['•'] sm:before:mr-1.5">
+                                ${ev.address}
+                            </span>
+                        ` : ''}
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
@@ -369,6 +400,7 @@ export function handleEventTypeChange() {
     const homeAwayGroup = document.getElementById('new-event-homeaway-group');
     const kitInput = document.getElementById('new-event-kit');
     const locationInput = document.getElementById('new-event-location');
+    const addressInput = document.getElementById('new-event-address');
     const timeInput = document.getElementById('new-event-time');
 
     if (type === 'game') {
@@ -379,6 +411,7 @@ export function handleEventTypeChange() {
         if (homeAwayGroup) homeAwayGroup.style.display = 'block';
         if (kitInput) kitInput.value = 'Black Kit';
         if (locationInput) locationInput.placeholder = 'Shane Homes West Soccer Dome (Field 2 7v7)';
+        if (addressInput) addressInput.placeholder = '11014 Bearspaw Dam Rd NW, Calgary';
         if (timeInput && !timeInput.value) timeInput.placeholder = '1:00 PM - 2:15 PM';
     } else if (type === 'pdp') {
         if (opponentLabel) opponentLabel.textContent = 'Session Focus (Optional)';
@@ -389,6 +422,9 @@ export function handleEventTypeChange() {
         if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
         if (locationInput && (!locationInput.value || locationInput.value.includes('Calgary West') || locationInput.value.includes('Captain Nichola'))) {
             locationInput.value = 'Royal Oak School (Indoor Gym)';
+        }
+        if (addressInput && (!addressInput.value || addressInput.value.includes('Bearspaw') || addressInput.value.includes('Panatella'))) {
+            addressInput.value = '9100 Royal Oak Way NW, Calgary';
         }
         if (timeInput && !timeInput.value) timeInput.value = '7:15 PM - 8:15 PM';
     } else if (type === 'performance') {
@@ -401,6 +437,9 @@ export function handleEventTypeChange() {
         if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Captain Nichola'))) {
             locationInput.value = 'Calgary West Soccer Centre (Field 2a)';
         }
+        if (addressInput && (!addressInput.value || addressInput.value.includes('Royal Oak') || addressInput.value.includes('Panatella'))) {
+            addressInput.value = '11014 Bearspaw Dam Rd NW, Calgary';
+        }
         if (timeInput && !timeInput.value) timeInput.value = '6:00 PM - 7:00 PM';
     } else {
         // practice
@@ -412,6 +451,9 @@ export function handleEventTypeChange() {
         if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
         if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Calgary West'))) {
             locationInput.value = 'Captain Nichola Goddard School (Main Gym)';
+        }
+        if (addressInput && (!addressInput.value || addressInput.value.includes('Royal Oak') || addressInput.value.includes('Bearspaw'))) {
+            addressInput.value = '405 Panatella Blvd NW, Calgary';
         }
         if (timeInput && !timeInput.value) timeInput.value = '7:30 PM - 8:30 PM';
     }
@@ -439,11 +481,21 @@ export function handleDatepickerChange(pickerVal) {
 export function openAddEventModal() {
     const modal = document.getElementById('modal-add-event') || document.getElementById('add-event-modal');
     if (modal) {
+        const editIdInput = document.getElementById('edit-event-id');
+        if (editIdInput) editIdInput.value = '';
+        const titleEl = document.getElementById('add-event-modal-title');
+        if (titleEl) titleEl.textContent = 'Add Schedule Event';
+        const submitBtn = document.getElementById('add-event-submit-btn');
+        if (submitBtn) submitBtn.textContent = 'Save Event';
+
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+
         modal.classList.remove('hidden');
         handleEventTypeChange();
         const dateInput = document.getElementById('new-event-date');
         const pickerInput = document.getElementById('new-event-date-picker');
-        if (pickerInput && !pickerInput.value) {
+        if (pickerInput) {
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -454,6 +506,72 @@ export function openAddEventModal() {
             }
         }
     }
+}
+
+export function openEditEventModal(id) {
+    const ev = scheduleEvents.find(e => Number(e.id) === Number(id));
+    if (!ev) return;
+    const modal = document.getElementById('modal-add-event') || document.getElementById('add-event-modal');
+    if (!modal) return;
+
+    const editIdInput = document.getElementById('edit-event-id');
+    if (editIdInput) editIdInput.value = String(ev.id);
+
+    const titleEl = document.getElementById('add-event-modal-title');
+    if (titleEl) titleEl.textContent = 'Edit Schedule Fixture / Event';
+
+    const submitBtn = document.getElementById('add-event-submit-btn');
+    if (submitBtn) submitBtn.textContent = 'Update Event';
+
+    const typeSelect = document.getElementById('new-event-type');
+    if (typeSelect) typeSelect.value = ev.type || 'practice';
+    handleEventTypeChange();
+
+    const opponentInput = document.getElementById('new-event-opponent');
+    if (opponentInput) {
+        if (ev.type === 'game') {
+            opponentInput.value = ev.opponent || '';
+        } else {
+            let clean = ev.title;
+            const prefixes = [
+                'Player Development Program (PDP) - ', 
+                'Player Development Program (PDP)', 
+                'Rockies Performance Session - ', 
+                'Rockies Performance Session', 
+                'Team Tactical Practice - ', 
+                'Team Tactical Practice',
+                'Team Practice - ',
+                'Team Practice'
+            ];
+            for (const p of prefixes) {
+                if (clean.startsWith(p)) {
+                    clean = clean.substring(p.length);
+                    break;
+                }
+            }
+            opponentInput.value = clean.trim();
+        }
+    }
+
+    const homeAwaySelect = document.getElementById('new-event-homeaway');
+    if (homeAwaySelect) homeAwaySelect.value = ev.isHome ? 'Home' : 'Away';
+
+    const dateInput = document.getElementById('new-event-date');
+    if (dateInput) dateInput.value = ev.date || '';
+
+    const timeInput = document.getElementById('new-event-time');
+    if (timeInput) timeInput.value = ev.kickoff || '';
+
+    const locationInput = document.getElementById('new-event-location');
+    if (locationInput) locationInput.value = ev.location || '';
+
+    const addressInput = document.getElementById('new-event-address');
+    if (addressInput) addressInput.value = ev.address || '';
+
+    const kitInput = document.getElementById('new-event-kit');
+    if (kitInput) kitInput.value = ev.jerseyKit || '';
+
+    modal.classList.remove('hidden');
 }
 
 export function closeAddEventModal() {
@@ -467,11 +585,13 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
         if (typeof event.stopPropagation === 'function') event.stopPropagation();
     }
 
+    const editingId = document.getElementById('edit-event-id')?.value.trim();
     const type = document.getElementById('new-event-type')?.value || 'practice';
     const rawTitleOrOpponent = document.getElementById('new-event-opponent')?.value.trim() || '';
     const dateInput = document.getElementById('new-event-date')?.value.trim() || '';
     const time = document.getElementById('new-event-time')?.value.trim() || '';
     const location = document.getElementById('new-event-location')?.value.trim() || 'Calgary West Soccer Centre';
+    const address = document.getElementById('new-event-address')?.value.trim() || '';
     const isHome = document.getElementById('new-event-homeaway')?.value === 'Home';
     const isGame = type === 'game';
     const isPDP = type === 'pdp';
@@ -492,7 +612,6 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
         : (isPerf ? 'Black Training Kit & Size 5 Ball' : 'Grey/Blue Training Kit & Size 5 Ball');
     const uniformKit = document.getElementById('new-event-kit')?.value.trim() || defaultKitForType;
 
-    const newId = Date.now();
     let title = '';
     let opponent = '';
 
@@ -508,21 +627,40 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
         title = rawTitleOrOpponent || 'Team Tactical Practice';
     }
 
-    const newEvent = normalizeScheduleEvent({
-        id: newId,
-        type,
-        title,
-        opponent,
-        isHome,
-        date: dateInput,
-        kickoff: time || 'TBD',
-        arrival: isGame ? '30 min prior' : '15 min prior',
-        location,
-        mapUrl: `https://maps.google.com/?q=${encodeURIComponent(location)}`,
-        jerseyKit: uniformKit
-    });
-
-    scheduleEvents.push(newEvent);
+    if (editingId) {
+        const idx = scheduleEvents.findIndex(e => String(e.id) === String(editingId));
+        if (idx !== -1) {
+            scheduleEvents[idx] = normalizeScheduleEvent({
+                ...scheduleEvents[idx],
+                type,
+                title,
+                opponent,
+                isHome,
+                date: dateInput,
+                kickoff: time || 'TBD',
+                arrival: isGame ? '30 min prior' : '15 min prior',
+                location,
+                address,
+                jerseyKit: uniformKit
+            });
+        }
+    } else {
+        const newId = Date.now();
+        const newEvent = normalizeScheduleEvent({
+            id: newId,
+            type,
+            title,
+            opponent,
+            isHome,
+            date: dateInput,
+            kickoff: time || 'TBD',
+            arrival: isGame ? '30 min prior' : '15 min prior',
+            location,
+            address,
+            jerseyKit: uniformKit
+        });
+        scheduleEvents.push(newEvent);
+    }
 
     // Sort chronologically so newly added practices and fixtures sit in chronological order
     scheduleEvents.sort((a, b) => {

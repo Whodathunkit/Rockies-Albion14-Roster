@@ -1070,8 +1070,9 @@
     <!-- Add Schedule Event Modal -->
     <div id="add-event-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-base font-extrabold text-white">Add Schedule Event</h3>
+            <h3 id="add-event-modal-title" class="text-base font-extrabold text-white">Add Schedule Event</h3>
             <form onsubmit="window.saveNewScheduleEvent(event)" class="space-y-3">
+                <input type="hidden" id="edit-event-id" value="">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-bold text-zinc-400 mb-1">Event Type</label>
@@ -1110,9 +1111,17 @@
                     <label class="block text-[11px] font-bold text-zinc-400 mb-1">Time / Duration</label>
                     <input type="text" id="new-event-time" required placeholder="e.g. 7:30 PM - 8:30 PM" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Venue / Facility</label>
-                    <input type="text" id="new-event-location" required placeholder="Captain Nichola Goddard School (Main Gym)" value="Captain Nichola Goddard School (Main Gym)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-[11px] font-bold text-zinc-400 mb-1">Venue / Facility / Gym Name *</label>
+                        <input type="text" id="new-event-location" required placeholder="e.g. Vivo Yellow 1 Gym" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        <span class="text-[10px] text-zinc-500">Name shown on schedule card</span>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-emerald-400 mb-1">Google Maps Address (for GPS) *</label>
+                        <input type="text" id="new-event-address" placeholder="e.g. 11950 Country Village Link NE, Calgary" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <span class="text-[10px] text-zinc-500">Address for map navigation link</span>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-zinc-400 mb-1">Uniform Kit Rule</label>
@@ -1124,7 +1133,7 @@
                 </div>
                 <div class="flex space-x-2 pt-2">
                     <button type="button" onclick="window.closeAddEventModal()" class="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-300">Cancel</button>
-                    <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow">Save Event</button>
+                    <button type="submit" id="add-event-submit-btn" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow">Save Event</button>
                 </div>
             </form>
         </div>
