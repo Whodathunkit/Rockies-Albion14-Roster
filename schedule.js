@@ -47,11 +47,23 @@ export const initialScheduleEvents = [
             { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit" }
 ];
 
+export function parseEventDate(dateStr) {
+    if (!dateStr) return null;
+    let cleaned = String(dateStr).replace(/^[A-Za-z]+,\s*/, '').trim();
+    if (!/\b(202[0-9]|203[0-9])\b/.test(cleaned)) {
+        const monthMatch = cleaned.match(/^[A-Za-z]+/);
+        const monthName = monthMatch ? monthMatch[0].toLowerCase() : '';
+        const isSpring = ['jan', 'january', 'feb', 'february', 'mar', 'march', 'apr', 'april', 'may'].some(m => monthName.startsWith(m));
+        cleaned = `${cleaned}, ${isSpring ? '2027' : '2026'}`;
+    }
+    const parsed = new Date(cleaned);
+    return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export function isFutureOrTodayEvent(dateStr) {
     if (!dateStr) return true;
-    const cleaned = dateStr.replace(/^[A-Za-z]+,\s*/, '').trim();
-    const parsed = new Date(cleaned);
-    if (isNaN(parsed.getTime())) return true;
+    const parsed = parseEventDate(dateStr);
+    if (!parsed) return true;
     // Keep events from today until the end of the day (23:59:59)
     const eventEndOfDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate(), 23, 59, 59, 999);
     return eventEndOfDay >= new Date();
@@ -139,12 +151,13 @@ export function updateScheduleEvents(newEvents) {
     }
 }
 
-export function saveScheduleEvents() {
+export function saveScheduleEvents(matchState, leagueStandings) {
     try {
         localStorage.setItem('rfc14_schedule_v4', JSON.stringify(scheduleEvents));
         localStorage.setItem('rfc14_schedule_v3', JSON.stringify(scheduleEvents));
+        localStorage.setItem('rfc14_schedule', JSON.stringify(scheduleEvents));
     } catch {}
-    savePersistentData('schedule', scheduleEvents);
+    savePersistentData(matchState || null, leagueStandings || null, scheduleEvents);
 }
 
 export function togglePastEventsSchedule(leagueStandings, isCoachMode) {
@@ -349,9 +362,98 @@ export function renderSchedule(leagueStandings, isCoachMode) {
     }).join('');
 }
 
+export function handleEventTypeChange() {
+    const type = document.getElementById('new-event-type')?.value || 'practice';
+    const opponentLabel = document.getElementById('new-event-opponent-label');
+    const opponentInput = document.getElementById('new-event-opponent');
+    const homeAwayGroup = document.getElementById('new-event-homeaway-group');
+    const kitInput = document.getElementById('new-event-kit');
+    const locationInput = document.getElementById('new-event-location');
+    const timeInput = document.getElementById('new-event-time');
+
+    if (type === 'game') {
+        if (opponentLabel) opponentLabel.textContent = 'Opponent Team Name *';
+        if (opponentInput) {
+            opponentInput.placeholder = 'e.g. SWU Atletico 14B';
+        }
+        if (homeAwayGroup) homeAwayGroup.style.display = 'block';
+        if (kitInput) kitInput.value = 'Black Kit';
+        if (locationInput) locationInput.placeholder = 'Shane Homes West Soccer Dome (Field 2 7v7)';
+        if (timeInput && !timeInput.value) timeInput.placeholder = '1:00 PM - 2:15 PM';
+    } else if (type === 'pdp') {
+        if (opponentLabel) opponentLabel.textContent = 'Session Focus (Optional)';
+        if (opponentInput) {
+            opponentInput.placeholder = 'e.g. Technical Footwork & Passing (or leave blank)';
+        }
+        if (homeAwayGroup) homeAwayGroup.style.display = 'none';
+        if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
+        if (locationInput && (!locationInput.value || locationInput.value.includes('Calgary West') || locationInput.value.includes('Captain Nichola'))) {
+            locationInput.value = 'Royal Oak School (Indoor Gym)';
+        }
+        if (timeInput && !timeInput.value) timeInput.value = '7:15 PM - 8:15 PM';
+    } else if (type === 'performance') {
+        if (opponentLabel) opponentLabel.textContent = 'Session Focus (Optional)';
+        if (opponentInput) {
+            opponentInput.placeholder = 'e.g. Speed, Agility & Strength (or leave blank)';
+        }
+        if (homeAwayGroup) homeAwayGroup.style.display = 'none';
+        if (kitInput) kitInput.value = 'Black Training Kit & Size 5 Ball';
+        if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Captain Nichola'))) {
+            locationInput.value = 'Calgary West Soccer Centre (Field 2a)';
+        }
+        if (timeInput && !timeInput.value) timeInput.value = '6:00 PM - 7:00 PM';
+    } else {
+        // practice
+        if (opponentLabel) opponentLabel.textContent = 'Practice Topic / Focus (Optional)';
+        if (opponentInput) {
+            opponentInput.placeholder = 'e.g. Shooting, Finishing & Defensive Shape (or leave blank)';
+        }
+        if (homeAwayGroup) homeAwayGroup.style.display = 'none';
+        if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
+        if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Calgary West'))) {
+            locationInput.value = 'Captain Nichola Goddard School (Main Gym)';
+        }
+        if (timeInput && !timeInput.value) timeInput.value = '7:30 PM - 8:30 PM';
+    }
+}
+
+export function handleDatepickerChange(pickerVal) {
+    if (!pickerVal) return;
+    const parts = pickerVal.split('-');
+    if (parts.length === 3) {
+        const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        if (!isNaN(d.getTime())) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const dayName = days[d.getDay()];
+            const monthName = months[d.getMonth()];
+            const dateNum = d.getDate();
+            const year = d.getFullYear();
+            const formatted = `${dayName}, ${monthName} ${dateNum < 10 ? '0' + dateNum : dateNum}, ${year}`;
+            const textInput = document.getElementById('new-event-date');
+            if (textInput) textInput.value = formatted;
+        }
+    }
+}
+
 export function openAddEventModal() {
     const modal = document.getElementById('modal-add-event') || document.getElementById('add-event-modal');
-    if (modal) modal.classList.remove('hidden');
+    if (modal) {
+        modal.classList.remove('hidden');
+        handleEventTypeChange();
+        const dateInput = document.getElementById('new-event-date');
+        const pickerInput = document.getElementById('new-event-date-picker');
+        if (pickerInput && !pickerInput.value) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            pickerInput.value = `${yyyy}-${mm}-${dd}`;
+            if (dateInput && !dateInput.value) {
+                handleDatepickerChange(pickerInput.value);
+            }
+        }
+    }
 }
 
 export function closeAddEventModal() {
@@ -359,28 +461,52 @@ export function closeAddEventModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-export function saveNewScheduleEvent() {
-    const type = document.getElementById('new-event-type')?.value || 'game';
-    const opponent = document.getElementById('new-event-opponent')?.value.trim() || '';
-    const date = document.getElementById('new-event-date')?.value.trim() || '';
+export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved) {
+    if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    const type = document.getElementById('new-event-type')?.value || 'practice';
+    const rawTitleOrOpponent = document.getElementById('new-event-opponent')?.value.trim() || '';
+    const dateInput = document.getElementById('new-event-date')?.value.trim() || '';
     const time = document.getElementById('new-event-time')?.value.trim() || '';
     const location = document.getElementById('new-event-location')?.value.trim() || 'Calgary West Soccer Centre';
     const isHome = document.getElementById('new-event-homeaway')?.value === 'Home';
     const isGame = type === 'game';
-    const defaultKitForType = isGame 
-        ? 'Black Kit' 
-        : (type === 'performance' ? 'Black Training Kit & Size 5 Ball' : 'Grey/Blue Training Kit & Size 5 Ball');
-    const uniformKit = document.getElementById('new-event-kit')?.value.trim() || defaultKitForType;
+    const isPDP = type === 'pdp';
+    const isPerf = type === 'performance';
 
-    if (!date) {
-        alert('Please enter a date for the event.');
+    if (isGame && !rawTitleOrOpponent) {
+        alert('Please enter the opponent team name for this match.');
         return;
     }
 
+    if (!dateInput) {
+        alert('Please enter or select a date for the event.');
+        return;
+    }
+
+    const defaultKitForType = isGame 
+        ? 'Black Kit' 
+        : (isPerf ? 'Black Training Kit & Size 5 Ball' : 'Grey/Blue Training Kit & Size 5 Ball');
+    const uniformKit = document.getElementById('new-event-kit')?.value.trim() || defaultKitForType;
+
     const newId = Date.now();
-    const title = isGame 
-        ? `CMSA Match ${isHome ? 'vs' : '@'} ${opponent || 'Opponent'}` 
-        : (type === 'pdp' ? 'Player Development Program (PDP)' : (type === 'performance' ? 'Rockies Performance Session' : 'Team Tactical Practice'));
+    let title = '';
+    let opponent = '';
+
+    if (isGame) {
+        opponent = rawTitleOrOpponent || 'Opponent';
+        title = `CMSA Match ${isHome ? 'vs' : '@'} ${opponent}`;
+    } else if (isPDP) {
+        title = rawTitleOrOpponent ? `Player Development Program (PDP) - ${rawTitleOrOpponent}` : 'Player Development Program (PDP)';
+    } else if (isPerf) {
+        title = rawTitleOrOpponent ? `Rockies Performance Session - ${rawTitleOrOpponent}` : 'Rockies Performance Session';
+    } else {
+        // practice
+        title = rawTitleOrOpponent || 'Team Tactical Practice';
+    }
 
     const newEvent = normalizeScheduleEvent({
         id: newId,
@@ -388,7 +514,7 @@ export function saveNewScheduleEvent() {
         title,
         opponent,
         isHome,
-        date,
+        date: dateInput,
         kickoff: time || 'TBD',
         arrival: isGame ? '30 min prior' : '15 min prior',
         location,
@@ -396,15 +522,35 @@ export function saveNewScheduleEvent() {
         jerseyKit: uniformKit
     });
 
-    scheduleEvents.unshift(newEvent);
-    saveScheduleEvents();
+    scheduleEvents.push(newEvent);
+
+    // Sort chronologically so newly added practices and fixtures sit in chronological order
+    scheduleEvents.sort((a, b) => {
+        const dA = parseEventDate(a.date);
+        const dB = parseEventDate(b.date);
+        if (dA && dB) return dA.getTime() - dB.getTime();
+        if (dA) return -1;
+        if (dB) return 1;
+        return a.id - b.id;
+    });
+
+    saveScheduleEvents(matchState, leagueStandings);
     closeAddEventModal();
-    window.updateAllViews?.();
+
+    if (typeof onSaved === 'function') {
+        onSaved();
+    } else {
+        window.updateAllViews?.();
+    }
 }
 
-export function deleteScheduleEvent(id) {
+export function deleteScheduleEvent(id, matchState, leagueStandings, onSaved) {
     if (!confirm('Are you sure you want to remove this fixture?')) return;
     scheduleEvents = scheduleEvents.filter(e => e.id !== id);
-    saveScheduleEvents();
-    window.updateAllViews?.();
+    saveScheduleEvents(matchState, leagueStandings);
+    if (typeof onSaved === 'function') {
+        onSaved();
+    } else {
+        window.updateAllViews?.();
+    }
 }

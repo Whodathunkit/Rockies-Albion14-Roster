@@ -79,7 +79,9 @@ import {
     openAddEventModal, 
     closeAddEventModal, 
     saveNewScheduleEvent, 
-    deleteScheduleEvent 
+    deleteScheduleEvent,
+    handleEventTypeChange,
+    handleDatepickerChange
 } from './schedule.js';
 
 import { 
@@ -752,8 +754,10 @@ window.startMatchFromSchedule = (opp) => {
 };
 window.openAddEventModal = openAddEventModal;
 window.closeAddEventModal = closeAddEventModal;
-window.saveNewScheduleEvent = () => saveNewScheduleEvent();
-window.deleteScheduleEvent = (id) => deleteScheduleEvent(id);
+window.handleEventTypeChange = handleEventTypeChange;
+window.handleDatepickerChange = handleDatepickerChange;
+window.saveNewScheduleEvent = (e) => saveNewScheduleEvent(e, matchState, leagueStandings, updateAllViews);
+window.deleteScheduleEvent = (id) => deleteScheduleEvent(id, matchState, leagueStandings, updateAllViews);
 
 // Standings window bindings
 window.openEditStandingsModal = openEditStandingsModal;

@@ -208,23 +208,58 @@ export async function saveCloudUserUnlock(unlocked) {
 
 // Database Persistence Helpers
 export async function savePersistentData(matchState, leagueStandings, scheduleEvents) {
+    let cleanMatch = (matchState && typeof matchState === 'object' && !Array.isArray(matchState)) ? matchState : null;
+    let cleanStandings = Array.isArray(leagueStandings) ? leagueStandings : null;
+    let cleanSchedule = Array.isArray(scheduleEvents) ? scheduleEvents : (Array.isArray(matchState) ? matchState : null);
+
+    if (!cleanMatch) {
+        try {
+            const raw = localStorage.getItem('rfc14_match_state');
+            if (raw) cleanMatch = JSON.parse(raw);
+        } catch {}
+    }
+    if (!cleanStandings) {
+        try {
+            const raw = localStorage.getItem('rfc14_standings');
+            if (raw) cleanStandings = JSON.parse(raw);
+        } catch {}
+    }
+    if (!cleanSchedule) {
+        try {
+            const raw = localStorage.getItem('rfc14_schedule_v4') || localStorage.getItem('rfc14_schedule');
+            if (raw) cleanSchedule = JSON.parse(raw);
+        } catch {}
+    }
+
+    if (cleanMatch) {
+        try { localStorage.setItem('rfc14_match_state', JSON.stringify(cleanMatch)); } catch {}
+    }
+    if (cleanStandings) {
+        try { localStorage.setItem('rfc14_standings', JSON.stringify(cleanStandings)); } catch {}
+    }
+    if (cleanSchedule) {
+        try {
+            localStorage.setItem('rfc14_schedule_v4', JSON.stringify(cleanSchedule));
+            localStorage.setItem('rfc14_schedule', JSON.stringify(cleanSchedule));
+        } catch {}
+    }
+
     if (!db || !currentUser) {
-        localStorage.setItem('rfc14_match_state', JSON.stringify(matchState));
-        localStorage.setItem('rfc14_standings', JSON.stringify(leagueStandings));
-        localStorage.setItem('rfc14_schedule', JSON.stringify(scheduleEvents));
         return;
     }
+
     try {
-        const cleanMatchState = JSON.parse(JSON.stringify(matchState));
-        const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-        await setDoc(matchDocRef, cleanMatchState, { merge: true });
+        if (cleanMatch) {
+            const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
+            await setDoc(matchDocRef, JSON.parse(JSON.stringify(cleanMatch)), { merge: true });
+        }
+
+        const portalUpdates = { updatedAt: Date.now() };
+        if (cleanStandings) portalUpdates.standingsJson = JSON.stringify(cleanStandings);
+        if (cleanSchedule) portalUpdates.scheduleJson = JSON.stringify(cleanSchedule);
 
         const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
-        await setDoc(portalDocRef, {
-            standingsJson: JSON.stringify(leagueStandings),
-            scheduleJson: JSON.stringify(scheduleEvents),
-            updatedAt: Date.now()
-        }, { merge: true });
+        await setDoc(portalDocRef, portalUpdates, { merge: true });
     } catch (err) {
         console.warn("Save error:", err);
     }

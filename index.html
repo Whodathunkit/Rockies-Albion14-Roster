@@ -1071,16 +1071,18 @@
     <div id="add-event-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 class="text-base font-extrabold text-white">Add Schedule Event</h3>
-            <form onsubmit="saveNewScheduleEvent(event)" class="space-y-3">
+            <form onsubmit="window.saveNewScheduleEvent(event)" class="space-y-3">
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block text-[11px] font-bold text-zinc-400 mb-1">Event Type</label>
-                        <select id="new-event-type" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                            <option value="game">⚽ Match</option>
-                            <option value="practice">🏃 Training</option>
+                        <select id="new-event-type" onchange="window.handleEventTypeChange()" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500 font-bold">
+                            <option value="practice">🏃 Team Practice</option>
+                            <option value="pdp">🎯 PDP Clinic</option>
+                            <option value="performance">⚡ Performance</option>
+                            <option value="game">⚽ CMSA Match</option>
                         </select>
                     </div>
-                    <div>
+                    <div id="new-event-homeaway-group" style="display: none;">
                         <label class="block text-[11px] font-bold text-zinc-400 mb-1">Home / Away</label>
                         <select id="new-event-homeaway" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
                             <option value="Home">Home</option>
@@ -1089,37 +1091,39 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Opponent or Event Title</label>
-                    <input type="text" id="new-event-opponent" required placeholder="e.g. SWU Atletico 14B" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    <label id="new-event-opponent-label" class="block text-[11px] font-bold text-zinc-400 mb-1">Practice Topic / Focus (Optional)</label>
+                    <input type="text" id="new-event-opponent" placeholder="e.g. Shooting, Finishing & Defensive Shape (or leave blank)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[11px] font-bold text-zinc-400 mb-1">Date</label>
-                        <input type="text" id="new-event-date" required placeholder="Saturday, Mar 01, 2027" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                <div>
+                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Date</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div>
+                            <input type="date" id="new-event-date-picker" onchange="window.handleDatepickerChange(this.value)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500" title="Select date on calendar">
+                        </div>
+                        <div>
+                            <input type="text" id="new-event-date" required placeholder="e.g. Thursday, Nov 12, 2026" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-zinc-400 mb-1">Time</label>
-                        <input type="text" id="new-event-time" required placeholder="1:00 PM - 2:15 PM" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
-                    </div>
+                    <p class="text-[10px] text-zinc-500 mt-1">Pick a date from the calendar or type (e.g. Nov 12, 2026).</p>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Venue / Field</label>
-                    <input type="text" id="new-event-location" required placeholder="Calgary West Soccer Centre - Field 1" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Time / Duration</label>
+                    <input type="text" id="new-event-time" required placeholder="e.g. 7:30 PM - 8:30 PM" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Address (For Google Maps)</label>
-                    <input type="text" id="new-event-address" placeholder="11014 Bearspaw Dam Rd NW, Calgary" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Venue / Facility</label>
+                    <input type="text" id="new-event-location" required placeholder="Captain Nichola Goddard School (Main Gym)" value="Captain Nichola Goddard School (Main Gym)" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Uniform Kit</label>
-                    <input type="text" id="new-event-kit" placeholder="Black Kit / Grey/Blue Training Kit & Size 5 Ball" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Uniform Kit Rule</label>
+                    <input type="text" id="new-event-kit" value="Grey/Blue Training Kit & Size 5 Ball" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Coach Notes</label>
-                    <input type="text" id="new-event-notes" placeholder="Arrive 30 minutes early for dynamic stretching" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+                    <label class="block text-[11px] font-bold text-zinc-400 mb-1">Coach Notes (Optional)</label>
+                    <input type="text" id="new-event-notes" placeholder="e.g. Arrive 15 min prior with water and size 5 ball" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500">
                 </div>
                 <div class="flex space-x-2 pt-2">
-                    <button type="button" onclick="closeAddEventModal()" class="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-300">Cancel</button>
+                    <button type="button" onclick="window.closeAddEventModal()" class="flex-1 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-300">Cancel</button>
                     <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow">Save Event</button>
                 </div>
             </form>
