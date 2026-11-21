@@ -7,7 +7,7 @@ export const players = [
     { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "" },
     { id: 5, jersey: 5, name: "Elijah Amoako", position: "Striker", parents: "Franklin & Linda", siblings: "", photo: "", videoUrl: "" },
     { id: 11, jersey: 11, name: "Tristan D'Mello", position: "Winger/Striker", parents: "Melvin & Charlotte", siblings: "", photo: "", videoUrl: "" },
-    { id: 22, jersey: 22, name: "Yazed (Zizou) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "" },
+    { id: 22, jersey: 22, name: "Yazed (Zezo) Manasrah", position: "Defense/Midfield", parents: "Family Manasrah", siblings: "", photo: "", videoUrl: "" },
     { id: 35, jersey: 35, name: "Nyle Zachary", position: "Midfield/Forward", parents: "Hug Saleh", siblings: "", photo: "", videoUrl: "" },
     { id: 52, jersey: 52, name: "Sam Campbell", position: "Defense", parents: "Scot & Luba", siblings: "", photo: "", videoUrl: "" },
     { id: 58, jersey: 58, name: "Harrison Locke", position: "Midfield", parents: "Paul & Lauren", siblings: "", photo: "", videoUrl: "" },

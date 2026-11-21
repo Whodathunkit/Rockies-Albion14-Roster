@@ -105,7 +105,7 @@ export const initialPastMatches = [
         scoreUs: 2,
         scoreThem: 6,
         motmJersey: 22,
-        motmName: "Yazed (Zizou) Manasrah",
+        motmName: "Yazed (Zezo) Manasrah",
         events: [
             {
                 id: 1792541236649,
@@ -189,6 +189,79 @@ export const initialPastMatches = [
     }
 ];
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function replaceZizouText(val) {
+    return typeof val === 'string' ? val.replace(/Zizou/gi, 'Zezo') : val;
+}
+
+function migrateEventsNames(events) {
+    if (!Array.isArray(events)) return;
+    events.forEach(ev => {
+        if (!ev || typeof ev !== 'object') return;
+        if (ev.scorerName) ev.scorerName = replaceZizouText(ev.scorerName);
+        if (ev.assistName) ev.assistName = replaceZizouText(ev.assistName);
+        if (ev.playerName) ev.playerName = replaceZizouText(ev.playerName);
+        if (ev.tag) ev.tag = replaceZizouText(ev.tag);
+        if (ev.note) ev.note = replaceZizouText(ev.note);
+    });
+}
+
+function migratePlayerNames(state) {
+    if (!state || typeof state !== 'object') return state;
+    migrateEventsNames(state.events);
+    if (Array.isArray(state.history)) {
+        state.history.forEach(m => {
+            if (!m || typeof m !== 'object') return;
+            if (m.motmName) m.motmName = replaceZizouText(m.motmName);
+            migrateEventsNames(m.events);
+        });
+    }
+    if (Array.isArray(state.guestPlayers)) {
+        state.guestPlayers.forEach(g => {
+            if (g && g.name) g.name = replaceZizouText(g.name);
+        });
+    }
+    return state;
+}
+
+function createEmptyStats() {
+    return { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 };
+}
+
+function ensureStatsObj(target) {
+    if (!target.stats || typeof target.stats !== 'object') {
+        target.stats = createEmptyStats();
+    } else {
+        target.stats = {
+            shotsUs: Number(target.stats.shotsUs) || 0,
+            shotsThem: Number(target.stats.shotsThem) || 0,
+            sotUs: Number(target.stats.sotUs) || 0,
+            sotThem: Number(target.stats.sotThem) || 0,
+            savesUs: Number(target.stats.savesUs) || 0,
+            savesThem: Number(target.stats.savesThem) || 0,
+            cornersUs: Number(target.stats.cornersUs) || 0,
+            cornersThem: Number(target.stats.cornersThem) || 0
+        };
+    }
+    return target.stats;
+}
+
+function getMatchById(matchId) {
+    if (matchId === null || matchId === undefined || matchId === 'live') {
+        return matchState;
+    }
+    return matchState.history.find(m => m.id === matchId) || null;
+}
+
 export let matchState = (() => {
     let state = null;
     try {
@@ -214,7 +287,7 @@ export let matchState = (() => {
             motmJersey: null,
             events: [],
             shootout: { active: false, usKicks: [], themKicks: [] },
-            stats: { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 },
+            stats: createEmptyStats(),
             history: JSON.parse(JSON.stringify(initialPastMatches)),
             attendance: {},
             guestPlayers: []
@@ -230,15 +303,20 @@ export let matchState = (() => {
     if (!Array.isArray(state.guestPlayers)) {
         state.guestPlayers = [];
     }
+    ensureStatsObj(state);
+    migratePlayerNames(state);
     return state;
 })();
 
 let timerInterval = null;
 let currentEditingEventId = null;
 let currentEditMatchId = null;
+let activeReviewMatchId = undefined; // undefined = closed, null = live match, number = archived match ID
+let activeEventDetailCtx = null; // { matchId: null|number, eventId: number|null, eventType: string, isNew: boolean }
 
 export function updateMatchState(newState) {
-    matchState = { ...matchState, ...newState };
+    matchState = migratePlayerNames({ ...matchState, ...newState });
+    ensureStatsObj(matchState);
 }
 
 export function formatTimer(sec) {
@@ -505,6 +583,61 @@ function renderKickBubbles(kicks) {
     return html;
 }
 
+// Live Match Opponent Inline Edit
+export function toggleEditLiveOpponent() {
+    const box = document.getElementById('edit-live-opponent-box');
+    const input = document.getElementById('input-live-opponent');
+    if (!box || !input) return;
+    const isHidden = box.classList.contains('hidden');
+    if (isHidden) {
+        input.value = matchState.opponentName || '';
+        box.classList.remove('hidden');
+        if (!input.dataset.enterBound) {
+            input.dataset.enterBound = '1';
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.saveLiveOpponentName?.();
+                } else if (e.key === 'Escape') {
+                    box.classList.add('hidden');
+                }
+            });
+        }
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 30);
+    } else {
+        box.classList.add('hidden');
+    }
+}
+
+export function saveLiveOpponentName(leagueStandings, scheduleEvents, onUpdate) {
+    const box = document.getElementById('edit-live-opponent-box');
+    const input = document.getElementById('input-live-opponent');
+    const nextName = input?.value.trim();
+    if (nextName) {
+        matchState.opponentName = nextName;
+        savePersistentData(matchState, leagueStandings, scheduleEvents);
+    }
+    if (box) box.classList.add('hidden');
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+// Safely play video clip attached to a live or archived event
+export function playEventVideo(matchId, eventId) {
+    const target = getMatchById(matchId);
+    if (!target || !Array.isArray(target.events)) return;
+    const ev = target.events.find(e => e.id === eventId);
+    if (!ev || !ev.video) return;
+    const title = ev.type === 'goal'
+        ? `#${ev.scorerJersey} ${ev.scorerName} Goal`
+        : ev.type === 'defense'
+            ? `#${ev.playerJersey} ${ev.playerName} Defensive Stop`
+            : `${ev.oppName || 'Opponent'} Goal`;
+    openVideoClipModal(ev.video, title, ev.time || '');
+}
+
 // Live Match Scoreboard Render
 export function renderMatchTracker(isCoachMode) {
     const scoreUsEl = document.getElementById('score-us');
@@ -516,6 +649,9 @@ export function renderMatchTracker(isCoachMode) {
     if (scoreUsEl) scoreUsEl.textContent = matchState.scoreUs;
     if (scoreThemEl) scoreThemEl.textContent = matchState.scoreThem;
     if (oppNameEl) oppNameEl.textContent = matchState.opponentName;
+    if (timerDisplayEl && !matchState.timerRunning) {
+        timerDisplayEl.textContent = formatTimer(matchState.timerSeconds || 0);
+    }
     const currentPeriod = matchState.period || "1st Half";
     if (periodBadgeEl) {
         periodBadgeEl.textContent = currentPeriod;
@@ -530,6 +666,7 @@ export function renderMatchTracker(isCoachMode) {
         }
     }
     updatePeriodButtonsHighlight(currentPeriod);
+    updateMatchFinalBanner();
 
     const allPlayers = getAllRosterPlayers(matchState);
     const availablePlayers = getAvailablePlayers(matchState);
@@ -563,14 +700,14 @@ export function renderMatchTracker(isCoachMode) {
         }
     }
 
-    // MOTM Select: STRICTLY available players only
+    // MOTM Select: STRICTLY available players only (plus currently assigned MOTM if marked absent later)
     const motmSelect = document.getElementById('motm-player-select');
     if (motmSelect) {
         if (availablePlayers.length === 0) {
             motmSelect.innerHTML = '<option value="">⚠️ No players marked available</option>';
         } else {
             motmSelect.innerHTML = '<option value="">Select MOTM...</option>' + availablePlayers.map(p => 
-                `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}${p.isGuest ? ' (Guest)' : ''}</option>`
+                `<option value="${p.jersey}" ${matchState.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${escapeHtml(p.name)}${p.isGuest ? ' (Guest)' : ''}</option>`
             ).join('');
         }
     }
@@ -583,75 +720,89 @@ export function renderMatchTracker(isCoachMode) {
         if (matchState.events.length === 0) {
             timeline.innerHTML = `<p class="text-xs text-zinc-500 italic text-center py-4">No match events logged yet.</p>`;
         } else {
-            timeline.innerHTML = matchState.events.map(ev => {
-                if (ev.type === 'goal') {
-                    const originText = ev.phase ? `${ev.phase} ➔ ` : '';
-                    const finishText = ev.finish || ev.tag || '';
-                    return `
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-blue-950/40 border border-blue-500/30">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-lg">⚽</span>
-                            <div>
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    <span class="text-xs font-black text-white">#${ev.scorerJersey} ${ev.scorerName}</span>
-                                    ${originText ? `<span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold">${originText}${finishText}</span>` : `<span class="text-[10px] bg-blue-900 text-blue-200 px-1.5 py-0.2 rounded font-bold">${ev.tag}</span>`}
-                                    ${ev.video ? `<button onclick="window.openVideoClipModal('${ev.video}', '#${ev.scorerJersey} ${ev.scorerName} Goal', '${ev.time}')" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
-                                </div>
-                                <p class="text-[10px] text-zinc-400 mt-0.5">
-                                    ${ev.assistName ? `Assist: #${ev.assistJersey} ${ev.assistName}` : 'Unassisted (Solo)'}
-                                </p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                            ${isCoachMode ? `<button onclick="window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
-                        </div>
-                    </div>
-                    `;
-                } else if (ev.type === 'opp_goal') {
-                    return `
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-rose-950/40 border border-rose-500/30">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-lg">⚽</span>
-                            <div>
-                                <span class="text-xs font-black text-rose-300">${ev.oppName} Goal</span>
-                                ${ev.note ? `<p class="text-[10px] text-zinc-400 mt-0.5">${ev.note}</p>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                            ${isCoachMode ? `<button onclick="window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
-                        </div>
-                    </div>
-                    `;
-                } else {
-                    return `
-                    <div class="flex items-center justify-between p-3 rounded-2xl bg-teal-950/30 border border-teal-500/30">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-lg">🛡️</span>
-                            <div>
-                                <div class="flex flex-wrap items-center gap-1.5">
-                                    <span class="text-xs font-black text-white">#${ev.playerJersey} ${ev.playerName}</span>
-                                    <span class="text-[10px] bg-teal-900 text-teal-200 px-1.5 py-0.2 rounded font-bold">${ev.action}</span>
-                                    ${ev.video ? `<button onclick="window.openVideoClipModal('${ev.video}', '#${ev.playerJersey} ${ev.playerName} Defensive Stop', '${ev.time}')" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
-                                </div>
-                                ${ev.note ? `<p class="text-[10px] text-zinc-400 mt-0.5">${ev.note}</p>` : ''}
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="text-xs font-mono font-bold text-amber-400">${ev.time}</span>
-                            ${isCoachMode ? `<button onclick="window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
-                        </div>
-                    </div>
-                    `;
-                }
-            }).join('');
+            timeline.innerHTML = matchState.events.map(ev => renderTimelineEventCard(ev, null, isCoachMode, true)).join('');
         }
     }
 
     renderStatsComparison();
     renderShootout();
     renderPastMatches(isCoachMode);
+}
+
+function renderTimelineEventCard(ev, matchId, isCoachMode, showDeleteOnCard = false) {
+    const matchArg = matchId === null ? 'null' : String(matchId);
+    const actionCue = isCoachMode
+        ? `<span class="text-[10px] font-bold text-zinc-400 group-hover:text-blue-300 bg-zinc-900/80 border border-zinc-700/70 px-1.5 py-0.5 rounded-md transition">✎ Edit</span>`
+        : `<span class="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-200 transition">Details ›</span>`;
+
+    if (ev.type === 'goal') {
+        const phase = ev.phase ? escapeHtml(ev.phase) : '';
+        const finish = ev.finish ? escapeHtml(ev.finish) : '';
+        const tag = ev.tag ? escapeHtml(ev.tag) : '';
+        const phaseFinish = phase && finish ? `${phase} ➔ ${finish}` : (phase || finish || tag);
+        const showSeparateTag = tag && tag !== finish && tag !== phase;
+        return `
+        <div onclick="window.openEventDetailModal(${matchArg}, ${ev.id})" class="group cursor-pointer flex items-center justify-between gap-2 p-3 rounded-2xl bg-blue-950/40 hover:bg-blue-950/70 border border-blue-500/30 hover:border-blue-400/60 transition">
+            <div class="flex items-center space-x-3 min-w-0">
+                <span class="text-lg shrink-0">⚽</span>
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-xs font-black text-white">#${escapeHtml(ev.scorerJersey)} ${escapeHtml(ev.scorerName)}</span>
+                        ${phaseFinish ? `<span class="text-[10px] bg-amber-950 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold">${phaseFinish}</span>` : ''}
+                        ${showSeparateTag ? `<span class="text-[10px] bg-blue-900/90 text-blue-200 border border-blue-500/30 px-1.5 py-0.2 rounded font-bold">✨ ${tag}</span>` : ''}
+                        ${ev.video ? `<button type="button" onclick="event.stopPropagation(); window.playEventVideo(${matchArg}, ${ev.id})" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
+                    </div>
+                    <p class="text-[10px] text-zinc-400 mt-0.5 truncate">
+                        ${ev.assistName ? `Assist: #${escapeHtml(ev.assistJersey)} ${escapeHtml(ev.assistName)}` : 'Unassisted (Solo)'}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 shrink-0">
+                <span class="text-xs font-mono font-bold text-amber-400">${escapeHtml(ev.time || '--:--')}</span>
+                ${actionCue}
+                ${showDeleteOnCard && isCoachMode ? `<button type="button" onclick="event.stopPropagation(); window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
+            </div>
+        </div>
+        `;
+    } else if (ev.type === 'opp_goal') {
+        return `
+        <div onclick="window.openEventDetailModal(${matchArg}, ${ev.id})" class="group cursor-pointer flex items-center justify-between gap-2 p-3 rounded-2xl bg-rose-950/40 hover:bg-rose-950/70 border border-rose-500/30 hover:border-rose-400/60 transition">
+            <div class="flex items-center space-x-3 min-w-0">
+                <span class="text-lg shrink-0">🥅</span>
+                <div class="min-w-0">
+                    <span class="text-xs font-black text-rose-300">${escapeHtml(ev.oppName || 'Opponent')} Goal</span>
+                    ${ev.note ? `<p class="text-[10px] text-zinc-400 mt-0.5 truncate">${escapeHtml(ev.note)}</p>` : ''}
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 shrink-0">
+                <span class="text-xs font-mono font-bold text-amber-400">${escapeHtml(ev.time || '--:--')}</span>
+                ${actionCue}
+                ${showDeleteOnCard && isCoachMode ? `<button type="button" onclick="event.stopPropagation(); window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
+            </div>
+        </div>
+        `;
+    } else {
+        return `
+        <div onclick="window.openEventDetailModal(${matchArg}, ${ev.id})" class="group cursor-pointer flex items-center justify-between gap-2 p-3 rounded-2xl bg-teal-950/30 hover:bg-teal-950/60 border border-teal-500/30 hover:border-teal-400/60 transition">
+            <div class="flex items-center space-x-3 min-w-0">
+                <span class="text-lg shrink-0">🛡️</span>
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-xs font-black text-white">#${escapeHtml(ev.playerJersey)} ${escapeHtml(ev.playerName)}</span>
+                        <span class="text-[10px] bg-teal-900 text-teal-200 px-1.5 py-0.2 rounded font-bold">${escapeHtml(ev.action || 'Defensive Stop')}</span>
+                        ${ev.video ? `<button type="button" onclick="event.stopPropagation(); window.playEventVideo(${matchArg}, ${ev.id})" class="text-[10px] bg-sky-950 hover:bg-sky-900 text-sky-300 border border-sky-500/40 px-1.5 py-0.2 rounded font-bold flex items-center space-x-1"><span>▶</span><span>Clip</span></button>` : ''}
+                    </div>
+                    ${ev.note ? `<p class="text-[10px] text-zinc-400 mt-0.5 truncate">${escapeHtml(ev.note)}</p>` : ''}
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 shrink-0">
+                <span class="text-xs font-mono font-bold text-amber-400">${escapeHtml(ev.time || '--:--')}</span>
+                ${actionCue}
+                ${showDeleteOnCard && isCoachMode ? `<button type="button" onclick="event.stopPropagation(); window.deleteMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>` : ''}
+            </div>
+        </div>
+        `;
+    }
 }
 
 // Past Match Records
@@ -667,20 +818,38 @@ export function renderPastMatches(isCoachMode) {
     list.innerHTML = matchState.history.map(m => {
         const isWin = m.scoreUs > m.scoreThem;
         const isDraw = m.scoreUs === m.scoreThem;
+        const st = m.stats || createEmptyStats();
+        const evCount = Array.isArray(m.events) ? m.events.length : 0;
         return `
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-950 border border-zinc-800 text-xs">
-            <div>
-                <div class="flex items-center space-x-2">
-                    <span class="font-extrabold text-white">vs ${m.opponent}</span>
-                    <span class="${isWin ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : (isDraw ? 'bg-amber-950 text-amber-300 border-amber-500/40' : 'bg-rose-950 text-rose-300 border-rose-500/40')} border text-[10px] px-1.5 py-0.2 rounded font-bold uppercase">
-                        ${isWin ? 'WIN' : (isDraw ? 'DRAW' : 'LOSS')}
-                    </span>
+        <div onclick="window.openMatchReviewModal(${m.id})" class="group cursor-pointer p-3.5 rounded-2xl bg-zinc-950 hover:bg-zinc-900/90 border border-zinc-800 hover:border-blue-500/40 text-xs transition space-y-2.5">
+            <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-extrabold text-white text-sm group-hover:text-blue-200 transition">vs ${escapeHtml(m.opponent)}</span>
+                        <span class="${isWin ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : (isDraw ? 'bg-amber-950 text-amber-300 border-amber-500/40' : 'bg-rose-950 text-rose-300 border-rose-500/40')} border text-[10px] px-1.5 py-0.2 rounded font-bold uppercase">
+                            ${isWin ? 'WIN' : (isDraw ? 'DRAW' : 'LOSS')}
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-zinc-400 mt-0.5">${escapeHtml(m.date)} • ${m.motmName && m.motmName !== 'Unassigned' ? `🎖️ MOTM: <span class="text-amber-300 font-semibold">${escapeHtml(m.motmName)}</span>` : 'No MOTM recorded'}</p>
                 </div>
-                <p class="text-[10px] text-zinc-400 mt-0.5">${m.date} • ${m.motmName ? `🎖️ MOTM: ${m.motmName}` : 'No MOTM recorded'}</p>
+                <div class="text-right shrink-0">
+                    <span class="text-lg font-black text-white font-mono tracking-tight">${m.scoreUs} - ${m.scoreThem}</span>
+                </div>
             </div>
-            <div class="text-right">
-                <span class="text-sm font-black text-white font-mono">${m.scoreUs} - ${m.scoreThem}</span>
-                ${isCoachMode ? `<button onclick="window.openEditMatchModal(${m.id})" class="block w-full text-right mt-1.5 text-[10px] text-blue-400 hover:text-blue-300 font-bold underline transition">Edit Match</button>` : ''}
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-zinc-800/80">
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-400">
+                    <span class="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">SOT <strong class="text-blue-300">${st.sotUs || 0}</strong>-<strong class="text-amber-300">${st.sotThem || 0}</strong></span>
+                    <span class="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">Shots <strong class="text-blue-300">${st.shotsUs || 0}</strong>-<strong class="text-amber-300">${st.shotsThem || 0}</strong></span>
+                    <span class="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">Saves <strong class="text-blue-300">${st.savesUs || 0}</strong>-<strong class="text-amber-300">${st.savesThem || 0}</strong></span>
+                    <span class="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">${evCount} Events</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button type="button" onclick="event.stopPropagation(); window.openMatchReviewModal(${m.id})" class="px-2.5 py-1 rounded-lg bg-[#003C71] hover:bg-blue-700 border border-blue-400/40 text-[10px] font-extrabold text-white transition shadow-sm">
+                        📋 Full Review
+                    </button>
+                    ${isCoachMode ? `<button type="button" onclick="event.stopPropagation(); window.openEditMatchModal(${m.id})" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-bold text-amber-300 transition">✏️ Edit Match</button>` : ''}
+                </div>
             </div>
         </div>
         `;
@@ -698,15 +867,22 @@ export function openGoalModal() {
             selScorer.innerHTML = '<option value="">⚠️ No players marked available (Check in on Roster)</option>';
         } else {
             selScorer.innerHTML = availablePlayers.map(p => 
-                `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+                `<option value="${p.jersey}">#${p.jersey} ${escapeHtml(p.name)} (${escapeHtml(p.position)})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
             ).join('');
         }
     }
     if (selAssist) {
         selAssist.innerHTML = '<option value="">None (Solo / Unassisted)</option>' + availablePlayers.map(p => 
-            `<option value="${p.jersey}">#${p.jersey} ${p.name}${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+            `<option value="${p.jersey}">#${p.jersey} ${escapeHtml(p.name)}${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
         ).join('');
     }
+    const tagInput = document.getElementById('goal-tag-input');
+    const videoInput = document.getElementById('goal-video-input');
+    const timeInput = document.getElementById('goal-time-input');
+    if (tagInput) tagInput.value = '';
+    if (videoInput) videoInput.value = '';
+    if (timeInput) timeInput.value = '';
+
     const modal = document.getElementById('goal-modal');
     if (modal) modal.classList.remove('hidden');
 }
@@ -760,7 +936,11 @@ export function confirmRockiesGoal(e, leagueStandings, scheduleEvents, onUpdate)
 // Opponent Goal Recording
 export function openOpponentGoalModal() {
     const inputName = document.getElementById('opponent-goal-name-input');
+    const inputNote = document.getElementById('opponent-goal-note-input');
+    const inputTime = document.getElementById('opponent-goal-time-input');
     if (inputName) inputName.value = matchState.opponentName || 'Opponent';
+    if (inputNote) inputNote.value = '';
+    if (inputTime) inputTime.value = '';
     const modal = document.getElementById('opponent-goal-modal');
     if (modal) modal.classList.remove('hidden');
 }
@@ -805,10 +985,17 @@ export function openDefensiveModal() {
             selDef.innerHTML = '<option value="">⚠️ No players marked available (Check in on Roster)</option>';
         } else {
             selDef.innerHTML = availablePlayers.map(p => 
-                `<option value="${p.jersey}">#${p.jersey} ${p.name} (${p.position})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
+                `<option value="${p.jersey}">#${p.jersey} ${escapeHtml(p.name)} (${escapeHtml(p.position)})${p.isGuest ? ' [Guest Call-Up]' : ''}</option>`
             ).join('');
         }
     }
+    const noteInput = document.getElementById('defense-note-input');
+    const videoInput = document.getElementById('defense-video-input');
+    const timeInput = document.getElementById('defense-time-input');
+    if (noteInput) noteInput.value = '';
+    if (videoInput) videoInput.value = '';
+    if (timeInput) timeInput.value = '';
+
     const modal = document.getElementById('defensive-modal');
     if (modal) modal.classList.remove('hidden');
 }
@@ -867,6 +1054,10 @@ export function deleteMatchEvent(id, leagueStandings, scheduleEvents, onUpdate) 
 export function archiveMatchToHistory(leagueStandings, scheduleEvents, onUpdate) {
     const allPlayers = getAllRosterPlayers(matchState);
     const motmP = allPlayers.find(p => p.jersey === matchState.motmJersey);
+    const archivedShootout = matchState.shootout && (matchState.shootout.active || matchState.shootout.usKicks?.length || matchState.shootout.themKicks?.length)
+        ? JSON.parse(JSON.stringify(matchState.shootout))
+        : null;
+
     matchState.history.unshift({
         id: Date.now(),
         opponent: matchState.opponentName || 'Opponent',
@@ -875,8 +1066,9 @@ export function archiveMatchToHistory(leagueStandings, scheduleEvents, onUpdate)
         scoreThem: matchState.scoreThem,
         motmJersey: matchState.motmJersey,
         motmName: motmP ? motmP.name : 'Unassigned',
-        events: [...matchState.events],
-        stats: { ...matchState.stats }
+        events: JSON.parse(JSON.stringify(matchState.events || [])),
+        stats: { ...ensureStatsObj(matchState) },
+        shootout: archivedShootout
     });
 
     matchState.scoreUs = 0;
@@ -888,7 +1080,7 @@ export function archiveMatchToHistory(leagueStandings, scheduleEvents, onUpdate)
     matchState.motmJersey = null;
     matchState.events = [];
     matchState.shootout = { active: false, usKicks: [], themKicks: [] };
-    matchState.stats = { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 };
+    matchState.stats = createEmptyStats();
 
     pauseTimer();
     savePersistentData(matchState, leagueStandings, scheduleEvents);
@@ -906,7 +1098,7 @@ export function resetNewMatch(leagueStandings, scheduleEvents, onUpdate) {
     matchState.motmJersey = null;
     matchState.events = [];
     matchState.shootout = { active: false, usKicks: [], themKicks: [] };
-    matchState.stats = { shotsUs: 0, shotsThem: 0, sotUs: 0, sotThem: 0, savesUs: 0, savesThem: 0, cornersUs: 0, cornersThem: 0 };
+    matchState.stats = createEmptyStats();
 
     pauseTimer();
     savePersistentData(matchState, leagueStandings, scheduleEvents);
@@ -931,7 +1123,7 @@ export async function openVideoClipModal(url, title, subtitle) {
     const playableUrl = await resolveFirebaseMediaUrl(url);
     if (container) {
         if (playableUrl) {
-            container.innerHTML = `<video src="${playableUrl}" controls autoplay playsinline class="w-full h-auto max-h-[60vh] object-contain rounded-xl"></video>`;
+            container.innerHTML = `<video src="${escapeHtml(playableUrl)}" controls autoplay playsinline class="w-full h-auto max-h-[60vh] object-contain rounded-xl"></video>`;
         } else {
             container.innerHTML = `<p class="text-xs text-rose-400 py-8">Could not load video stream.</p>`;
         }
@@ -945,7 +1137,39 @@ export function closeVideoClipModal() {
     if (modal) modal.classList.add('hidden');
 }
 
-// Edit Past Match Modal
+// ================= EDIT PAST MATCH MODAL =================
+
+const EDIT_STAT_FIELDS = [
+    ['edit-match-sot-us', 'sotUs'],
+    ['edit-match-sot-them', 'sotThem'],
+    ['edit-match-shots-us', 'shotsUs'],
+    ['edit-match-shots-them', 'shotsThem'],
+    ['edit-match-saves-us', 'savesUs'],
+    ['edit-match-saves-them', 'savesThem'],
+    ['edit-match-corners-us', 'cornersUs'],
+    ['edit-match-corners-them', 'cornersThem']
+];
+
+export function adjustEditMatchStat(inputId, delta) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const current = parseInt(input.value, 10) || 0;
+    input.value = String(Math.max(0, current + delta));
+}
+
+function syncEditMatchModalFromMatch(match) {
+    if (!match) return;
+    const scoreUsInput = document.getElementById('edit-match-score-us');
+    const scoreThemInput = document.getElementById('edit-match-score-them');
+    if (scoreUsInput) scoreUsInput.value = match.scoreUs;
+    if (scoreThemInput) scoreThemInput.value = match.scoreThem;
+    const st = ensureStatsObj(match);
+    EDIT_STAT_FIELDS.forEach(([elId, key]) => {
+        const el = document.getElementById(elId);
+        if (el) el.value = st[key] || 0;
+    });
+}
+
 export function openEditMatchModal(id) {
     const match = matchState.history.find(m => m.id === id);
     if (!match) return;
@@ -953,18 +1177,21 @@ export function openEditMatchModal(id) {
 
     const oppInput = document.getElementById('edit-match-opponent');
     const dateInput = document.getElementById('edit-match-date');
-    const scoreUsInput = document.getElementById('edit-match-score-us');
-    const scoreThemInput = document.getElementById('edit-match-score-them');
     const motmSelect = document.getElementById('edit-match-motm');
 
     if (oppInput) oppInput.value = match.opponent || '';
     if (dateInput) dateInput.value = match.date || '';
-    if (scoreUsInput) scoreUsInput.value = match.scoreUs;
-    if (scoreThemInput) scoreThemInput.value = match.scoreThem;
+    syncEditMatchModalFromMatch(match);
 
     if (motmSelect) {
         const allPlayers = getAllRosterPlayers(matchState);
-        motmSelect.innerHTML = '<option value="">None</option>' + allPlayers.map(p => `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${p.name}${p.isGuest ? ' (Guest)' : ''}</option>`).join('');
+        let optionsHtml = '<option value="">None</option>' + allPlayers.map(p =>
+            `<option value="${p.jersey}" ${match.motmJersey === p.jersey ? 'selected' : ''}>#${p.jersey} ${escapeHtml(p.name)}${p.isGuest ? ' (Guest)' : ''}</option>`
+        ).join('');
+        if (match.motmJersey && !allPlayers.some(p => p.jersey === match.motmJersey)) {
+            optionsHtml += `<option value="${match.motmJersey}" selected>#${match.motmJersey} ${escapeHtml(match.motmName || 'Player')}</option>`;
+        }
+        motmSelect.innerHTML = optionsHtml;
     }
 
     renderEditMatchEvents();
@@ -982,26 +1209,75 @@ export function renderEditMatchEvents() {
     const list = document.getElementById('edit-match-timeline-list');
     if (!list || !currentEditMatchId) return;
     const match = matchState.history.find(m => m.id === currentEditMatchId);
-    if (!match || !match.events || match.events.length === 0) {
-        list.innerHTML = `<p class="text-[10px] text-zinc-500 italic text-center py-4">No events logged.</p>`;
+    if (!match || !Array.isArray(match.events) || match.events.length === 0) {
+        list.innerHTML = `<p class="text-[10px] text-zinc-500 italic text-center py-4">No events logged yet. Use the buttons above to add one.</p>`;
         return;
     }
-    list.innerHTML = match.events.map(ev => `
-        <div class="flex items-center justify-between p-2 rounded-lg border bg-zinc-900 border-zinc-800 text-xs">
-            <div>
-                <p class="font-bold text-white text-[11px]">${ev.scorerName || ev.action || 'Event'}</p>
-                <p class="text-[9px] text-zinc-400">${ev.time}</p>
+    list.innerHTML = match.events.map(ev => {
+        let icon = '🛡️';
+        let title = `#${ev.playerJersey || '?'} ${ev.playerName || 'Defender'}`;
+        let sub = [ev.action, ev.note].filter(Boolean).join(' • ');
+        let borderCls = 'bg-teal-950/25 border-teal-500/30 hover:border-teal-400/60';
+
+        if (ev.type === 'goal') {
+            icon = '⚽';
+            title = `#${ev.scorerJersey || '?'} ${ev.scorerName || 'Scorer'}`;
+            const meta = [
+                ev.assistName ? `Ast: #${ev.assistJersey} ${ev.assistName}` : 'Solo',
+                ev.phase,
+                ev.finish,
+                ev.tag && ev.tag !== ev.finish ? `✨ ${ev.tag}` : ''
+            ].filter(Boolean);
+            sub = meta.join(' • ');
+            borderCls = 'bg-blue-950/35 border-blue-500/30 hover:border-blue-400/60';
+        } else if (ev.type === 'opp_goal') {
+            icon = '🥅';
+            title = `${ev.oppName || match.opponent || 'Opponent'} Goal`;
+            sub = ev.note || 'Opponent goal';
+            borderCls = 'bg-rose-950/35 border-rose-500/30 hover:border-rose-400/60';
+        }
+
+        return `
+        <div onclick="window.openEventDetailModal(${match.id}, ${ev.id})" class="group cursor-pointer flex items-center justify-between gap-2 p-2.5 rounded-xl border ${borderCls} text-xs transition">
+            <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="text-sm shrink-0">${icon}</span>
+                <div class="min-w-0">
+                    <div class="flex items-center space-x-1.5">
+                        <p class="font-bold text-white text-[11px] truncate">${escapeHtml(title)}</p>
+                        ${ev.video ? `<span class="text-[9px] text-sky-300 bg-sky-950 border border-sky-500/30 px-1 rounded">🎬</span>` : ''}
+                    </div>
+                    <p class="text-[10px] text-zinc-400 truncate">${escapeHtml(sub)}</p>
+                </div>
             </div>
-            <button type="button" onclick="window.deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1">&times;</button>
+            <div class="flex items-center space-x-2 shrink-0">
+                <span class="text-[10px] font-mono font-bold text-amber-400">${escapeHtml(ev.time || '--:--')}</span>
+                <span class="text-[10px] text-blue-300 font-bold opacity-80 group-hover:opacity-100">✎</span>
+                <button type="button" onclick="event.stopPropagation(); window.deletePastMatchEvent(${ev.id})" class="text-zinc-500 hover:text-rose-400 text-sm px-1" title="Delete Event">&times;</button>
+            </div>
         </div>
-    `).join('');
+        `;
+    }).join('');
+}
+
+export function openAddPastMatchEvent(eventType, isCoachMode) {
+    if (!currentEditMatchId) return;
+    openEventDetailModal(currentEditMatchId, null, isCoachMode, eventType);
 }
 
 export function deletePastMatchEvent(eventId, leagueStandings, scheduleEvents, onUpdate) {
     if (!currentEditMatchId) return;
     const match = matchState.history.find(m => m.id === currentEditMatchId);
-    if (!match) return;
+    if (!match || !Array.isArray(match.events)) return;
+    const removed = match.events.find(e => e.id === eventId);
     match.events = match.events.filter(e => e.id !== eventId);
+    if (removed) {
+        if (removed.type === 'goal') {
+            match.scoreUs = Math.max(0, (match.scoreUs || 0) - 1);
+        } else if (removed.type === 'opp_goal') {
+            match.scoreThem = Math.max(0, (match.scoreThem || 0) - 1);
+        }
+        syncEditMatchModalFromMatch(match);
+    }
     renderEditMatchEvents();
     savePersistentData(matchState, leagueStandings, scheduleEvents);
     if (typeof onUpdate === 'function') onUpdate();
@@ -1014,8 +1290,8 @@ export function saveEditedMatch(e, leagueStandings, scheduleEvents, onUpdate) {
     if (match) {
         const opp = document.getElementById('edit-match-opponent')?.value.trim();
         const d = document.getElementById('edit-match-date')?.value.trim();
-        const us = parseInt(document.getElementById('edit-match-score-us')?.value, 10) || 0;
-        const them = parseInt(document.getElementById('edit-match-score-them')?.value, 10) || 0;
+        const us = Math.max(0, parseInt(document.getElementById('edit-match-score-us')?.value, 10) || 0);
+        const them = Math.max(0, parseInt(document.getElementById('edit-match-score-them')?.value, 10) || 0);
         const motmVal = document.getElementById('edit-match-motm')?.value;
 
         match.opponent = opp || match.opponent;
@@ -1025,7 +1301,13 @@ export function saveEditedMatch(e, leagueStandings, scheduleEvents, onUpdate) {
         match.motmJersey = motmVal ? parseInt(motmVal, 10) : null;
         const allPlayers = getAllRosterPlayers(matchState);
         const motmP = allPlayers.find(p => p.jersey === match.motmJersey);
-        match.motmName = motmP ? motmP.name : 'Unassigned';
+        match.motmName = motmP ? motmP.name : (match.motmJersey ? match.motmName || 'Assigned' : 'Unassigned');
+
+        const st = ensureStatsObj(match);
+        EDIT_STAT_FIELDS.forEach(([elId, key]) => {
+            const el = document.getElementById(elId);
+            if (el) st[key] = Math.max(0, parseInt(el.value, 10) || 0);
+        });
     }
 
     closeEditMatchModal();
@@ -1035,8 +1317,854 @@ export function saveEditedMatch(e, leagueStandings, scheduleEvents, onUpdate) {
 
 export function deletePastMatch(leagueStandings, scheduleEvents, onUpdate) {
     if (!currentEditMatchId) return;
-    matchState.history = matchState.history.filter(m => m.id !== currentEditMatchId);
+    const deletedId = currentEditMatchId;
+    matchState.history = matchState.history.filter(m => m.id !== deletedId);
+    if (activeReviewMatchId === deletedId) {
+        closeMatchReviewModal();
+    }
     closeEditMatchModal();
     savePersistentData(matchState, leagueStandings, scheduleEvents);
     if (typeof onUpdate === 'function') onUpdate();
+}
+
+// ================= EVENT DETAILS & EDIT MODAL =================
+
+const GOAL_PHASE_OPTIONS = [
+    'Open Play',
+    'Counter Attack',
+    'Corner Kick',
+    'Free Kick',
+    'Throw-in / Set Piece',
+    'Penalty'
+];
+
+const GOAL_FINISH_OPTIONS = [
+    'Right Foot',
+    'Left Foot',
+    'Header',
+    'Tap-in',
+    'Volley'
+];
+
+const DEFENSE_ACTION_OPTIONS = [
+    'Key Defensive Tackle',
+    'Diving Goalkeeper Save',
+    'Goal Line Clearance',
+    'Crucial Interception',
+    'Shot Block'
+];
+
+function populateSelectWithOptions(selectEl, options, currentVal) {
+    if (!selectEl) return;
+    const list = [...options];
+    if (currentVal && !list.includes(currentVal)) {
+        list.unshift(currentVal);
+    }
+    selectEl.innerHTML = list.map(opt =>
+        `<option value="${escapeHtml(opt)}" ${opt === currentVal ? 'selected' : ''}>${escapeHtml(opt)}</option>`
+    ).join('');
+}
+
+function populatePlayerSelect(selectEl, selectedJersey, selectedName, allowNone = false) {
+    if (!selectEl) return;
+    const allPlayers = getAllRosterPlayers(matchState);
+    let html = allowNone ? '<option value="">None (Solo / Unassisted)</option>' : '';
+    const hasSelected = selectedJersey !== null && selectedJersey !== undefined && selectedJersey !== '';
+    const existsInRoster = hasSelected && allPlayers.some(p => p.jersey === Number(selectedJersey));
+
+    html += allPlayers.map(p =>
+        `<option value="${p.jersey}" ${hasSelected && p.jersey === Number(selectedJersey) ? 'selected' : ''}>#${p.jersey} ${escapeHtml(p.name)} (${escapeHtml(p.position)})${p.isGuest ? ' [Guest]' : ''}</option>`
+    ).join('');
+
+    if (hasSelected && !existsInRoster) {
+        html += `<option value="${escapeHtml(selectedJersey)}" selected>#${escapeHtml(selectedJersey)} ${escapeHtml(selectedName || 'Player')} [Archived]</option>`;
+    }
+    selectEl.innerHTML = html;
+}
+
+export function openEventDetailModal(matchId, eventId, isCoachMode, newEventType = null) {
+    const target = getMatchById(matchId);
+    if (!target) return;
+
+    let eventType = newEventType;
+    const isNew = !!newEventType;
+
+    if (!isNew) {
+        const ev = (target.events || []).find(e => e.id === eventId);
+        if (!ev) return;
+        eventType = ev.type || 'defense';
+    }
+
+    activeEventDetailCtx = {
+        matchId: matchId === 'live' ? null : matchId,
+        eventId: isNew ? null : eventId,
+        eventType,
+        isNew
+    };
+
+    renderEventDetailModalContent(isCoachMode);
+    const modal = document.getElementById('event-detail-modal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+export function closeEventDetailModal() {
+    const modal = document.getElementById('event-detail-modal');
+    if (modal) modal.classList.add('hidden');
+    activeEventDetailCtx = null;
+}
+
+export function refreshEventDetailModalMode(isCoachMode) {
+    const modal = document.getElementById('event-detail-modal');
+    if (!activeEventDetailCtx || !modal || modal.classList.contains('hidden')) return;
+    renderEventDetailModalContent(isCoachMode);
+}
+
+function renderEventDetailModalContent(isCoachMode) {
+    if (!activeEventDetailCtx) return;
+    const { matchId, eventId, eventType, isNew } = activeEventDetailCtx;
+    const target = getMatchById(matchId);
+    if (!target) {
+        closeEventDetailModal();
+        return;
+    }
+
+    const ev = isNew
+        ? (eventType === 'goal'
+            ? { type: 'goal', time: matchId === null ? formatTimer(matchState.timerSeconds || 0) : '', scorerJersey: '', scorerName: '', assistJersey: null, assistName: null, phase: 'Open Play', finish: 'Right Foot', tag: '', video: '' }
+            : eventType === 'opp_goal'
+                ? { type: 'opp_goal', time: matchId === null ? formatTimer(matchState.timerSeconds || 0) : '', oppName: target.opponent || target.opponentName || 'Opponent', note: '' }
+                : { type: 'defense', time: matchId === null ? formatTimer(matchState.timerSeconds || 0) : '', playerJersey: '', playerName: '', action: 'Key Defensive Tackle', note: '', video: '' })
+        : (target.events || []).find(e => e.id === eventId);
+
+    if (!ev) {
+        closeEventDetailModal();
+        return;
+    }
+
+    const badgeEl = document.getElementById('ev-detail-type-badge');
+    const titleEl = document.getElementById('ev-detail-modal-title');
+    const subtitleEl = document.getElementById('ev-detail-context-subtitle');
+    const videoBar = document.getElementById('ev-detail-video-preview-bar');
+    const watchBtn = document.getElementById('ev-detail-watch-clip-btn');
+    const readonlyView = document.getElementById('ev-detail-readonly-view');
+    const readonlyBody = document.getElementById('ev-detail-readonly-body');
+    const editForm = document.getElementById('ev-detail-edit-form');
+    const goalFields = document.getElementById('ev-detail-goal-fields');
+    const oppFields = document.getElementById('ev-detail-opp-fields');
+    const defFields = document.getElementById('ev-detail-def-fields');
+    const deleteBtn = document.getElementById('ev-detail-delete-btn');
+    const saveBtn = document.getElementById('ev-detail-save-btn');
+
+    const matchLabel = matchId === null
+        ? `Live Match vs ${matchState.opponentName || 'Opponent'}`
+        : `vs ${target.opponent || 'Opponent'} (${target.date || 'Archived'})`;
+
+    if (badgeEl) {
+        if (eventType === 'goal') {
+            badgeEl.textContent = '⚽ Rockies Goal';
+            badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-500/40';
+        } else if (eventType === 'opp_goal') {
+            badgeEl.textContent = '🥅 Opponent Goal';
+            badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-rose-950 text-rose-300 border border-rose-500/40';
+        } else {
+            badgeEl.textContent = '🛡️ Defensive Stop / Save';
+            badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-950 text-emerald-300 border border-emerald-500/40';
+        }
+    }
+
+    if (titleEl) {
+        if (isNew) {
+            titleEl.textContent = eventType === 'goal' ? 'Add Rockies Goal' : eventType === 'opp_goal' ? 'Add Opponent Goal' : 'Add Defensive Stop';
+        } else {
+            titleEl.textContent = isCoachMode ? 'Inspect & Edit Event' : 'Event Details';
+        }
+    }
+    if (subtitleEl) subtitleEl.textContent = matchLabel;
+
+    if (videoBar && watchBtn) {
+        if (!isNew && ev.video) {
+            videoBar.classList.remove('hidden');
+            watchBtn.onclick = () => playEventVideo(matchId, ev.id);
+        } else {
+            videoBar.classList.add('hidden');
+            watchBtn.onclick = null;
+        }
+    }
+
+    if (!isCoachMode && !isNew) {
+        if (editForm) editForm.classList.add('hidden');
+        if (readonlyView) readonlyView.classList.remove('hidden');
+
+        if (readonlyBody) {
+            const row = (label, value, highlight = '') => `
+                <div class="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-zinc-950 border border-zinc-800/90">
+                    <span class="text-[11px] font-bold text-zinc-400 uppercase tracking-wider shrink-0">${label}</span>
+                    <span class="text-xs font-bold text-right ${highlight || 'text-white'}">${value}</span>
+                </div>
+            `;
+
+            if (eventType === 'goal') {
+                readonlyBody.innerHTML = [
+                    row('Goal Scorer', `#${escapeHtml(ev.scorerJersey)} ${escapeHtml(ev.scorerName)}`, 'text-blue-300'),
+                    row('Assist', ev.assistName ? `#${escapeHtml(ev.assistJersey)} ${escapeHtml(ev.assistName)}` : 'Unassisted (Solo)'),
+                    row('Match Time', escapeHtml(ev.time || 'Not recorded'), 'text-amber-400 font-mono'),
+                    row('Play Phase', escapeHtml(ev.phase || 'Not specified')),
+                    row('Finish Type', escapeHtml(ev.finish || 'Not specified')),
+                    row('Highlight Tag', escapeHtml(ev.tag || 'None')),
+                    row('Video Clip', ev.video ? 'Attached (use Play Clip above)' : 'None', ev.video ? 'text-sky-300' : 'text-zinc-500')
+                ].join('');
+            } else if (eventType === 'opp_goal') {
+                readonlyBody.innerHTML = [
+                    row('Opponent / Scorer', escapeHtml(ev.oppName || target.opponent || 'Opponent'), 'text-rose-300'),
+                    row('Match Time', escapeHtml(ev.time || 'Not recorded'), 'text-amber-400 font-mono'),
+                    row('Notes', escapeHtml(ev.note || 'No notes recorded'), ev.note ? 'text-white' : 'text-zinc-500')
+                ].join('');
+            } else {
+                readonlyBody.innerHTML = [
+                    row('Player', `#${escapeHtml(ev.playerJersey)} ${escapeHtml(ev.playerName)}`, 'text-emerald-300'),
+                    row('Action Type', escapeHtml(ev.action || 'Defensive Stop')),
+                    row('Match Time', escapeHtml(ev.time || 'Not recorded'), 'text-amber-400 font-mono'),
+                    row('Coach Note', escapeHtml(ev.note || 'No notes recorded'), ev.note ? 'text-white' : 'text-zinc-500'),
+                    row('Video Clip', ev.video ? 'Attached (use Play Clip above)' : 'None', ev.video ? 'text-sky-300' : 'text-zinc-500')
+                ].join('');
+            }
+        }
+        return;
+    }
+
+    // Coach Mode (Editable form)
+    if (readonlyView) readonlyView.classList.add('hidden');
+    if (editForm) editForm.classList.remove('hidden');
+
+    if (goalFields) goalFields.classList.toggle('hidden', eventType !== 'goal');
+    if (oppFields) oppFields.classList.toggle('hidden', eventType !== 'opp_goal');
+    if (defFields) defFields.classList.toggle('hidden', eventType !== 'defense');
+
+    const goalScorerSel = document.getElementById('ev-edit-goal-scorer');
+    const goalAssistSel = document.getElementById('ev-edit-goal-assist');
+    const goalPhaseSel = document.getElementById('ev-edit-goal-phase');
+    const goalFinishSel = document.getElementById('ev-edit-goal-finish');
+    const goalTagInput = document.getElementById('ev-edit-goal-tag');
+    const goalVideoInput = document.getElementById('ev-edit-goal-video');
+
+    const oppNameInput = document.getElementById('ev-edit-opp-name');
+    const oppNoteInput = document.getElementById('ev-edit-opp-note');
+
+    const defPlayerSel = document.getElementById('ev-edit-def-player');
+    const defActionSel = document.getElementById('ev-edit-def-action');
+    const defNoteInput = document.getElementById('ev-edit-def-note');
+    const defVideoInput = document.getElementById('ev-edit-def-video');
+
+    const timeInput = document.getElementById('ev-edit-time');
+
+    if (goalScorerSel) goalScorerSel.required = (eventType === 'goal');
+    if (defPlayerSel) defPlayerSel.required = (eventType === 'defense');
+
+    if (eventType === 'goal') {
+        populatePlayerSelect(goalScorerSel, ev.scorerJersey, ev.scorerName, false);
+        populatePlayerSelect(goalAssistSel, ev.assistJersey, ev.assistName, true);
+        populateSelectWithOptions(goalPhaseSel, GOAL_PHASE_OPTIONS, ev.phase || 'Open Play');
+        populateSelectWithOptions(goalFinishSel, GOAL_FINISH_OPTIONS, ev.finish || 'Right Foot');
+        if (goalTagInput) goalTagInput.value = ev.tag || '';
+        if (goalVideoInput) goalVideoInput.value = ev.video || '';
+    } else if (eventType === 'opp_goal') {
+        if (oppNameInput) oppNameInput.value = ev.oppName || target.opponent || target.opponentName || 'Opponent';
+        if (oppNoteInput) oppNoteInput.value = ev.note || '';
+    } else {
+        populatePlayerSelect(defPlayerSel, ev.playerJersey, ev.playerName, false);
+        populateSelectWithOptions(defActionSel, DEFENSE_ACTION_OPTIONS, ev.action || 'Key Defensive Tackle');
+        if (defNoteInput) defNoteInput.value = ev.note || '';
+        if (defVideoInput) defVideoInput.value = ev.video || '';
+    }
+
+    if (timeInput) timeInput.value = ev.time || '';
+    if (deleteBtn) deleteBtn.classList.toggle('hidden', isNew);
+    if (saveBtn) {
+        saveBtn.textContent = isNew ? 'Add Event' : 'Save Changes';
+        saveBtn.className = eventType === 'opp_goal'
+            ? 'flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-bold text-white shadow transition'
+            : eventType === 'defense'
+                ? 'flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow transition'
+                : 'flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow transition';
+    }
+}
+
+export function saveEventDetail(e, leagueStandings, scheduleEvents, onUpdate) {
+    if (e) e.preventDefault();
+    if (!activeEventDetailCtx) return;
+
+    const { matchId, eventId, eventType, isNew } = activeEventDetailCtx;
+    const target = getMatchById(matchId);
+    if (!target) return;
+    if (!Array.isArray(target.events)) target.events = [];
+
+    const allPlayers = getAllRosterPlayers(matchState);
+    const timeVal = document.getElementById('ev-edit-time')?.value.trim() || (matchId === null ? formatTimer(matchState.timerSeconds || 0) : '00:00');
+
+    let updatedEv = null;
+
+    if (eventType === 'goal') {
+        const scorerJersey = parseInt(document.getElementById('ev-edit-goal-scorer')?.value, 10);
+        const assistRaw = document.getElementById('ev-edit-goal-assist')?.value;
+        const assistJersey = assistRaw ? parseInt(assistRaw, 10) : null;
+        const phase = document.getElementById('ev-edit-goal-phase')?.value || 'Open Play';
+        const finish = document.getElementById('ev-edit-goal-finish')?.value || 'Right Foot';
+        const customTag = document.getElementById('ev-edit-goal-tag')?.value.trim() || '';
+        const video = document.getElementById('ev-edit-goal-video')?.value.trim() || '';
+
+        const existing = !isNew ? target.events.find(ev => ev.id === eventId) : null;
+        const scorerObj = allPlayers.find(p => p.jersey === scorerJersey);
+        const assistObj = assistJersey !== null ? allPlayers.find(p => p.jersey === assistJersey) : null;
+
+        updatedEv = {
+            id: isNew ? Date.now() : eventId,
+            type: 'goal',
+            time: timeVal,
+            scorerJersey: Number.isNaN(scorerJersey) ? (existing?.scorerJersey ?? 0) : scorerJersey,
+            scorerName: scorerObj ? scorerObj.name : (existing && existing.scorerJersey === scorerJersey ? existing.scorerName : 'Scorer'),
+            assistJersey,
+            assistName: assistObj ? assistObj.name : (assistJersey !== null && existing && existing.assistJersey === assistJersey ? existing.assistName : null),
+            phase,
+            finish,
+            tag: customTag || finish,
+            video
+        };
+    } else if (eventType === 'opp_goal') {
+        const oppName = document.getElementById('ev-edit-opp-name')?.value.trim() || target.opponent || target.opponentName || 'Opponent';
+        const note = document.getElementById('ev-edit-opp-note')?.value.trim() || '';
+        updatedEv = {
+            id: isNew ? Date.now() : eventId,
+            type: 'opp_goal',
+            time: timeVal,
+            oppName,
+            note
+        };
+    } else {
+        const playerJersey = parseInt(document.getElementById('ev-edit-def-player')?.value, 10);
+        const action = document.getElementById('ev-edit-def-action')?.value || 'Key Defensive Tackle';
+        const note = document.getElementById('ev-edit-def-note')?.value.trim() || '';
+        const video = document.getElementById('ev-edit-def-video')?.value.trim() || '';
+        const existing = !isNew ? target.events.find(ev => ev.id === eventId) : null;
+        const playerObj = allPlayers.find(p => p.jersey === playerJersey);
+
+        updatedEv = {
+            id: isNew ? Date.now() : eventId,
+            type: 'defense',
+            time: timeVal,
+            playerJersey: Number.isNaN(playerJersey) ? (existing?.playerJersey ?? 0) : playerJersey,
+            playerName: playerObj ? playerObj.name : (existing && existing.playerJersey === playerJersey ? existing.playerName : 'Defender'),
+            action,
+            note,
+            video
+        };
+    }
+
+    if (isNew) {
+        target.events.unshift(updatedEv);
+        const st = ensureStatsObj(target);
+        if (eventType === 'goal') {
+            target.scoreUs = (target.scoreUs || 0) + 1;
+            st.shotsUs += 1;
+            st.sotUs += 1;
+        } else if (eventType === 'opp_goal') {
+            target.scoreThem = (target.scoreThem || 0) + 1;
+            st.shotsThem += 1;
+            st.sotThem += 1;
+        } else if (eventType === 'defense') {
+            st.savesUs += 1;
+        }
+    } else {
+        const idx = target.events.findIndex(ev => ev.id === eventId);
+        if (idx !== -1) {
+            target.events[idx] = updatedEv;
+        }
+    }
+
+    if (matchId === null) {
+        // Live match scores always mirror live events
+        let us = 0, them = 0;
+        matchState.events.forEach(ev => {
+            if (ev.type === 'goal') us++;
+            if (ev.type === 'opp_goal') them++;
+        });
+        matchState.scoreUs = us;
+        matchState.scoreThem = them;
+    } else if (currentEditMatchId === matchId) {
+        syncEditMatchModalFromMatch(target);
+        renderEditMatchEvents();
+    }
+
+    closeEventDetailModal();
+    savePersistentData(matchState, leagueStandings, scheduleEvents);
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+export function deleteEventFromDetailModal(leagueStandings, scheduleEvents, onUpdate) {
+    if (!activeEventDetailCtx || activeEventDetailCtx.isNew) return;
+    const { matchId, eventId } = activeEventDetailCtx;
+    const target = getMatchById(matchId);
+    if (!target || !Array.isArray(target.events)) return;
+
+    const removed = target.events.find(ev => ev.id === eventId);
+    target.events = target.events.filter(ev => ev.id !== eventId);
+
+    if (matchId === null) {
+        let us = 0, them = 0;
+        matchState.events.forEach(ev => {
+            if (ev.type === 'goal') us++;
+            if (ev.type === 'opp_goal') them++;
+        });
+        matchState.scoreUs = us;
+        matchState.scoreThem = them;
+    } else if (removed) {
+        if (removed.type === 'goal') {
+            target.scoreUs = Math.max(0, (target.scoreUs || 0) - 1);
+        } else if (removed.type === 'opp_goal') {
+            target.scoreThem = Math.max(0, (target.scoreThem || 0) - 1);
+        }
+        if (currentEditMatchId === matchId) {
+            syncEditMatchModalFromMatch(target);
+            renderEditMatchEvents();
+        }
+    }
+
+    closeEventDetailModal();
+    savePersistentData(matchState, leagueStandings, scheduleEvents);
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+// ================= FULL MATCH REVIEW MODAL =================
+
+export function openMatchReviewModal(matchId, isCoachMode) {
+    const normalizedId = matchId === 'live' ? null : matchId;
+    const target = getMatchById(normalizedId);
+    if (!target) return;
+
+    activeReviewMatchId = normalizedId;
+    renderMatchReviewContent(isCoachMode);
+
+    const modal = document.getElementById('match-review-modal');
+    if (modal) modal.classList.remove('hidden');
+}
+
+export function closeMatchReviewModal() {
+    const modal = document.getElementById('match-review-modal');
+    if (modal) modal.classList.add('hidden');
+    activeReviewMatchId = undefined;
+}
+
+export function refreshOpenMatchReview(isCoachMode) {
+    const modal = document.getElementById('match-review-modal');
+    if (activeReviewMatchId === undefined || !modal || modal.classList.contains('hidden')) return;
+    renderMatchReviewContent(isCoachMode);
+}
+
+export function adjustReviewStat(matchId, key, amount, leagueStandings, scheduleEvents, onUpdate) {
+    const normalizedId = matchId === 'live' ? null : matchId;
+    const target = getMatchById(normalizedId);
+    if (!target) return;
+    const st = ensureStatsObj(target);
+    st[key] = Math.max(0, (st[key] || 0) + amount);
+    if (normalizedId !== null && currentEditMatchId === normalizedId) {
+        syncEditMatchModalFromMatch(target);
+    }
+    savePersistentData(matchState, leagueStandings, scheduleEvents);
+    if (typeof onUpdate === 'function') onUpdate();
+}
+
+function buildPlayerBoxScore(match) {
+    const allPlayers = getAllRosterPlayers(matchState);
+    const map = new Map();
+
+    const ensureEntry = (jersey, fallbackName) => {
+        const key = String(jersey ?? fallbackName ?? 'unknown');
+        if (!map.has(key)) {
+            const rosterMatch = allPlayers.find(p => p.jersey === Number(jersey));
+            map.set(key, {
+                jersey: jersey ?? '?',
+                name: rosterMatch ? rosterMatch.name : (fallbackName || 'Player'),
+                position: rosterMatch ? rosterMatch.position : '',
+                goals: 0,
+                assists: 0,
+                stops: 0,
+                isMotm: false
+            });
+        }
+        return map.get(key);
+    };
+
+    (match.events || []).forEach(ev => {
+        if (ev.type === 'goal') {
+            const scorer = ensureEntry(ev.scorerJersey, ev.scorerName);
+            scorer.goals += 1;
+            if (ev.assistName || (ev.assistJersey !== null && ev.assistJersey !== undefined)) {
+                const assister = ensureEntry(ev.assistJersey, ev.assistName);
+                assister.assists += 1;
+            }
+        } else if (ev.type === 'defense') {
+            const def = ensureEntry(ev.playerJersey, ev.playerName);
+            def.stops += 1;
+        }
+    });
+
+    if (match.motmJersey) {
+        const rosterMotm = allPlayers.find(p => p.jersey === Number(match.motmJersey));
+        const motmEntry = ensureEntry(match.motmJersey, match.motmName || rosterMotm?.name || 'MOTM');
+        motmEntry.isMotm = true;
+    }
+
+    return Array.from(map.values()).sort((a, b) => {
+        const scoreB = b.goals * 4 + b.assists * 3 + b.stops * 2 + (b.isMotm ? 1 : 0);
+        const scoreA = a.goals * 4 + a.assists * 3 + a.stops * 2 + (a.isMotm ? 1 : 0);
+        if (scoreB !== scoreA) return scoreB - scoreA;
+        return Number(a.jersey) - Number(b.jersey);
+    });
+}
+
+function renderReviewStatRow(label, usKey, themKey, usVal, themVal, matchArg, isCoachMode) {
+    const total = usVal + themVal;
+    const usPct = total === 0 ? 50 : Math.round((usVal / total) * 100);
+    const themPct = 100 - usPct;
+
+    return `
+    <div class="space-y-1.5">
+        <div class="flex items-center justify-between gap-2 text-xs font-bold">
+            <div class="flex items-center space-x-1.5 min-w-[84px]">
+                ${isCoachMode ? `<button type="button" onclick="window.adjustReviewStat(${matchArg}, '${usKey}', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-black text-xs flex items-center justify-center border border-zinc-700 active:scale-95">−</button>` : ''}
+                <span class="min-w-6 text-center font-black text-sm text-blue-300 font-mono">${usVal}</span>
+                ${isCoachMode ? `<button type="button" onclick="window.adjustReviewStat(${matchArg}, '${usKey}', 1)" class="w-6 h-6 rounded-lg bg-blue-900/80 hover:bg-blue-800 text-blue-200 font-black text-xs flex items-center justify-center border border-blue-500/50 active:scale-95">+</button>` : ''}
+            </div>
+            <div class="text-center flex-1">
+                <span class="text-[11px] text-zinc-300 uppercase font-extrabold tracking-wider">${label}</span>
+                ${total > 0 ? `<span class="block text-[9px] font-mono text-zinc-500">${usPct}% — ${themPct}%</span>` : ''}
+            </div>
+            <div class="flex items-center justify-end space-x-1.5 min-w-[84px]">
+                ${isCoachMode ? `<button type="button" onclick="window.adjustReviewStat(${matchArg}, '${themKey}', -1)" class="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-black text-xs flex items-center justify-center border border-zinc-700 active:scale-95">−</button>` : ''}
+                <span class="min-w-6 text-center font-black text-sm text-amber-300 font-mono">${themVal}</span>
+                ${isCoachMode ? `<button type="button" onclick="window.adjustReviewStat(${matchArg}, '${themKey}', 1)" class="w-6 h-6 rounded-lg bg-amber-950/80 hover:bg-amber-900 text-amber-200 font-black text-xs flex items-center justify-center border border-amber-500/50 active:scale-95">+</button>` : ''}
+            </div>
+        </div>
+        <div class="h-2 w-full bg-zinc-800 rounded-full overflow-hidden flex">
+            <div class="bg-blue-600 h-full transition-all duration-300" style="width: ${usPct}%;"></div>
+            <div class="bg-amber-500 h-full transition-all duration-300" style="width: ${themPct}%;"></div>
+        </div>
+    </div>
+    `;
+}
+
+function renderMatchReviewContent(isCoachMode) {
+    const container = document.getElementById('match-review-content');
+    if (!container) return;
+
+    const match = getMatchById(activeReviewMatchId);
+    if (!match) {
+        closeMatchReviewModal();
+        return;
+    }
+
+    const isLive = activeReviewMatchId === null;
+    const matchArg = isLive ? 'null' : String(match.id);
+    const opponent = isLive ? (match.opponentName || 'Opponent') : (match.opponent || 'Opponent');
+    const dateLabel = isLive ? (match.isFinal || match.period === 'Full Time' ? 'Full Time (Unarchived)' : `Live • ${match.period || '1st Half'} (${formatTimer(match.timerSeconds || 0)})`) : (match.date || 'Archived Match');
+    const scoreUs = match.scoreUs || 0;
+    const scoreThem = match.scoreThem || 0;
+    const isWin = scoreUs > scoreThem;
+    const isDraw = scoreUs === scoreThem;
+    const resultLabel = isLive && !match.isFinal && match.period !== 'Full Time' ? 'IN PROGRESS' : (isWin ? 'WIN' : isDraw ? 'DRAW' : 'LOSS');
+    const resultClass = resultLabel === 'IN PROGRESS'
+        ? 'bg-blue-950 text-blue-300 border-blue-500/40'
+        : isWin
+            ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40'
+            : isDraw
+                ? 'bg-amber-950 text-amber-300 border-amber-500/40'
+                : 'bg-rose-950 text-rose-300 border-rose-500/40';
+
+    const st = ensureStatsObj(match);
+    const events = Array.isArray(match.events) ? match.events : [];
+    const allPlayers = getAllRosterPlayers(matchState);
+
+    let motmDisplay = 'Not Crowned';
+    if (match.motmJersey) {
+        const mp = allPlayers.find(p => p.jersey === Number(match.motmJersey));
+        const mName = mp ? mp.name : (match.motmName || 'Assigned');
+        motmDisplay = `#${match.motmJersey} ${mName}`;
+    } else if (match.motmName && match.motmName !== 'Unassigned') {
+        motmDisplay = match.motmName;
+    }
+
+    // Derived analytics KPIs
+    const totalUsShots = Math.max(st.shotsUs, st.sotUs);
+    const shotAccPct = totalUsShots > 0 ? Math.min(100, Math.round((st.sotUs / totalUsShots) * 100)) : null;
+    const conversionDenom = st.sotUs > 0 ? st.sotUs : totalUsShots;
+    const conversionPct = conversionDenom > 0 ? Math.min(100, Math.round((scoreUs / conversionDenom) * 100)) : null;
+    const saveDenom = st.savesUs + scoreThem;
+    const saveRatePct = saveDenom > 0 ? Math.round((st.savesUs / saveDenom) * 100) : null;
+    const isCleanSheet = scoreThem === 0 && (scoreUs > 0 || !isLive || match.isFinal || events.length > 0 || st.savesUs > 0);
+
+    const goalsCount = events.filter(e => e.type === 'goal').length;
+    const stopsCount = events.filter(e => e.type === 'defense').length;
+    const oppGoalsCount = events.filter(e => e.type === 'opp_goal').length;
+
+    const boxScore = buildPlayerBoxScore(match);
+
+    // Penalty Shootout section if present
+    const sh = match.shootout;
+    const hasShootout = sh && (sh.active || (sh.usKicks && sh.usKicks.length > 0) || (sh.themKicks && sh.themKicks.length > 0));
+    const shootoutHtml = hasShootout ? `
+        <div class="p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+                <span class="text-[11px] font-black uppercase tracking-wider text-purple-300">🎯 Penalty Shootout</span>
+                <span class="text-xs font-mono font-black text-white">${(sh.usKicks || []).filter(Boolean).length} - ${(sh.themKicks || []).filter(Boolean).length} PK</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 text-[11px]">
+                <div>
+                    <span class="text-blue-300 font-bold block mb-1">Rockies</span>
+                    <div class="flex flex-wrap gap-1">${renderKickBubbles(sh.usKicks || [])}</div>
+                </div>
+                <div>
+                    <span class="text-amber-300 font-bold block mb-1">${escapeHtml(opponent)}</span>
+                    <div class="flex flex-wrap gap-1">${renderKickBubbles(sh.themKicks || [])}</div>
+                </div>
+            </div>
+        </div>
+    ` : '';
+
+    container.innerHTML = `
+        <!-- Top Header -->
+        <div class="flex flex-wrap items-start justify-between gap-2 border-b border-zinc-800 pb-3">
+            <div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${resultClass}">${resultLabel}</span>
+                    <span class="text-[11px] font-semibold text-zinc-400">${escapeHtml(dateLabel)}</span>
+                </div>
+                <h3 class="text-lg sm:text-xl font-black text-white mt-1">Full Match Review</h3>
+            </div>
+            <div class="flex items-center space-x-1.5">
+                <button type="button" onclick="window.copyMatchReviewSummary(${matchArg}, this)" class="px-2.5 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[11px] font-bold transition">
+                    📋 Copy Summary
+                </button>
+                ${!isLive && isCoachMode ? `
+                    <button type="button" onclick="window.openEditMatchModal(${match.id})" class="px-2.5 py-1.5 rounded-xl bg-amber-600/20 hover:bg-amber-600/35 border border-amber-500/40 text-amber-300 text-[11px] font-bold transition">
+                        ✏️ Edit Match
+                    </button>
+                ` : ''}
+                ${!isCoachMode ? `
+                    <button type="button" onclick="window.unlockCoachToEditEvent()" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-amber-300 text-[11px] font-bold transition" title="Unlock Coach Mode to edit stats and events">
+                        🔓 Edit
+                    </button>
+                ` : ''}
+                <button type="button" onclick="window.closeMatchReviewModal()" class="text-zinc-400 hover:text-white text-xl font-bold px-1.5 leading-none">&times;</button>
+            </div>
+        </div>
+
+        <!-- Scoreboard Hero -->
+        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#003C71]/50 via-zinc-950 to-zinc-950 border border-blue-500/25 space-y-3">
+            <div class="grid grid-cols-7 items-center text-center gap-2">
+                <div class="col-span-3 space-y-1">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-blue-300">Rockies Albion 14</span>
+                    <div class="text-4xl sm:text-5xl font-black text-white font-mono">${scoreUs}</div>
+                </div>
+                <div class="col-span-1 text-xs font-black text-zinc-500 uppercase">VS</div>
+                <div class="col-span-3 space-y-1">
+                    <span class="text-[10px] font-black uppercase tracking-widest text-amber-300 truncate block">${escapeHtml(opponent)}</span>
+                    <div class="text-4xl sm:text-5xl font-black text-white font-mono">${scoreThem}</div>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-white/10 text-xs">
+                <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/35 text-amber-300 font-bold">
+                    <span>🎖️</span>
+                    <span>MOTM: ${escapeHtml(motmDisplay)}</span>
+                </span>
+                ${isCleanSheet ? `
+                    <span class="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-teal-500/15 border border-teal-400/35 text-teal-300 font-bold">
+                        <span>🧤</span>
+                        <span>Clean Sheet</span>
+                    </span>
+                ` : ''}
+            </div>
+        </div>
+
+        ${shootoutHtml}
+
+        <!-- Derived Analytics KPIs -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
+            <div class="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400">Shot Accuracy</span>
+                <span class="text-lg font-black font-mono text-blue-300">${shotAccPct !== null ? `${shotAccPct}%` : '—'}</span>
+                <span class="block text-[10px] text-zinc-500">${st.sotUs} on target / ${totalUsShots}</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400">Conversion</span>
+                <span class="text-lg font-black font-mono text-emerald-300">${conversionPct !== null ? `${conversionPct}%` : '—'}</span>
+                <span class="block text-[10px] text-zinc-500">${scoreUs}G on ${conversionDenom} ${st.sotUs > 0 ? 'SOT' : 'shots'}</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400">GK Save Rate</span>
+                <span class="text-lg font-black font-mono text-teal-300">${saveRatePct !== null ? `${saveRatePct}%` : '—'}</span>
+                <span class="block text-[10px] text-zinc-500">${st.savesUs} saves • ${scoreThem} GA</span>
+            </div>
+            <div class="p-3 rounded-2xl bg-zinc-950 border border-zinc-800">
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400">Logged Events</span>
+                <span class="text-lg font-black font-mono text-amber-300">${events.length}</span>
+                <span class="block text-[10px] text-zinc-500">${goalsCount}G • ${stopsCount}D • ${oppGoalsCount} Opp</span>
+            </div>
+        </div>
+
+        <!-- Complete Team Statistics Comparison -->
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3.5">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-wider text-white">📊 Match Statistics</h4>
+                    ${isCoachMode ? `<p class="text-[10px] text-emerald-400 mt-0.5">Coach Mode active — adjust any stat directly below.</p>` : ''}
+                </div>
+                <div class="flex items-center space-x-3 text-[11px] font-bold">
+                    <span class="text-blue-400">Rockies</span>
+                    <span class="text-zinc-500">vs</span>
+                    <span class="text-amber-400 truncate max-w-[110px]">${escapeHtml(opponent)}</span>
+                </div>
+            </div>
+            <div class="space-y-3">
+                ${renderReviewStatRow('Shots on Target', 'sotUs', 'sotThem', st.sotUs, st.sotThem, matchArg, isCoachMode)}
+                ${renderReviewStatRow('Total Shots', 'shotsUs', 'shotsThem', st.shotsUs, st.shotsThem, matchArg, isCoachMode)}
+                ${renderReviewStatRow('Goalkeeper Saves', 'savesUs', 'savesThem', st.savesUs, st.savesThem, matchArg, isCoachMode)}
+                ${renderReviewStatRow('Corner Kicks', 'cornersUs', 'cornersThem', st.cornersUs, st.cornersThem, matchArg, isCoachMode)}
+            </div>
+        </div>
+
+        <!-- Player Performance Box Score -->
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-2">
+                <h4 class="text-xs font-black uppercase tracking-wider text-white">⭐ Player Box Score</h4>
+                <span class="text-[10px] text-zinc-500">${boxScore.length} contributor${boxScore.length === 1 ? '' : 's'}</span>
+            </div>
+            ${boxScore.length === 0 ? `
+                <p class="text-xs text-zinc-500 italic text-center py-3">No individual player events recorded for this match yet.</p>
+            ` : `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="border-b border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-400">
+                                <th class="py-2 pr-2">Player</th>
+                                <th class="py-2 px-2 text-center text-blue-300">G</th>
+                                <th class="py-2 px-2 text-center text-sky-300">A</th>
+                                <th class="py-2 px-2 text-center text-emerald-300">Stops</th>
+                                <th class="py-2 pl-2 text-right text-amber-300">Award</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-800/60">
+                            ${boxScore.map(p => `
+                                <tr>
+                                    <td class="py-2 pr-2 font-bold text-white">
+                                        <span class="text-zinc-400 font-mono mr-1">#${escapeHtml(p.jersey)}</span>${escapeHtml(p.name)}
+                                    </td>
+                                    <td class="py-2 px-2 text-center font-mono font-black ${p.goals > 0 ? 'text-blue-300' : 'text-zinc-600'}">${p.goals}</td>
+                                    <td class="py-2 px-2 text-center font-mono font-black ${p.assists > 0 ? 'text-sky-300' : 'text-zinc-600'}">${p.assists}</td>
+                                    <td class="py-2 px-2 text-center font-mono font-black ${p.stops > 0 ? 'text-emerald-300' : 'text-zinc-600'}">${p.stops}</td>
+                                    <td class="py-2 pl-2 text-right">
+                                        ${p.isMotm ? `<span class="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-[10px] font-black text-amber-300">🎖️ MOTM</span>` : `<span class="text-zinc-700">—</span>`}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `}
+        </div>
+
+        <!-- Complete Play-by-Play Timeline -->
+        <div class="p-4 rounded-2xl bg-zinc-950 border border-zinc-800 space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-2">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-wider text-white">⏱️ Complete Play-by-Play (${events.length})</h4>
+                    <p class="text-[10px] text-zinc-400 mt-0.5">Tap any event to see all recorded details${isCoachMode ? ' or edit/delete it' : ''}.</p>
+                </div>
+                ${isCoachMode ? `
+                    <div class="flex items-center space-x-1.5">
+                        <button type="button" onclick="window.openEventDetailModal(${matchArg}, null, 'goal')" class="px-2 py-1 rounded-lg bg-blue-900/70 hover:bg-blue-800 border border-blue-500/40 text-[10px] font-bold text-blue-200">+ ⚽ Goal</button>
+                        <button type="button" onclick="window.openEventDetailModal(${matchArg}, null, 'opp_goal')" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/40 text-[10px] font-bold text-rose-200">+ 🥅 Opp</button>
+                        <button type="button" onclick="window.openEventDetailModal(${matchArg}, null, 'defense')" class="px-2 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-[10px] font-bold text-emerald-200">+ 🛡️ Stop</button>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="space-y-2">
+                ${events.length === 0
+                    ? `<p class="text-xs text-zinc-500 italic text-center py-4">No events logged for this match.</p>`
+                    : events.map(ev => renderTimelineEventCard(ev, activeReviewMatchId, isCoachMode, false)).join('')
+                }
+            </div>
+        </div>
+    `;
+}
+
+export async function copyMatchReviewSummary(matchId, btnEl) {
+    const normalizedId = matchId === 'live' ? null : matchId;
+    const match = getMatchById(normalizedId);
+    if (!match) return;
+
+    const isLive = normalizedId === null;
+    const opponent = isLive ? (match.opponentName || 'Opponent') : (match.opponent || 'Opponent');
+    const dateStr = isLive ? new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : (match.date || '');
+    const st = ensureStatsObj(match);
+    const events = Array.isArray(match.events) ? match.events : [];
+    const allPlayers = getAllRosterPlayers(matchState);
+
+    let motmText = 'Not Assigned';
+    if (match.motmJersey) {
+        const mp = allPlayers.find(p => p.jersey === Number(match.motmJersey));
+        motmText = `#${match.motmJersey} ${mp ? mp.name : (match.motmName || '')}`.trim();
+    } else if (match.motmName && match.motmName !== 'Unassigned') {
+        motmText = match.motmName;
+    }
+
+    const lines = [
+        `⚽ Rockies Albion 14 vs ${opponent}`,
+        `📅 ${dateStr}`,
+        `🏆 Final Score: Rockies ${match.scoreUs || 0} - ${match.scoreThem || 0} ${opponent}`,
+        `🎖️ MOTM: ${motmText}`,
+        ``,
+        `📊 Match Stats (Rockies vs ${opponent}):`,
+        `• Shots on Target: ${st.sotUs} - ${st.sotThem}`,
+        `• Total Shots: ${st.shotsUs} - ${st.shotsThem}`,
+        `• GK Saves: ${st.savesUs} - ${st.savesThem}`,
+        `• Corner Kicks: ${st.cornersUs} - ${st.cornersThem}`
+    ];
+
+    const goals = events.filter(e => e.type === 'goal');
+    if (goals.length > 0) {
+        lines.push(``, `⚽ Rockies Goals:`);
+        goals.forEach(g => {
+            const ast = g.assistName ? ` (Ast: #${g.assistJersey} ${g.assistName})` : ' (Solo)';
+            const details = [g.phase, g.finish, g.tag && g.tag !== g.finish ? g.tag : ''].filter(Boolean).join(' • ');
+            lines.push(`• [${g.time || '--:--'}] #${g.scorerJersey} ${g.scorerName}${ast}${details ? ` — ${details}` : ''}`);
+        });
+    }
+
+    const stops = events.filter(e => e.type === 'defense');
+    if (stops.length > 0) {
+        lines.push(``, `🛡️ Defensive Stops:`);
+        stops.forEach(d => {
+            lines.push(`• [${d.time || '--:--'}] #${d.playerJersey} ${d.playerName} — ${d.action}${d.note ? ` (${d.note})` : ''}`);
+        });
+    }
+
+    const summaryText = lines.join('\n');
+    try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(summaryText);
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = summaryText;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        }
+        if (btnEl) {
+            const orig = btnEl.innerHTML;
+            btnEl.innerHTML = '✓ Copied!';
+            setTimeout(() => { btnEl.innerHTML = orig; }, 1800);
+        }
+    } catch {}
 }

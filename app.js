@@ -65,6 +65,21 @@ import {
     saveEditedMatch, 
     deletePastMatch, 
     deletePastMatchEvent, 
+    adjustEditMatchStat,
+    openAddPastMatchEvent,
+    toggleEditLiveOpponent,
+    saveLiveOpponentName,
+    playEventVideo,
+    openEventDetailModal,
+    closeEventDetailModal,
+    refreshEventDetailModalMode,
+    saveEventDetail,
+    deleteEventFromDetailModal,
+    openMatchReviewModal,
+    closeMatchReviewModal,
+    refreshOpenMatchReview,
+    adjustReviewStat,
+    copyMatchReviewSummary,
     openVideoClipModal, 
     closeVideoClipModal 
 } from './tracker.js';
@@ -191,6 +206,8 @@ export function updateAllViews() {
     renderStandings(isCoachMode);
     renderLeaderboard(matchState);
     updateModeToggleButton();
+    refreshOpenMatchReview(isCoachMode);
+    refreshEventDetailModalMode(isCoachMode);
 }
 
 // Tab Switching Logic
@@ -334,6 +351,11 @@ export function updateModeToggleButton() {
     if (resetPkBtn) resetPkBtn.style.display = isCoachMode ? 'inline-block' : 'none';
     if (addEventBtn) addEventBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
     if (editStandingsBtn) editStandingsBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
+
+    const editLiveOppBtn = document.getElementById('btn-edit-live-opponent');
+    const editLiveOppBox = document.getElementById('edit-live-opponent-box');
+    if (editLiveOppBtn) editLiveOppBtn.classList.toggle('hidden', !isCoachMode);
+    if (!isCoachMode && editLiveOppBox) editLiveOppBox.classList.add('hidden');
 }
 
 export function toggleCoachMode() {
@@ -708,16 +730,31 @@ window.adjustStat = (key, amt) => {
     if (!isCoachMode) {
         openCoachPinModal(() => {
             adjustStat(key, amt, leagueStandings, scheduleEvents);
+            refreshOpenMatchReview(isCoachMode);
         });
         return;
     }
     adjustStat(key, amt, leagueStandings, scheduleEvents);
+    refreshOpenMatchReview(isCoachMode);
 };
 window.setMatchPeriod = (period) => setMatchPeriod(period, leagueStandings, scheduleEvents);
 window.resumeMatchFromFinal = () => resumeMatchFromFinal(leagueStandings, scheduleEvents);
 window.recordShootoutKick = (team, scored) => recordShootoutKick(team, scored, leagueStandings, scheduleEvents);
 window.resetShootout = () => resetShootout(leagueStandings, scheduleEvents);
-window.setMatchMOTM = (jersey) => setMatchMOTM(jersey, leagueStandings, scheduleEvents);
+window.setMatchMOTM = (jersey) => {
+    setMatchMOTM(jersey, leagueStandings, scheduleEvents);
+    refreshOpenMatchReview(isCoachMode);
+};
+
+window.toggleEditLiveOpponent = () => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => toggleEditLiveOpponent());
+        return;
+    }
+    toggleEditLiveOpponent();
+};
+window.saveLiveOpponentName = () => saveLiveOpponentName(leagueStandings, scheduleEvents, updateAllViews);
+window.playEventVideo = playEventVideo;
 
 window.openGoalModal = openGoalModal;
 window.closeGoalModal = closeGoalModal;
@@ -740,6 +777,42 @@ window.closeEditMatchModal = closeEditMatchModal;
 window.saveEditedMatch = (e) => saveEditedMatch(e, leagueStandings, scheduleEvents, updateAllViews);
 window.deletePastMatch = () => deletePastMatch(leagueStandings, scheduleEvents, updateAllViews);
 window.deletePastMatchEvent = (id) => deletePastMatchEvent(id, leagueStandings, scheduleEvents, updateAllViews);
+window.adjustEditMatchStat = adjustEditMatchStat;
+window.openAddPastMatchEvent = (eventType) => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => openAddPastMatchEvent(eventType, true));
+        return;
+    }
+    openAddPastMatchEvent(eventType, isCoachMode);
+};
+
+// Event Details & Edit Modal window bindings
+window.openEventDetailModal = (matchId, eventId, newEventType = null) => {
+    if (newEventType && !isCoachMode) {
+        openCoachPinModal(() => openEventDetailModal(matchId, eventId, true, newEventType));
+        return;
+    }
+    openEventDetailModal(matchId, eventId, isCoachMode, newEventType);
+};
+window.closeEventDetailModal = closeEventDetailModal;
+window.unlockCoachToEditEvent = () => openCoachPinModal(() => {
+    refreshEventDetailModalMode(true);
+    refreshOpenMatchReview(true);
+});
+window.saveEventDetail = (e) => saveEventDetail(e, leagueStandings, scheduleEvents, updateAllViews);
+window.deleteEventFromDetailModal = () => deleteEventFromDetailModal(leagueStandings, scheduleEvents, updateAllViews);
+
+// Full Match Review Modal window bindings
+window.openMatchReviewModal = (matchId) => openMatchReviewModal(matchId, isCoachMode);
+window.closeMatchReviewModal = closeMatchReviewModal;
+window.adjustReviewStat = (matchId, key, amt) => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => adjustReviewStat(matchId, key, amt, leagueStandings, scheduleEvents, updateAllViews));
+        return;
+    }
+    adjustReviewStat(matchId, key, amt, leagueStandings, scheduleEvents, updateAllViews);
+};
+window.copyMatchReviewSummary = copyMatchReviewSummary;
 
 window.openVideoClipModal = openVideoClipModal;
 window.closeVideoClipModal = closeVideoClipModal;
