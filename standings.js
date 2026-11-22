@@ -168,7 +168,7 @@ export function renderStandings(isCoachMode) {
         const teamName = team.team || 'Unknown Team';
         const isRockies = Boolean(team.isUs || (typeof teamName === 'string' && teamName.toLowerCase().includes('rockies')));
         const rowClass = isRockies 
-            ? 'bg-[#003C71]/40 border-l-4 border-blue-400 font-bold text-white' 
+            ? 'brand-standings-row font-bold text-white' 
             : 'border-b border-zinc-800/60 hover:bg-zinc-800/30 text-zinc-300';
         
         return `

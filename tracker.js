@@ -328,9 +328,9 @@ export function formatTimer(sec) {
 export function updatePeriodButtonsHighlight(currentPeriod) {
     const periodButtons = [
         { id: 'btn-period-pregame', period: 'Pre-Game', activeClass: 'bg-amber-500 text-zinc-950 font-black shadow-md ring-2 ring-amber-400' },
-        { id: 'btn-period-1st-half', period: '1st Half', activeClass: 'bg-[#003C71] text-white font-black shadow-md ring-2 ring-blue-400' },
+        { id: 'btn-period-1st-half', period: '1st Half', activeClass: 'bg-[var(--brand-primary)] text-white font-black shadow-md ring-2 ring-blue-400' },
         { id: 'btn-period-halftime', period: 'Halftime', activeClass: 'bg-zinc-700 text-white font-black shadow-md ring-2 ring-zinc-400' },
-        { id: 'btn-period-2nd-half', period: '2nd Half', activeClass: 'bg-[#003C71] text-white font-black shadow-md ring-2 ring-blue-400' },
+        { id: 'btn-period-2nd-half', period: '2nd Half', activeClass: 'bg-[var(--brand-primary)] text-white font-black shadow-md ring-2 ring-blue-400' },
         { id: 'btn-period-penalties', period: 'Penalties', activeClass: 'bg-purple-700 text-white font-black shadow-md ring-2 ring-purple-400' },
         { id: 'btn-period-full-time', period: 'Full Time', activeClass: 'bg-emerald-700 text-white font-black shadow-md ring-2 ring-emerald-400' }
     ];
@@ -845,7 +845,7 @@ export function renderPastMatches(isCoachMode) {
                     <span class="px-2 py-0.5 rounded-md bg-zinc-900 border border-zinc-800">${evCount} Events</span>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <button type="button" onclick="event.stopPropagation(); window.openMatchReviewModal(${m.id})" class="px-2.5 py-1 rounded-lg bg-[#003C71] hover:bg-blue-700 border border-blue-400/40 text-[10px] font-extrabold text-white transition shadow-sm">
+                    <button type="button" onclick="event.stopPropagation(); window.openMatchReviewModal(${m.id})" class="px-2.5 py-1 rounded-lg bg-[var(--brand-primary)] hover:bg-blue-700 border border-blue-400/40 text-[10px] font-extrabold text-white transition shadow-sm">
                         📋 Full Review
                     </button>
                     ${isCoachMode ? `<button type="button" onclick="event.stopPropagation(); window.openEditMatchModal(${m.id})" class="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-[10px] font-bold text-amber-300 transition">✏️ Edit Match</button>` : ''}
@@ -1958,7 +1958,7 @@ function renderMatchReviewContent(isCoachMode) {
         </div>
 
         <!-- Scoreboard Hero -->
-        <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#003C71]/50 via-zinc-950 to-zinc-950 border border-blue-500/25 space-y-3">
+        <div class="p-4 sm:p-5 rounded-2xl brand-review-hero border border-blue-500/25 space-y-3">
             <div class="grid grid-cols-7 items-center text-center gap-2">
                 <div class="col-span-3 space-y-1">
                     <span class="text-[10px] font-black uppercase tracking-widest text-blue-300">Rockies Albion 14</span>

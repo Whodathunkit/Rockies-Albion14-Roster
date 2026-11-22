@@ -413,7 +413,7 @@ export function renderRoster(matchState, isCoachMode = false) {
                     <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${parentsText}</p>
                 </div>
                 <div class="flex flex-col items-end space-y-1 flex-shrink-0">
-                    <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[#003C71] border border-blue-400/40'} flex items-center justify-center text-sm font-black text-white shadow-md">
+                    <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[var(--brand-primary)] border border-blue-400/40'} flex items-center justify-center text-sm font-black text-white shadow-md">
                         #${p.jersey}
                     </div>
                 </div>
@@ -567,7 +567,7 @@ export function refreshActivePlayerModalUI(jersey, matchState) {
         } else {
             banner.innerHTML = `
                 <div class="text-center p-4">
-                    <div class="w-16 h-16 rounded-2xl bg-[#003C71] border border-blue-400 flex items-center justify-center text-2xl font-black text-white mx-auto mb-2 shadow">
+                    <div class="w-16 h-16 rounded-2xl bg-[var(--brand-primary)] border border-blue-400 flex items-center justify-center text-2xl font-black text-white mx-auto mb-2 shadow">
                         #${player.jersey}
                     </div>
                     <h4 class="text-base font-black text-white">${player.name}</h4>

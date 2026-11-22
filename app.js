@@ -1,3 +1,11 @@
+import {
+    applyTeamThemeVariables,
+    getActiveTeamConfig
+} from './tenant.js';
+
+// Hydrate root club/team brand CSS custom properties before any component renders
+applyTeamThemeVariables(getActiveTeamConfig());
+
 import { 
     initFirebase, 
     firebaseConfig, 
@@ -306,10 +314,10 @@ export function updateModeToggleButton() {
     if (isCoachMode) {
         if (icon) icon.textContent = "⚡";
         if (label) label.textContent = "Coach Mode (Active)";
-        if (btn) btn.className = "inline-flex items-center space-x-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-3 py-1.5 rounded-full text-[11px] font-bold text-amber-300 transition shadow backdrop-blur-sm active:scale-95";
+        if (btn) btn.className = "inline-flex items-center space-x-1.5 coach-mode-active border px-3 py-1.5 rounded-full text-[11px] font-bold transition shadow backdrop-blur-sm active:scale-95";
         if (footerIndicator) {
             footerIndicator.textContent = "Mode: Coach Mode ⚡";
-            footerIndicator.className = "px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-950/80 border border-amber-500/40 text-amber-300";
+            footerIndicator.className = "px-3 py-1.5 rounded-full text-[11px] font-bold badge-accent-gold border";
         }
         if (footerCoachBtn) {
             footerCoachBtn.innerHTML = `<span>🔒 Exit Coach Mode</span>`;
@@ -325,7 +333,7 @@ export function updateModeToggleButton() {
         }
         if (footerCoachBtn) {
             footerCoachBtn.innerHTML = `<span>⚡ Coach Mode</span>`;
-            footerCoachBtn.className = "inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-amber-300 border border-zinc-700 hover:border-amber-500/40 text-xs font-bold transition shadow-sm active:scale-95";
+            footerCoachBtn.className = "inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-[var(--accent-gold)] border border-zinc-700 hover:border-[var(--accent-gold)] text-xs font-bold transition shadow-sm active:scale-95";
         }
     }
 
@@ -593,7 +601,7 @@ export function renderPreGameRosterModalList() {
         return `
         <div class="flex items-center justify-between p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 hover:border-zinc-700/80 transition">
             <div class="flex items-center space-x-3 min-w-0">
-                <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[#003C71] border border-blue-400/40'} text-white flex items-center justify-center font-black text-sm shadow-md flex-shrink-0">
+                <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[var(--brand-primary)] border border-blue-400/40'} text-white flex items-center justify-center font-black text-sm shadow-md flex-shrink-0">
                     #${p.jersey}
                 </div>
                 <div class="min-w-0">
@@ -921,6 +929,9 @@ export function syncGateVisibility() {
 
 // Initialize on DOM Ready
 function onAppInit() {
+    // Ensure root CSS custom properties reflect the active tenant palette
+    applyTeamThemeVariables(getActiveTeamConfig());
+
     // Check if passcode is already unlocked via localStorage, cookie, or sessionStorage
     syncGateVisibility();
 

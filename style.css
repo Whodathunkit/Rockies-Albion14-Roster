@@ -1,34 +1,121 @@
 /* ==========================================================================
-   Rockies Albion 14 - Master Stylesheet
+   Calgary Rockies FC Portal - Master Stylesheet (Multi-Tenant CSS Variables)
    ========================================================================== */
+
+:root {
+    /* Club Brand Palette Defaults (Calgary Rockies FC: Royal Blue, Black, White) */
+    --brand-primary: #003C71;
+    --brand-primary-hover: #004d91;
+    --brand-secondary: #000000;
+    --brand-white: #FFFFFF;
+    --brand-primary-glow: rgba(0, 60, 113, 0.4);
+    --brand-bg: #090d16;
+    --brand-text: #f3f4f6;
+
+    /* Dedicated UI Utility Accent (Coach Mode, MOTM awards, trophies, yellow cards) */
+    --accent-gold: #FFB81C;
+}
 
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #090d16;
-    color: #f3f4f6;
+    background-color: var(--brand-bg);
+    color: var(--brand-text);
     margin: 0;
     padding: 0;
 }
 
-/* Calgary Rockies FC Official Palette */
-.bg-rockies-blue {
-    background-color: #003C71;
+/* Club Brand Utilities (Dynamic via Tenant CSS Custom Properties) */
+.bg-rockies-blue,
+.bg-brand-primary {
+    background-color: var(--brand-primary);
 }
 
-.text-rockies-gold {
-    color: #FFB81C;
+.bg-rockies-blue:hover,
+.hover\:bg-brand-primary-hover:hover {
+    background-color: var(--brand-primary-hover);
 }
 
-.border-rockies-blue {
-    border-color: #003C71;
+.text-rockies-blue,
+.text-brand-primary {
+    color: var(--brand-primary);
+}
+
+.border-rockies-blue,
+.border-brand-primary {
+    border-color: var(--brand-primary);
+}
+
+.bg-brand-secondary {
+    background-color: var(--brand-secondary);
+}
+
+/* Brand Structural Surfaces & Translucent Gradients */
+.brand-banner-header {
+    background-image: linear-gradient(
+        to right,
+        rgb(24, 24, 27),
+        rgba(24, 24, 27, 0.95),
+        color-mix(in srgb, var(--brand-primary) 35%, transparent)
+    );
+}
+
+.brand-scoreboard-surface {
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--brand-primary) 80%, transparent),
+        rgb(24, 24, 27),
+        rgb(9, 9, 11)
+    );
+    border-color: color-mix(in srgb, var(--brand-primary) 70%, rgba(59, 130, 246, 0.35));
+}
+
+.brand-review-hero {
+    background-image: linear-gradient(
+        to bottom right,
+        color-mix(in srgb, var(--brand-primary) 55%, transparent),
+        rgb(9, 9, 11),
+        rgb(9, 9, 11)
+    );
+}
+
+.brand-standings-row {
+    background-color: color-mix(in srgb, var(--brand-primary) 42%, transparent);
+    border-left: 4px solid var(--brand-primary);
+    box-shadow: inset 3px 0 0 var(--brand-primary-glow);
+}
+
+/* Dedicated UI Accent Gold (Coach Mode, MOTM, Yellow Cards, Trophies) */
+.text-rockies-gold,
+.text-accent-gold {
+    color: var(--accent-gold);
+}
+
+.bg-accent-gold {
+    background-color: var(--accent-gold);
+}
+
+.border-accent-gold {
+    border-color: var(--accent-gold);
+}
+
+.badge-accent-gold,
+.coach-mode-active {
+    color: var(--accent-gold);
+    background-color: color-mix(in srgb, var(--accent-gold) 16%, transparent);
+    border-color: color-mix(in srgb, var(--accent-gold) 45%, transparent);
+}
+
+.badge-accent-gold:hover,
+.coach-mode-active:hover {
+    background-color: color-mix(in srgb, var(--accent-gold) 26%, transparent);
 }
 
 /* Navigation Tabs Active State */
 .tab-btn.active {
-    background-color: #003C71;
-    color: #ffffff;
-    border-color: #3b82f6;
-    box-shadow: 0 4px 14px rgba(0, 60, 113, 0.4);
+    background-color: var(--brand-primary);
+    color: var(--brand-white);
+    border-color: color-mix(in srgb, var(--brand-primary) 55%, #60a5fa);
+    box-shadow: 0 4px 14px var(--brand-primary-glow);
 }
 
 /* Custom Sleek Scrollbars */

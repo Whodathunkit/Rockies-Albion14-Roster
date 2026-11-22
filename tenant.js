@@ -8,7 +8,14 @@ export const ACTIVE_CLUB_STORAGE_KEY = 'rockies_active_club';
 export const DEFAULT_CLUB_ID = 'rockies';
 export const DEFAULT_TEAM_ID = 'albion14';
 
+// Dedicated UI Utility Accents (NOT club brand colors)
+// Strictly reserved for Man of the Match awards, yellow cards, trophies, and Coach Mode toggle.
+export const UI_ACCENTS = {
+    gold: '#FFB81C'
+};
+
 // Canonical Calgary Rockies FC Club Defaults
+// Official Club Brand Palette: Royal Blue (#003C71), Black (#000000), and White (#FFFFFF).
 // Teams inherit all club assets, brand colors, facility directory, and kit defaults
 // unless they explicitly supply a team-level override.
 export const CLUB_DEFAULTS = {
@@ -20,13 +27,17 @@ export const CLUB_DEFAULTS = {
     websiteUrl: 'https://rockiessoccer.ca',
     crestUrl: 'https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png',
     crestFallbackText: 'RFC',
-    colors: {
+    brandColors: {
         primary: '#003C71',
+        secondary: '#000000',
+        white: '#FFFFFF',
         primaryHover: '#004d91',
         primaryGlow: 'rgba(0, 60, 113, 0.4)',
-        secondary: '#FFB81C',
         background: '#090d16',
         text: '#f3f4f6'
+    },
+    uiAccents: {
+        gold: UI_ACCENTS.gold
     },
     arrivalRules: {
         gameMinutes: 30,
@@ -357,6 +368,20 @@ function stripLeadingHash(hex) {
     return String(hex || '#003C71').replace(/^#/, '');
 }
 
+function hexToRgba(hex, alpha = 0.4) {
+    const clean = stripLeadingHash(hex);
+    const expanded = clean.length === 3
+        ? clean.split('').map(ch => ch + ch).join('')
+        : clean;
+    if (!/^[0-9a-f]{6}$/i.test(expanded)) {
+        return `rgba(0, 60, 113, ${alpha})`;
+    }
+    const r = parseInt(expanded.slice(0, 2), 16);
+    const g = parseInt(expanded.slice(2, 4), 16);
+    const b = parseInt(expanded.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 // ============================================================================
 // URL & Cache Tenant Resolution
 // ============================================================================
@@ -533,14 +558,22 @@ export function getActiveTeamConfig(teamIdOverride = null) {
     const staticClub = CLUB_REGISTRY[baseClubId] || CLUB_DEFAULTS;
 
     // Layer 1: Club Defaults + Runtime Club Overrides
+    const mergedClubBrandColors = {
+        ...CLUB_DEFAULTS.brandColors,
+        ...(staticClub.brandColors || staticClub.colors || {}),
+        ...(runtimeClubOverrides?.brandColors || runtimeClubOverrides?.colors || {})
+    };
+
     const mergedClub = {
         ...CLUB_DEFAULTS,
         ...staticClub,
         ...(runtimeClubOverrides || {}),
-        colors: {
-            ...CLUB_DEFAULTS.colors,
-            ...(staticClub.colors || {}),
-            ...(runtimeClubOverrides?.colors || {})
+        brandColors: mergedClubBrandColors,
+        uiAccents: {
+            ...UI_ACCENTS,
+            ...(CLUB_DEFAULTS.uiAccents || {}),
+            ...(staticClub.uiAccents || {}),
+            ...(runtimeClubOverrides?.uiAccents || {})
         },
         arrivalRules: {
             ...CLUB_DEFAULTS.arrivalRules,
@@ -566,10 +599,31 @@ export function getActiveTeamConfig(teamIdOverride = null) {
     const staticTeam = TEAM_REGISTRY[resolvedTeamId] || buildDynamicFallbackTeam(resolvedTeamId, mergedClub);
     const teamOverrides = runtimeTeamOverrides || {};
 
-    const effectiveColors = {
-        ...mergedClub.colors,
-        ...(staticTeam.brandingOverrides?.colors || {}),
-        ...(teamOverrides.brandingOverrides?.colors || {})
+    const teamBrandOverrides = {
+        ...(staticTeam.brandingOverrides?.brandColors || staticTeam.brandingOverrides?.colors || {}),
+        ...(teamOverrides.brandingOverrides?.brandColors || teamOverrides.brandingOverrides?.colors || {})
+    };
+
+    const effectiveBrandColors = {
+        ...mergedClub.brandColors,
+        ...teamBrandOverrides
+    };
+
+    // Derive primary glow automatically if primary color was overridden without an explicit primaryGlow
+    if (
+        effectiveBrandColors.primary &&
+        effectiveBrandColors.primary.toLowerCase() !== CLUB_DEFAULTS.brandColors.primary.toLowerCase() &&
+        !teamBrandOverrides.primaryGlow &&
+        !runtimeClubOverrides?.brandColors?.primaryGlow
+    ) {
+        effectiveBrandColors.primaryGlow = hexToRgba(effectiveBrandColors.primary, 0.4);
+    }
+
+    const effectiveUiAccents = {
+        ...UI_ACCENTS,
+        ...(mergedClub.uiAccents || {}),
+        ...(staticTeam.uiAccents || {}),
+        ...(teamOverrides.uiAccents || {})
     };
 
     const effectiveCrestUrl =
@@ -577,7 +631,7 @@ export function getActiveTeamConfig(teamIdOverride = null) {
         staticTeam.brandingOverrides?.crestUrl ||
         mergedClub.crestUrl;
 
-    const primaryHex = stripLeadingHash(effectiveColors.primary);
+    const primaryHex = stripLeadingHash(effectiveBrandColors.primary);
     const effectiveSquadTitle = teamOverrides.squadTitle || staticTeam.squadTitle || `${mergedClub.clubName} ${staticTeam.name}`;
     const effectiveBannerUrl = teamOverrides.bannerPhotoUrl !== undefined
         ? teamOverrides.bannerPhotoUrl
@@ -643,6 +697,8 @@ export function getActiveTeamConfig(teamIdOverride = null) {
         gender: teamOverrides.gender || staticTeam.gender || '',
         tier: teamOverrides.tier || staticTeam.tier || '',
         season: teamOverrides.season || staticTeam.season || mergedClub.season,
+        brandColors: effectiveBrandColors,
+        uiAccents: effectiveUiAccents,
         branding: {
             crestUrl: effectiveCrestUrl,
             crestFallbackText:
@@ -652,7 +708,8 @@ export function getActiveTeamConfig(teamIdOverride = null) {
             crestFallbackUrl: `https://placehold.co/80x80/${primaryHex}/ffffff?text=${encodeURIComponent(mergedClub.crestFallbackText || 'FC')}`,
             bannerPhotoUrl: effectiveBannerUrl,
             bannerFallbackUrl: `https://placehold.co/1200x616/${primaryHex}/ffffff?text=${encodeURIComponent(effectiveSquadTitle)}`,
-            colors: effectiveColors
+            brandColors: effectiveBrandColors,
+            colors: effectiveBrandColors
         },
         arrivalRules: {
             ...mergedClub.arrivalRules,
@@ -684,19 +741,24 @@ export function getActiveTeamConfig(teamIdOverride = null) {
 // ============================================================================
 
 /**
- * Injects resolved Club/Team brand palette tokens onto :root CSS custom properties.
+ * Injects resolved Club/Team brand palette tokens and dedicated UI utility accents
+ * onto :root CSS custom properties.
  */
 export function applyTeamThemeVariables(config = null) {
     if (typeof document === 'undefined' || !document.documentElement) return;
     const active = config || getActiveTeamConfig();
-    const colors = active.branding?.colors || CLUB_DEFAULTS.colors;
+    const brandColors = active.brandColors || active.branding?.brandColors || CLUB_DEFAULTS.brandColors;
+    const accentGold = active.uiAccents?.gold || UI_ACCENTS.gold;
     const root = document.documentElement;
-    root.style.setProperty('--brand-primary', colors.primary);
-    root.style.setProperty('--brand-primary-hover', colors.primaryHover || colors.primary);
-    root.style.setProperty('--brand-primary-glow', colors.primaryGlow || 'rgba(0, 60, 113, 0.4)');
-    root.style.setProperty('--brand-secondary', colors.secondary);
-    root.style.setProperty('--brand-bg', colors.background || '#090d16');
-    root.style.setProperty('--brand-text', colors.text || '#f3f4f6');
+
+    root.style.setProperty('--brand-primary', brandColors.primary || '#003C71');
+    root.style.setProperty('--brand-secondary', brandColors.secondary || '#000000');
+    root.style.setProperty('--brand-white', brandColors.white || '#FFFFFF');
+    root.style.setProperty('--brand-primary-hover', brandColors.primaryHover || '#004d91');
+    root.style.setProperty('--brand-primary-glow', brandColors.primaryGlow || 'rgba(0, 60, 113, 0.4)');
+    root.style.setProperty('--accent-gold', accentGold);
+    root.style.setProperty('--brand-bg', brandColors.background || '#090d16');
+    root.style.setProperty('--brand-text', brandColors.text || '#f3f4f6');
 }
 
 /**
