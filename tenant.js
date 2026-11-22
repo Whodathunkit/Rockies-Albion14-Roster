@@ -243,7 +243,7 @@ export const TEAM_REGISTRY = {
         bannerPhotoUrl: '',
         officials: [
             {
-                name: 'Head Coach (TBD)',
+                name: 'William Fru',
                 role: 'HEAD COACH',
                 subtitle: 'Tactics, Lineups & Training',
                 badgeVariant: 'blue',
@@ -251,16 +251,16 @@ export const TEAM_REGISTRY = {
                 showWhatsapp: false
             },
             {
-                name: 'Team Manager (TBD)',
+                name: 'Tyler Martens',
                 role: 'TEAM MANAGER',
                 subtitle: 'Scheduling, Roster & Operations',
                 badgeVariant: 'amber',
-                email: '',
-                showWhatsapp: false
+                email: 'tyler.martens@gmail.com',
+                showWhatsapp: true
             }
         ],
         links: {
-            whatsappUrl: '',
+            whatsappUrl: 'https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In'',
             instagramUrl: '',
             instagramHandle: '',
             cmsaStandingsUrl: ''
@@ -270,14 +270,14 @@ export const TEAM_REGISTRY = {
             coachPin: '2011'
         },
         kitRules: {
-            matches: 'Royal Blue Home Kit / Black Alternate Kit',
+            matches: 'Royal Blue Home Kit',
             practice: 'Grey/Blue Training Kit & Size 5 Ball',
             pdp: 'Grey/Blue Training Kit & Size 5 Ball',
-            performance: 'Black Training Kit & Size 5 Ball',
+            performance: 'Grey/Blue Training Kit & Size 5 Ball',
             bannerSummary: [
-                { label: 'Matches', value: 'Royal Blue / Black Alternate Kit', accentClass: 'text-amber-400' },
+                { label: 'Matches', value: 'Royal Blue', accentClass: 'text-amber-400' },
                 { label: 'PDP & Team Practice', value: 'Grey/Blue Training Kit', accentClass: 'text-blue-300' },
-                { label: 'Performance', value: 'Black Training Kit', accentClass: 'text-zinc-300' }
+                { label: 'Performance', value: 'Grey/Blue Training Kit', accentClass: 'text-zinc-300' }
             ]
         },
         trainingDefaults: {
