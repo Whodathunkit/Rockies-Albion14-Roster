@@ -260,7 +260,7 @@ export const TEAM_REGISTRY = {
             }
         ],
         links: {
-            whatsappUrl: 'https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In'',
+            whatsappUrl: 'https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In',
             instagramUrl: '',
             instagramHandle: '',
             cmsaStandingsUrl: ''
