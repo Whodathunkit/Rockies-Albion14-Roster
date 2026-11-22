@@ -1,0 +1,218 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // =========================================================================
+    // Global Safety Net (Default Deny)
+    // =========================================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // =========================================================================
+    // Shared Security & Validation Helpers
+    // =========================================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() > 0
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function hasValidTenantEnvelope(data, expectedTeamId) {
+      return data.teamId is string
+        && data.teamId == expectedTeamId
+        && data.clubId is string
+        && data.clubId.size() > 0
+        && data.clubId.size() <= 64
+        && data.updatedAt is int
+        && data.updatedAt > 0;
+    }
+
+    function isValidPlayerProfile(data, teamId) {
+      return hasValidTenantEnvelope(data, teamId)
+        && (!('jersey' in data) || data.jersey is int || (data.jersey is string && data.jersey.size() > 0 && data.jersey.size() <= 16))
+        && (!('name' in data) || (data.name is string && data.name.size() <= 120))
+        && (!('position' in data) || (data.position is string && data.position.size() <= 80))
+        && (!('parents' in data) || (data.parents is string && data.parents.size() <= 300))
+        && (!('siblings' in data) || (data.siblings is string && data.siblings.size() <= 300))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 500))
+        && (!('photo' in data) || (data.photo is string && data.photo.size() <= 600000))
+        && (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 1000))
+        && (!('isGuest' in data) || data.isGuest is bool);
+    }
+
+    function isValidMatchCenter(data, teamId) {
+      return hasValidTenantEnvelope(data, teamId)
+        && (!('scoreUs' in data) || (data.scoreUs is int && data.scoreUs >= 0 && data.scoreUs <= 99))
+        && (!('scoreThem' in data) || (data.scoreThem is int && data.scoreThem >= 0 && data.scoreThem <= 99))
+        && (!('opponentName' in data) || (data.opponentName is string && data.opponentName.size() <= 120))
+        && (!('timerSeconds' in data) || (data.timerSeconds is int && data.timerSeconds >= 0 && data.timerSeconds <= 36000))
+        && (!('timerRunning' in data) || data.timerRunning is bool)
+        && (!('period' in data) || (data.period is string && data.period.size() <= 40))
+        && (!('isFinal' in data) || data.isFinal is bool)
+        && (!('events' in data) || (data.events is list && data.events.size() <= 300))
+        && (!('history' in data) || (data.history is list && data.history.size() <= 200))
+        && (!('guestPlayers' in data) || (data.guestPlayers is list && data.guestPlayers.size() <= 50))
+        && (!('stats' in data) || data.stats is map)
+        && (!('shootout' in data) || data.shootout is map)
+        && (!('attendance' in data) || data.attendance is map);
+    }
+
+    function isValidTeamConfig(data, teamId) {
+      return hasValidTenantEnvelope(data, teamId)
+        && data.keys().hasOnly(['clubId', 'teamId', 'updatedAt', 'standingsJson', 'scheduleJson', 'profilesJson'])
+        && (!('standingsJson' in data) || (data.standingsJson is string && data.standingsJson.size() <= 900000))
+        && (!('scheduleJson' in data) || (data.scheduleJson is string && data.scheduleJson.size() <= 900000))
+        && (!('profilesJson' in data) || (data.profilesJson is string && data.profilesJson.size() <= 900000));
+    }
+
+    function isValidMediaChunk(data, teamId) {
+      return data.keys().hasAll([
+          'clubId', 'teamId', 'mediaId', 'index', 'totalChunks',
+          'metaHeader', 'mimeType', 'data', 'updatedBy', 'createdAt'
+        ])
+        && data.keys().hasOnly([
+          'clubId', 'teamId', 'mediaId', 'index', 'totalChunks',
+          'metaHeader', 'mimeType', 'data', 'updatedBy', 'createdAt'
+        ])
+        && data.teamId is string && data.teamId == teamId
+        && data.clubId is string && data.clubId.size() > 0 && data.clubId.size() <= 64
+        && data.mediaId is string && data.mediaId.size() > 0 && data.mediaId.size() <= 128
+        && data.index is int && data.index >= 0 && data.index < 100
+        && data.totalChunks is int && data.totalChunks >= 1 && data.totalChunks <= 100
+        && data.metaHeader is string && data.metaHeader.size() <= 200
+        && data.mimeType is string && data.mimeType.size() <= 100
+        && data.data is string && data.data.size() > 0 && data.data.size() <= 700000
+        && data.updatedBy is string && data.updatedBy == request.auth.uid
+        && data.createdAt is int && data.createdAt > 0;
+    }
+
+    function isValidSessionDoc(data, teamId) {
+      return data.keys().hasAll(['clubId', 'teamId', 'unlocked', 'updatedAt'])
+        && data.keys().hasOnly(['clubId', 'teamId', 'unlocked', 'updatedAt'])
+        && hasValidTenantEnvelope(data, teamId)
+        && data.unlocked is bool;
+    }
+
+    // =========================================================================
+    // 1. Multi-Tenant Team Hierarchy: teams/{teamId}/...
+    // =========================================================================
+    match /teams/{teamId} {
+
+      // Optional future team metadata document (read-only by default for clients)
+      allow get: if isValidId(teamId);
+
+      // Player Roster & Family Profiles: teams/{teamId}/players/{jersey}
+      match /players/{jersey} {
+        allow get: if isValidId(teamId) && isValidId(jersey);
+        allow list: if isValidId(teamId);
+        allow create, update: if isSignedIn()
+          && isValidId(teamId)
+          && isValidId(jersey)
+          && isValidPlayerProfile(incoming(), teamId);
+        allow delete: if isSignedIn() && isValidId(teamId) && isValidId(jersey);
+      }
+
+      // Live Match Center & Archived Match History: teams/{teamId}/matchCenter/{docId}
+      match /matchCenter/{docId} {
+        allow get: if isValidId(teamId) && isValidId(docId);
+        allow list: if isValidId(teamId);
+        allow create, update: if isSignedIn()
+          && isValidId(teamId)
+          && isValidId(docId)
+          && isValidMatchCenter(incoming(), teamId);
+        allow delete: if isSignedIn() && isValidId(teamId) && isValidId(docId);
+      }
+
+      // Team Portal Config (Schedule, Standings & Profiles Backup): teams/{teamId}/config/{docId}
+      match /config/{docId} {
+        allow get: if isValidId(teamId) && isValidId(docId);
+        allow list: if isValidId(teamId);
+        allow create, update: if isSignedIn()
+          && isValidId(teamId)
+          && isValidId(docId)
+          && isValidTeamConfig(incoming(), teamId);
+        allow delete: if isSignedIn() && isValidId(teamId) && isValidId(docId);
+      }
+
+      // Chunked Highlight Video Storage: teams/{teamId}/mediaChunks/{chunkId}
+      match /mediaChunks/{chunkId} {
+        allow get: if isValidId(teamId) && isValidId(chunkId);
+        allow list: if isValidId(teamId);
+        allow create, update: if isSignedIn()
+          && isValidId(teamId)
+          && isValidId(chunkId)
+          && isValidMediaChunk(incoming(), teamId);
+        allow delete: if isSignedIn() && isValidId(teamId) && isValidId(chunkId);
+      }
+
+      // Per-User Passcode Unlock State: teams/{teamId}/sessions/{uid}
+      // Strictly isolated to the signed-in user's own UID
+      match /sessions/{uid} {
+        allow get: if isOwner(uid) && isValidId(teamId) && isValidId(uid);
+        allow create, update: if isOwner(uid)
+          && isValidId(teamId)
+          && isValidId(uid)
+          && isValidSessionDoc(incoming(), teamId);
+        allow delete: if isOwner(uid) && isValidId(teamId) && isValidId(uid);
+      }
+    }
+
+    // Optional Club-Level Branding Metadata (Read-Only for Static Clients)
+    match /clubs/{clubId} {
+      allow get: if isValidId(clubId);
+    }
+
+    // =========================================================================
+    // 2. Legacy Albion 14 Fallback Bridge: artifacts/{appId}/...
+    //    Maintains seamless read & legacy write compatibility for
+    //    artifacts/rockies-albion-14/public/data/... and user unlock sessions
+    // =========================================================================
+    match /artifacts/{appId} {
+
+      match /public/data/playerProfiles/{jersey} {
+        allow get: if isValidId(appId) && isValidId(jersey);
+        allow list: if isValidId(appId);
+        allow create, update, delete: if isSignedIn() && isValidId(appId) && isValidId(jersey);
+      }
+
+      match /public/data/matchCenter/{docId} {
+        allow get: if isValidId(appId) && isValidId(docId);
+        allow list: if isValidId(appId);
+        allow create, update, delete: if isSignedIn() && isValidId(appId) && isValidId(docId);
+      }
+
+      match /public/data/teamPortal/{docId} {
+        allow get: if isValidId(appId) && isValidId(docId);
+        allow list: if isValidId(appId);
+        allow create, update, delete: if isSignedIn() && isValidId(appId) && isValidId(docId);
+      }
+
+      match /public/data/mediaChunks/{chunkId} {
+        allow get: if isValidId(appId) && isValidId(chunkId);
+        allow list: if isValidId(appId);
+        allow create, update, delete: if isSignedIn() && isValidId(appId) && isValidId(chunkId);
+      }
+
+      match /users/{uid}/preferences/{prefId} {
+        allow get: if isOwner(uid) && isValidId(appId) && isValidId(prefId);
+        allow create, update, delete: if isOwner(uid) && isValidId(appId) && isValidId(prefId);
+      }
+    }
+  }
+}
