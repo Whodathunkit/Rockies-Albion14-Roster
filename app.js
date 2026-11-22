@@ -45,6 +45,14 @@ import {
     markAllAttendance,
     addGuestPlayer,
     removeGuestPlayer,
+    openAddPlayerModal,
+    closeAddPlayerModal,
+    submitAddPlayer,
+    openImportCsvModal,
+    closeImportCsvModal,
+    handleCsvFileSelect,
+    updateCsvImportPreview,
+    submitCsvRosterImport,
     activePlayerCard
 } from './roster.js';
 
@@ -408,6 +416,7 @@ export function updateModeToggleButton() {
     const resetPkBtn = document.getElementById('btn-reset-shootout');
     const addEventBtn = document.getElementById('btn-add-event') || document.getElementById('btn-open-add-event');
     const editStandingsBtn = document.getElementById('btn-open-edit-standings');
+    const rosterCoachActions = document.getElementById('roster-coach-actions');
 
     if (trackerActions) trackerActions.style.display = isCoachMode ? 'grid' : 'none';
     if (periodControls) periodControls.style.display = 'flex';
@@ -419,6 +428,10 @@ export function updateModeToggleButton() {
     if (resetPkBtn) resetPkBtn.style.display = isCoachMode ? 'inline-block' : 'none';
     if (addEventBtn) addEventBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
     if (editStandingsBtn) editStandingsBtn.style.display = isCoachMode ? 'inline-flex' : 'none';
+    if (rosterCoachActions) {
+        rosterCoachActions.classList.toggle('hidden', !isCoachMode);
+        rosterCoachActions.classList.toggle('flex', isCoachMode);
+    }
 
     const editLiveOppBtn = document.getElementById('btn-edit-live-opponent');
     const editLiveOppBox = document.getElementById('edit-live-opponent-box');
@@ -594,6 +607,34 @@ window.handleProfilePhotoUpload = (e) => {
     if (file) processFamilyPhotoFile(file, matchState);
 };
 window.savePlayerVideoUrl = () => savePlayerVideoUrl(matchState);
+
+window.openAddPlayerModal = () => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => openAddPlayerModal());
+        return;
+    }
+    openAddPlayerModal();
+};
+window.closeAddPlayerModal = closeAddPlayerModal;
+window.submitAddPlayer = (e) => submitAddPlayer(e, matchState, () => {
+    updateAllViews();
+    renderPreGameRosterModalList();
+});
+
+window.openImportCsvModal = () => {
+    if (!isCoachMode) {
+        openCoachPinModal(() => openImportCsvModal());
+        return;
+    }
+    openImportCsvModal();
+};
+window.closeImportCsvModal = closeImportCsvModal;
+window.handleCsvFileSelect = handleCsvFileSelect;
+window.updateCsvImportPreview = updateCsvImportPreview;
+window.submitCsvRosterImport = (e) => submitCsvRosterImport(e, matchState, () => {
+    updateAllViews();
+    renderPreGameRosterModalList();
+});
 
 export function handlePreGameButtonClick() {
     if (!isCoachMode) {

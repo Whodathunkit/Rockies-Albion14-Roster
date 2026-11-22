@@ -54,8 +54,10 @@ function loadInitialRosterPlayers() {
                         position: String(p.position || 'Player'),
                         parents: String(p.parents || ''),
                         siblings: String(p.siblings || ''),
+                        notes: String(p.notes || ''),
                         photo: String(p.photo || ''),
-                        videoUrl: String(p.videoUrl || '')
+                        videoUrl: String(p.videoUrl || ''),
+                        isGuest: Boolean(p.isGuest)
                     }))
                     .sort((a, b) => a.jersey - b.jersey);
                 if (derived.length > 0) return derived;
@@ -224,8 +226,10 @@ export function applyProfileDocToRoster(docId, data) {
         if (data.position !== undefined && data.position) rosterPlayer.position = data.position;
         if (data.parents !== undefined) rosterPlayer.parents = data.parents;
         if (data.siblings !== undefined) rosterPlayer.siblings = data.siblings;
+        if (data.notes !== undefined) rosterPlayer.notes = data.notes;
         if (data.photo !== undefined) rosterPlayer.photo = data.photo;
         if (data.videoUrl !== undefined) rosterPlayer.videoUrl = data.videoUrl;
+        if (data.isGuest !== undefined) rosterPlayer.isGuest = Boolean(data.isGuest);
     } else if (data?.name) {
         // Hydrate Firestore-defined player into active squad roster (supports teams without hardcoded seeds)
         players.push({
@@ -235,11 +239,14 @@ export function applyProfileDocToRoster(docId, data) {
             position: String(data.position || 'Player'),
             parents: String(data.parents || ''),
             siblings: String(data.siblings || ''),
+            notes: String(data.notes || ''),
             photo: String(data.photo || ''),
-            videoUrl: String(data.videoUrl || '')
+            videoUrl: String(data.videoUrl || ''),
+            isGuest: Boolean(data.isGuest)
         });
         players.sort((a, b) => Number(a.jersey) - Number(b.jersey));
     }
+    setTeamStorageItem('roster_players', players);
 }
 
 // Player Stat Calculation Logic
@@ -274,7 +281,7 @@ export function getPlayerAssists(jersey, matchState) {
 export function isDefenderOrGK(position) {
     if (!position || typeof position !== 'string') return false;
     const p = position.toLowerCase();
-    return p.includes('goalkeeper') || p.includes('gk') || p.includes('defense') || p.includes('defender');
+    return p.includes('goalkeeper') || /\bgk\b/.test(p) || p.includes('defense') || p.includes('defender') || /\bdef\b/.test(p);
 }
 
 export function getPlayerCleanSheets(player, matchState) {
@@ -449,19 +456,71 @@ export function getPlayerRecentHighlights(jersey, matchState) {
     return items;
 }
 
+function escapeRosterHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function isCoachModeUnlockedLocal(explicitFlag = false) {
+    if (explicitFlag) return true;
+    try {
+        if (localStorage.getItem(getTeamStorageKey('coach_mode')) === 'true') return true;
+    } catch {}
+    try {
+        if (sessionStorage.getItem(getTeamStorageKey('coach_mode')) === 'true') return true;
+    } catch {}
+    return false;
+}
+
 // Render Roster Grid
 export function renderRoster(matchState, isCoachMode = false) {
     const grid = document.getElementById('roster-grid');
     if (!grid) return;
+
+    const coachActive = isCoachModeUnlockedLocal(isCoachMode);
+    const coachHeaderActions = document.getElementById('roster-coach-actions');
+    if (coachHeaderActions) {
+        coachHeaderActions.classList.toggle('hidden', !coachActive);
+        coachHeaderActions.classList.toggle('flex', coachActive);
+    }
 
     const all = getAllRosterPlayers(matchState);
     const activeConfig = getActiveTeamConfig();
 
     if (all.length === 0) {
         grid.innerHTML = `
-            <div class="col-span-full p-8 text-center bg-zinc-900/70 border border-zinc-800 rounded-2xl space-y-2">
-                <p class="text-sm font-extrabold text-white">No players added for ${activeConfig.name} yet</p>
-                <p class="text-xs text-zinc-400">Add players via Coach Mode or sync your squad roster in Firestore (<code class="text-blue-300">teams/${CURRENT_TEAM_ID}/players</code>).</p>
+            <div class="col-span-full p-8 text-center bg-zinc-900/70 border border-zinc-800 rounded-2xl space-y-4">
+                <div class="w-12 h-12 rounded-2xl bg-[var(--brand-primary)]/30 border border-blue-500/30 flex items-center justify-center text-2xl mx-auto">
+                    👥
+                </div>
+                <div class="space-y-1">
+                    <p class="text-sm sm:text-base font-extrabold text-white">No players added for ${escapeRosterHtml(activeConfig.name)} yet</p>
+                    <p class="text-xs text-zinc-400 max-w-md mx-auto">
+                        ${coachActive
+                            ? 'Add players one by one or paste a CSV roster to populate your squad and sync directly to Firestore.'
+                            : `Unlock Coach Mode to add players or bulk import your ${escapeRosterHtml(activeConfig.name)} roster.`}
+                    </p>
+                </div>
+                ${coachActive ? `
+                    <div class="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+                        <button type="button" onclick="window.openAddPlayerModal()" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-hover)] border border-blue-400/50 text-white text-xs font-extrabold shadow-lg transition active:scale-95">
+                            <span>+ Add Player</span>
+                        </button>
+                        <button type="button" onclick="window.openImportCsvModal()" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-100 text-xs font-extrabold shadow transition active:scale-95">
+                            <span>📥 Import CSV</span>
+                        </button>
+                    </div>
+                ` : `
+                    <div class="pt-1">
+                        <button type="button" onclick="window.toggleCoachMode()" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-[var(--accent-gold)] text-[var(--accent-gold)] text-xs font-extrabold transition active:scale-95">
+                            <span>⚡ Unlock Coach Mode to Add Players</span>
+                        </button>
+                    </div>
+                `}
             </div>
         `;
         const countEl = document.getElementById('roster-player-count');
@@ -479,24 +538,30 @@ export function renderRoster(matchState, isCoachMode = false) {
         const prof = playerProfilesMap[p.jersey] || {};
         const customPhoto = prof.photo !== undefined ? prof.photo : p.photo;
         const customVideo = prof.videoUrl !== undefined ? prof.videoUrl : p.videoUrl;
-        const parentsText = prof.parents !== undefined ? prof.parents : (p.parents || 'Family');
+        const rawParents = (prof.parents !== undefined && String(prof.parents).trim() !== '') ? prof.parents : p.parents;
+        const parentsText = rawParents && String(rawParents).trim() !== '' ? String(rawParents) : 'Family';
+        const notesText = (prof.notes !== undefined && String(prof.notes).trim() !== '') ? String(prof.notes) : (p.notes || '');
+        const safeName = escapeRosterHtml(p.name || `Player #${p.jersey}`);
+        const safePos = escapeRosterHtml(p.position || 'Player');
+        const safeNotes = escapeRosterHtml(notesText);
+        const safeParents = escapeRosterHtml(parentsText);
         const recentHighlights = getPlayerRecentHighlights(p.jersey, matchState).slice(0, 2);
 
         return `
-        <div onclick="window.openPlayerModal(${p.jersey})" class="bg-zinc-900 border border-zinc-800/90 hover:border-blue-500/50 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
+        <div onclick="window.openPlayerModal(${Number(p.jersey)})" class="bg-zinc-900 border border-zinc-800/90 hover:border-blue-500/50 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition duration-200 cursor-pointer flex flex-col justify-between group relative overflow-hidden">
             <div class="flex items-start justify-between">
                 <div class="pr-2">
                     <div class="flex flex-wrap items-center gap-1.5">
-                        <h3 class="text-sm font-extrabold text-white group-hover:text-blue-400 transition">${p.name}</h3>
+                        <h3 class="text-sm font-extrabold text-white group-hover:text-blue-400 transition">${safeName}</h3>
                         ${p.isGuest ? `<span class="text-[9px] bg-amber-500/20 border border-amber-500/40 text-amber-300 px-1.5 py-0.2 rounded font-black tracking-wider uppercase">★ Call-Up</span>` : ''}
                         ${customVideo ? `<span class="text-[10px] bg-blue-950 border border-blue-500/40 text-blue-300 px-1.5 py-0.2 rounded font-bold">▶ Clip</span>` : ''}
                     </div>
-                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${p.position}${p.notes ? ` • ${p.notes}` : ''}</p>
-                    <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${parentsText}</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mt-0.5">${safePos}${safeNotes ? ` • ${safeNotes}` : ''}</p>
+                    <p class="text-[11px] text-zinc-400 mt-2">👨‍👩‍👦 ${safeParents}</p>
                 </div>
                 <div class="flex flex-col items-end space-y-1 flex-shrink-0">
                     <div class="w-10 h-10 rounded-xl ${p.isGuest ? 'bg-amber-600/90 border border-amber-400/50' : 'bg-[var(--brand-primary)] border border-blue-400/40'} flex items-center justify-center text-sm font-black text-white shadow-md">
-                        #${p.jersey}
+                        #${Number(p.jersey)}
                     </div>
                 </div>
             </div>
@@ -768,4 +833,421 @@ export async function savePlayerVideoUrl(matchState) {
     await savePlayerProfileToFirebase(activePlayerCard.jersey, { videoUrl: val }, playerProfilesMap);
     refreshActivePlayerModalUI(activePlayerCard.jersey, matchState);
     renderRoster(matchState);
+}
+
+// ============================================================================
+// Coach Mode: Add Single Player & Bulk CSV Roster Import
+// ============================================================================
+
+function upsertLocalRosterPlayer(playerRecord, matchState = null) {
+    const jerseyNum = Number(playerRecord.jersey);
+    const normalized = {
+        id: jerseyNum,
+        jersey: jerseyNum,
+        name: String(playerRecord.name || '').trim(),
+        position: String(playerRecord.position || 'Player').trim() || 'Player',
+        parents: String(playerRecord.parents || '').trim(),
+        siblings: String(playerRecord.siblings || '').trim(),
+        notes: String(playerRecord.notes || '').trim(),
+        photo: String(playerRecord.photo || ''),
+        videoUrl: String(playerRecord.videoUrl || ''),
+        isGuest: Boolean(playerRecord.isGuest)
+    };
+
+    const existingIdx = players.findIndex(p => Number(p.jersey) === jerseyNum);
+    if (existingIdx >= 0) {
+        players[existingIdx] = {
+            ...players[existingIdx],
+            ...normalized,
+            photo: normalized.photo || players[existingIdx].photo || '',
+            videoUrl: normalized.videoUrl || players[existingIdx].videoUrl || '',
+            siblings: normalized.siblings || players[existingIdx].siblings || ''
+        };
+    } else {
+        players.push(normalized);
+    }
+
+    players.sort((a, b) => Number(a.jersey) - Number(b.jersey));
+    setTeamStorageItem('roster_players', players);
+
+    // Ensure new player defaults to attending for match tracking
+    if (playerAttendanceMap[jerseyNum] === undefined) {
+        playerAttendanceMap[jerseyNum] = 'attending';
+        setTeamStorageItem('player_attendance', playerAttendanceMap);
+    }
+    if (matchState) {
+        if (!matchState.attendance) matchState.attendance = {};
+        if (matchState.attendance[jerseyNum] === undefined) {
+            matchState.attendance[jerseyNum] = 'attending';
+        }
+    }
+
+    return players.find(p => Number(p.jersey) === jerseyNum);
+}
+
+export function openAddPlayerModal() {
+    const modal = document.getElementById('add-player-modal');
+    const form = document.getElementById('add-player-form');
+    const errorEl = document.getElementById('add-player-error');
+    if (form) form.reset();
+    if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+    }
+    if (modal) modal.classList.remove('hidden');
+    const jerseyInput = document.getElementById('add-player-jersey');
+    if (jerseyInput) {
+        setTimeout(() => jerseyInput.focus(), 80);
+    }
+}
+
+export function closeAddPlayerModal() {
+    const modal = document.getElementById('add-player-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export async function submitAddPlayer(event, matchState, onUpdate) {
+    if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    const jerseyInput = document.getElementById('add-player-jersey');
+    const nameInput = document.getElementById('add-player-name');
+    const positionInput = document.getElementById('add-player-position');
+    const parentsInput = document.getElementById('add-player-parents');
+    const notesInput = document.getElementById('add-player-notes');
+    const guestToggle = document.getElementById('add-player-is-guest');
+    const errorEl = document.getElementById('add-player-error');
+    const submitBtn = document.getElementById('btn-submit-add-player');
+
+    const showError = (msg) => {
+        if (errorEl) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove('hidden');
+        }
+    };
+
+    const rawJersey = (jerseyInput?.value || '').trim();
+    const jersey = parseInt(rawJersey, 10);
+    if (rawJersey === '' || Number.isNaN(jersey) || jersey < 0 || jersey > 999) {
+        showError('Please enter a valid jersey number between 0 and 999.');
+        jerseyInput?.focus();
+        return false;
+    }
+
+    const name = (nameInput?.value || '').trim();
+    if (!name) {
+        showError('Please enter the player name.');
+        nameInput?.focus();
+        return false;
+    }
+
+    const existing = getAllRosterPlayers(matchState).find(p => Number(p.jersey) === jersey);
+    if (existing) {
+        showError(`Jersey #${jersey} is already assigned to ${existing.name}. Please choose a unique number.`);
+        jerseyInput?.focus();
+        return false;
+    }
+
+    if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('hidden');
+    }
+
+    const position = (positionInput?.value || '').trim() || 'Player';
+    const parents = (parentsInput?.value || '').trim();
+    const notes = (notesInput?.value || '').trim();
+    const isGuest = Boolean(guestToggle?.checked);
+
+    const newPlayer = upsertLocalRosterPlayer({
+        jersey,
+        name,
+        position,
+        parents,
+        notes,
+        isGuest
+    }, matchState);
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
+    }
+
+    try {
+        await savePlayerProfileToFirebase(jersey, {
+            jersey,
+            name: newPlayer.name,
+            position: newPlayer.position,
+            parents: newPlayer.parents,
+            siblings: newPlayer.siblings,
+            notes: newPlayer.notes,
+            isGuest: newPlayer.isGuest
+        }, playerProfilesMap);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '+ Add Player';
+        }
+    }
+
+    closeAddPlayerModal();
+    renderRoster(matchState, true);
+    if (typeof onUpdate === 'function') onUpdate();
+    return false;
+}
+
+// Parse a single RFC-4180 CSV line (handles quoted commas and escaped double quotes)
+function parseCsvLine(line) {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (inQuotes) {
+            if (ch === '"') {
+                if (line[i + 1] === '"') {
+                    current += '"';
+                    i++;
+                } else {
+                    inQuotes = false;
+                }
+            } else {
+                current += ch;
+            }
+        } else if (ch === '"') {
+            inQuotes = true;
+        } else if (ch === ',') {
+            cells.push(current.trim());
+            current = '';
+        } else {
+            current += ch;
+        }
+    }
+    cells.push(current.trim());
+    return cells;
+}
+
+export function parseRosterCsvText(rawText) {
+    const lines = String(rawText || '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+    const validRows = [];
+    const errors = [];
+    const seenJerseys = new Set();
+
+    lines.forEach((line, idx) => {
+        const cols = parseCsvLine(line);
+        if (cols.length === 0) return;
+
+        // Skip optional header row (e.g. "jersey, name, position, parents, notes")
+        const firstColLower = (cols[0] || '').toLowerCase().replace(/^#/, '').trim();
+        if (
+            idx === 0 &&
+            (firstColLower === 'jersey' || firstColLower === 'number' || firstColLower === 'no' || firstColLower === 'jersey number')
+        ) {
+            return;
+        }
+
+        const cleanJerseyStr = (cols[0] || '').replace(/^#/, '').trim();
+        const jersey = parseInt(cleanJerseyStr, 10);
+        const name = (cols[1] || '').trim();
+        const position = (cols[2] || '').trim() || 'Player';
+        const parents = (cols[3] || '').trim();
+        const notes = (cols.slice(4).join(', ') || '').trim();
+
+        if (cleanJerseyStr === '' || Number.isNaN(jersey) || jersey < 0 || jersey > 999) {
+            errors.push(`Line ${idx + 1}: Invalid jersey number "${cols[0] || ''}"`);
+            return;
+        }
+        if (!name) {
+            errors.push(`Line ${idx + 1}: Missing player name for #${jersey}`);
+            return;
+        }
+        if (seenJerseys.has(jersey)) {
+            errors.push(`Line ${idx + 1}: Duplicate jersey #${jersey} inside CSV (skipped)`);
+            return;
+        }
+
+        seenJerseys.add(jersey);
+        validRows.push({
+            jersey,
+            name,
+            position,
+            parents,
+            notes,
+            isGuest: false
+        });
+    });
+
+    return { validRows, errors };
+}
+
+export function openImportCsvModal() {
+    const modal = document.getElementById('import-csv-modal');
+    const textarea = document.getElementById('csv-paste-input');
+    const fileInput = document.getElementById('csv-file-input');
+    const statusEl = document.getElementById('csv-import-status');
+    const previewEl = document.getElementById('csv-import-preview');
+
+    if (textarea) textarea.value = '';
+    if (fileInput) fileInput.value = '';
+    if (statusEl) {
+        statusEl.textContent = '';
+        statusEl.classList.add('hidden');
+    }
+    if (previewEl) {
+        previewEl.innerHTML = '';
+        previewEl.classList.add('hidden');
+    }
+    if (modal) modal.classList.remove('hidden');
+    if (textarea) setTimeout(() => textarea.focus(), 80);
+}
+
+export function closeImportCsvModal() {
+    const modal = document.getElementById('import-csv-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
+export function updateCsvImportPreview() {
+    const textarea = document.getElementById('csv-paste-input');
+    const previewEl = document.getElementById('csv-import-preview');
+    const statusEl = document.getElementById('csv-import-status');
+    if (!textarea || !previewEl) return;
+
+    const raw = textarea.value.trim();
+    if (!raw) {
+        previewEl.innerHTML = '';
+        previewEl.classList.add('hidden');
+        if (statusEl) statusEl.classList.add('hidden');
+        return;
+    }
+
+    const { validRows, errors } = parseRosterCsvText(raw);
+    previewEl.classList.remove('hidden');
+
+    const rowsPreviewHtml = validRows.slice(0, 6).map(r => `
+        <div class="flex items-center justify-between text-[11px] py-1 border-b border-zinc-800/70 last:border-b-0">
+            <div class="flex items-center space-x-2 min-w-0">
+                <span class="px-1.5 py-0.5 rounded bg-[var(--brand-primary)] text-white font-black font-mono text-[10px]">#${r.jersey}</span>
+                <span class="font-bold text-white truncate">${escapeRosterHtml(r.name)}</span>
+                <span class="text-blue-300 text-[10px] font-semibold">${escapeRosterHtml(r.position)}</span>
+            </div>
+            <span class="text-[10px] text-zinc-400 truncate max-w-[140px]">${escapeRosterHtml(r.parents || r.notes || '—')}</span>
+        </div>
+    `).join('');
+
+    const moreCount = validRows.length > 6 ? `<p class="text-[10px] text-zinc-400 pt-1">…and ${validRows.length - 6} more player${validRows.length - 6 === 1 ? '' : 's'}</p>` : '';
+    const errorsHtml = errors.length > 0
+        ? `<div class="mt-2 p-2 rounded-lg bg-rose-950/60 border border-rose-500/40 text-[10px] text-rose-200 space-y-0.5">${errors.slice(0, 4).map(err => `<p>• ${escapeRosterHtml(err)}</p>`).join('')}${errors.length > 4 ? `<p>• …+${errors.length - 4} more issue(s)</p>` : ''}</div>`
+        : '';
+
+    previewEl.innerHTML = `
+        <div class="p-3 rounded-xl bg-zinc-950 border border-zinc-800 space-y-1">
+            <div class="flex items-center justify-between pb-1 border-b border-zinc-800">
+                <span class="text-[11px] font-extrabold text-emerald-400">Ready to Import: ${validRows.length} Player${validRows.length === 1 ? '' : 's'}</span>
+                ${errors.length > 0 ? `<span class="text-[10px] font-bold text-rose-400">${errors.length} skipped</span>` : ''}
+            </div>
+            ${validRows.length > 0 ? rowsPreviewHtml + moreCount : '<p class="text-[11px] text-zinc-500 italic py-1">No valid rows detected yet.</p>'}
+            ${errorsHtml}
+        </div>
+    `;
+}
+
+export function handleCsvFileSelect(event) {
+    const file = event?.target?.files?.[0];
+    if (!file) return;
+    const textarea = document.getElementById('csv-paste-input');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        if (textarea) {
+            textarea.value = String(e.target?.result || '');
+            updateCsvImportPreview();
+        }
+    };
+    reader.readAsText(file);
+}
+
+export async function submitCsvRosterImport(event, matchState, onUpdate) {
+    if (event) {
+        if (typeof event.preventDefault === 'function') event.preventDefault();
+        if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+
+    const textarea = document.getElementById('csv-paste-input');
+    const overwriteToggle = document.getElementById('csv-overwrite-existing');
+    const statusEl = document.getElementById('csv-import-status');
+    const submitBtn = document.getElementById('btn-submit-import-csv');
+
+    const showStatus = (msg, isError = false) => {
+        if (!statusEl) return;
+        statusEl.textContent = msg;
+        statusEl.className = isError
+            ? 'text-xs font-semibold text-rose-300 bg-rose-950/60 border border-rose-500/40 rounded-xl px-3 py-2'
+            : 'text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 rounded-xl px-3 py-2';
+        statusEl.classList.remove('hidden');
+    };
+
+    const { validRows } = parseRosterCsvText(textarea?.value || '');
+    if (validRows.length === 0) {
+        showStatus('Please paste or upload at least one valid CSV row (jersey, name, position, parents, notes).', true);
+        return false;
+    }
+
+    const allowOverwrite = Boolean(overwriteToggle?.checked);
+    const existingJerseys = new Set(players.map(p => Number(p.jersey)));
+    const rowsToImport = allowOverwrite
+        ? validRows
+        : validRows.filter(r => !existingJerseys.has(Number(r.jersey)));
+
+    if (rowsToImport.length === 0) {
+        showStatus('All jersey numbers in this CSV already exist on the roster. Enable "Update existing players" to overwrite them.', true);
+        return false;
+    }
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = `Importing ${rowsToImport.length}...`;
+    }
+
+    try {
+        // 1. Update local roster state immediately
+        const upsertedPlayers = rowsToImport.map(row => upsertLocalRosterPlayer(row, matchState));
+
+        // 2. Batch-save player profiles to Firestore (teams/${CURRENT_TEAM_ID}/players/${jersey})
+        const batchSize = 5;
+        for (let i = 0; i < upsertedPlayers.length; i += batchSize) {
+            const batch = upsertedPlayers.slice(i, i + batchSize);
+            await Promise.all(
+                batch.map(p => savePlayerProfileToFirebase(p.jersey, {
+                    jersey: p.jersey,
+                    name: p.name,
+                    position: p.position,
+                    parents: p.parents,
+                    siblings: p.siblings,
+                    notes: p.notes,
+                    isGuest: p.isGuest
+                }, playerProfilesMap))
+            );
+        }
+
+        renderRoster(matchState, true);
+        if (typeof onUpdate === 'function') onUpdate();
+        closeImportCsvModal();
+    } catch (err) {
+        console.warn('Bulk CSV import error:', err);
+        showStatus('Failed to import some rows. Please check your connection and try again.', true);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📥 Import Players';
+        }
+    }
+
+    return false;
 }
