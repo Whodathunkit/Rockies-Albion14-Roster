@@ -266,8 +266,8 @@ export const TEAM_REGISTRY = {
             cmsaStandingsUrl: ''
         },
         auth: {
-            familyPasscodes: ['alliance11', 'rockies11'],
-            coachPin: '1111'
+            familyPasscodes: ['alliance11', 'rockies11', '2011'],
+            coachPin: '2011'
         },
         kitRules: {
             matches: 'Royal Blue Home Kit / Black Alternate Kit',
