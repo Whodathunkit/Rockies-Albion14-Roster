@@ -1,8 +1,15 @@
 import { players, getAllRosterPlayers } from './roster.js';
 import { savePersistentData } from './firebase.js';
+import {
+    CURRENT_TEAM_ID,
+    getActiveTeamConfig,
+    getTeamStorageKey,
+    getTeamStorageItem,
+    setTeamStorageItem
+} from './tenant.js';
 
-// Default CMSA Boys U13 Tier 2 Standings (18 Teams - Synced with latest CMSA official table)
-export const initialLeagueStandings = [
+// Default Albion 14 CMSA Boys U13 Tier 2 Standings Seed (only seeded when CURRENT_TEAM_ID === 'albion14')
+const ALBION14_STANDINGS_SEED = [
     { id: 1, rank: 1, name: "Blizzard Alliance 14 Boys", team: "Blizzard Alliance 14 Boys", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 11, ga: 4, gd: 7, isUs: false },
     { id: 2, rank: 2, name: "Foothills 2014 Prospects", team: "Foothills 2014 Prospects", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 9, ga: 4, gd: 5, isUs: false },
     { id: 3, rank: 3, name: "Villains Cyclones 14", team: "Villains Cyclones 14", gp: 2, w: 2, t: 0, l: 0, pts: 6, gf: 9, ga: 5, gd: 4, isUs: false },
@@ -23,6 +30,31 @@ export const initialLeagueStandings = [
     { id: 18, rank: 18, name: "CWFC B2014 Green", team: "CWFC B2014 Green", gp: 2, w: 0, t: 0, l: 2, pts: 0, gf: 2, ga: 12, gd: -10, isUs: false }
 ];
 
+export const initialLeagueStandings = CURRENT_TEAM_ID === 'albion14' ? ALBION14_STANDINGS_SEED : [];
+
+/**
+ * Dynamically checks whether a standings row belongs to the active team
+ * using config.teamName / config.name, config.shortName, and config.standingsMatchKeywords.
+ */
+export function isOurTeamInStandings(teamName, explicitFlag = false) {
+    if (explicitFlag) return true;
+    if (!teamName || typeof teamName !== 'string') return false;
+
+    const lower = teamName.toLowerCase().trim();
+    const config = getActiveTeamConfig();
+    const matchTokens = [
+        config.teamName,
+        config.name,
+        config.fullName,
+        config.shortName,
+        ...(Array.isArray(config.standingsMatchKeywords) ? config.standingsMatchKeywords : [])
+    ]
+        .filter(token => typeof token === 'string' && token.trim().length >= 3)
+        .map(token => token.toLowerCase().trim());
+
+    return matchTokens.some(token => lower.includes(token) || token.includes(lower));
+}
+
 export function normalizeStandingItem(team, idx = 0) {
     if (!team || typeof team !== 'object') {
         return {
@@ -42,7 +74,7 @@ export function normalizeStandingItem(team, idx = 0) {
     const ga = Number(team.ga ?? team.goalsAgainst ?? 0) || 0;
     const gd = (team.gd !== undefined) ? Number(team.gd) || 0 : (gf - ga);
     const pts = (team.pts !== undefined) ? Number(team.pts) || 0 : ((w * 3) + (t * 1));
-    const isUs = Boolean(team.isUs || (typeof teamName === 'string' && teamName.toLowerCase().includes('rockies')));
+    const isUs = isOurTeamInStandings(teamName, Boolean(team.isUs));
 
     return {
         id: team.id || idx + 1,
@@ -55,15 +87,27 @@ export function normalizeStandingItem(team, idx = 0) {
 
 export let leagueStandings = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_standings_v4');
+        const saved =
+            getTeamStorageItem('standings_v4', 'rfc14_standings_v4') ||
+            getTeamStorageItem('standings', 'rfc14_standings');
         if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0 && (parsed[0].name || parsed[0].team)) {
-                return parsed.map((item, idx) => normalizeStandingItem(item, idx));
+            if (Array.isArray(parsed)) {
+                if (parsed.length === 0 && CURRENT_TEAM_ID !== 'albion14') {
+                    return [];
+                }
+                if (parsed.length > 0 && (parsed[0].name || parsed[0].team)) {
+                    return parsed.map((item, idx) => normalizeStandingItem(item, idx));
+                }
             }
         }
     } catch {}
-    return initialLeagueStandings.map((item, idx) => normalizeStandingItem(item, idx));
+
+    if (CURRENT_TEAM_ID === 'albion14') {
+        return ALBION14_STANDINGS_SEED.map((item, idx) => normalizeStandingItem(item, idx));
+    }
+
+    return [];
 })();
 
 export function updateLeagueStandings(newStandings) {
@@ -74,8 +118,8 @@ export function updateLeagueStandings(newStandings) {
 
 export function saveLeagueStandings(matchState, scheduleEvents) {
     try {
-        localStorage.setItem('rfc14_standings_v4', JSON.stringify(leagueStandings));
-        localStorage.setItem('rfc14_standings', JSON.stringify(leagueStandings));
+        localStorage.setItem(getTeamStorageKey('standings_v4'), JSON.stringify(leagueStandings));
+        setTeamStorageItem('standings', leagueStandings);
     } catch {}
     if (matchState && scheduleEvents) {
         savePersistentData(matchState, leagueStandings, scheduleEvents);
@@ -164,10 +208,24 @@ export function renderStandings(isCoachMode) {
     if (!tbody) return;
 
     const sorted = getSortedStandings();
+    const activeConfig = getActiveTeamConfig();
+
+    if (sorted.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="py-8 px-4 text-center text-xs text-zinc-400">
+                    No league standings recorded yet for <strong class="text-white">${activeConfig.name}</strong> (${activeConfig.division}).
+                    ${isCoachMode ? ' Click <strong>Edit Standings</strong> to paste or enter your division table.' : ''}
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     tbody.innerHTML = sorted.map(team => {
         const teamName = team.team || 'Unknown Team';
-        const isRockies = Boolean(team.isUs || (typeof teamName === 'string' && teamName.toLowerCase().includes('rockies')));
-        const rowClass = isRockies 
+        const isOurTeam = isOurTeamInStandings(teamName, Boolean(team.isUs));
+        const rowClass = isOurTeam 
             ? 'brand-standings-row font-bold text-white' 
             : 'border-b border-zinc-800/60 hover:bg-zinc-800/30 text-zinc-300';
         
@@ -178,11 +236,11 @@ export function renderStandings(isCoachMode) {
                 </td>
                 <td class="py-2.5 px-3">
                     <div class="flex items-center space-x-2">
-                        ${isRockies 
+                        ${isOurTeam 
                             ? `<span class="w-2 h-2 rounded-full bg-blue-400 ring-4 ring-blue-500/20"></span>` 
                             : `<span class="w-1.5 h-1.5 rounded-full bg-zinc-600"></span>`}
-                        <span class="${isRockies ? 'text-white font-black' : 'text-zinc-200 font-semibold'}">${teamName}</span>
-                        ${isRockies ? `<span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-blue-900 border border-blue-500/40 text-blue-200 font-bold">Our Team</span>` : ''}
+                        <span class="${isOurTeam ? 'text-white font-black' : 'text-zinc-200 font-semibold'}">${teamName}</span>
+                        ${isOurTeam ? `<span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-blue-900 border border-blue-500/40 text-blue-200 font-bold">Our Team</span>` : ''}
                     </div>
                 </td>
                 <td class="py-2.5 px-2 text-center text-zinc-400 font-mono">${team.gp}</td>
@@ -338,9 +396,9 @@ export function renderPendingStandingsPreview(teams, sourceLabel = 'Extracted Ta
                     </thead>
                     <tbody class="divide-y divide-zinc-900">
                         ${teams.map(t => {
-                            const isRockies = t.isUs || (t.team && t.team.toLowerCase().includes('rockies'));
+                            const isOurTeam = isOurTeamInStandings(t.team || t.name, Boolean(t.isUs));
                             return `
-                            <tr class="${isRockies ? 'bg-blue-950/60 font-bold text-blue-200' : 'text-zinc-300'}">
+                            <tr class="${isOurTeam ? 'bg-blue-950/60 font-bold text-blue-200' : 'text-zinc-300'}">
                                 <td class="py-1 px-1 text-zinc-500">${t.rank}</td>
                                 <td class="py-1 px-1 font-semibold truncate max-w-[150px]">${t.team}</td>
                                 <td class="py-1 px-1 text-center font-mono text-zinc-300">${t.gp}</td>
@@ -402,7 +460,7 @@ export function parseCmsaTextTable(rawText) {
                 const gf = numParts[5] !== undefined ? numParts[5] : 0;
                 const ga = numParts[6] !== undefined ? numParts[6] : 0;
                 const gd = numParts[7] !== undefined ? numParts[7] : (gf - ga);
-                const isUs = teamName.toLowerCase().includes('rockies') || teamName.toLowerCase().includes('albion');
+                const isUs = isOurTeamInStandings(teamName, false);
                 parsedTeams.push(normalizeStandingItem({
                     rank: rank || (parsedTeams.length + 1),
                     team: teamName,
@@ -437,7 +495,7 @@ export function parseCmsaTextTable(rawText) {
         const gf = statCount === 8 ? nums[5] : 0;
         const ga = statCount === 8 ? nums[6] : 0;
         const gd = statCount === 8 ? nums[7] : (gf - ga);
-        const isUs = teamName.toLowerCase().includes('rockies') || teamName.toLowerCase().includes('albion');
+        const isUs = isOurTeamInStandings(teamName, false);
 
         parsedTeams.push(normalizeStandingItem({
             rank: rank || (parsedTeams.length + 1),
@@ -478,6 +536,14 @@ export function handlePasteStandingsText() {
 }
 
 export function syncOfficialCmsaStandings() {
+    if (initialLeagueStandings.length === 0) {
+        const activeConfig = getActiveTeamConfig();
+        const statusEl = document.getElementById('ai-scanner-status');
+        if (statusEl) {
+            statusEl.innerHTML = `<div class="text-xs text-amber-300 font-semibold py-1">No built-in seed table is configured for ${activeConfig.name} (${activeConfig.division}). Paste your CMSA division table below or add teams manually.</div>`;
+        }
+        return;
+    }
     pendingScannedStandings = initialLeagueStandings.map((t, idx) => normalizeStandingItem(t, idx));
     renderPendingStandingsPreview(pendingScannedStandings, 'Official CMSA Table');
 }

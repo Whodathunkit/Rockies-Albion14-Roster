@@ -1,7 +1,14 @@
 import { savePlayerProfileToFirebase, resolveFirebaseMediaUrl } from './firebase.js';
+import {
+    CURRENT_TEAM_ID,
+    getActiveTeamConfig,
+    getTeamStorageKey,
+    getTeamStorageItem,
+    setTeamStorageItem
+} from './tenant.js';
 
-// Official 12-Player Roster
-export const players = [
+// Albion 14 Official 12-Player Roster Seed (only seeded when CURRENT_TEAM_ID === 'albion14')
+const ALBION14_SEED_PLAYERS = [
     { id: 1, jersey: 1, name: "Haaris Nathoo", position: "Goalkeeper", parents: "Rizwan & Rabea", siblings: "", photo: "", videoUrl: "" },
     { id: 3, jersey: 3, name: "Nael Salazar Simon", position: "GK/Winger", parents: "Paulina & Armando", siblings: "", photo: "", videoUrl: "" },
     { id: 4, jersey: 4, name: "Logan Martens", position: "Defense", parents: "Tyler & Rosie", siblings: "", photo: "", videoUrl: "" },
@@ -16,9 +23,54 @@ export const players = [
     { id: 70, jersey: 70, name: "Esteban Bazurto", position: "Midfield/Winger", parents: "Family Bazurto", siblings: "", photo: "", videoUrl: "" }
 ];
 
+function loadInitialRosterPlayers() {
+    try {
+        const cachedRoster = localStorage.getItem(getTeamStorageKey('roster_players'));
+        if (cachedRoster) {
+            const parsed = JSON.parse(cachedRoster);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed;
+            }
+        }
+    } catch {}
+
+    // Only seed hardcoded Albion 14 roster when active team is albion14
+    if (CURRENT_TEAM_ID === 'albion14') {
+        return ALBION14_SEED_PLAYERS.map(p => ({ ...p }));
+    }
+
+    // For all other teams, check if team-scoped player profiles already hold roster records
+    try {
+        const rawProfiles = localStorage.getItem(getTeamStorageKey('player_profiles'));
+        if (rawProfiles) {
+            const parsed = JSON.parse(rawProfiles);
+            if (parsed && typeof parsed === 'object') {
+                const derived = Object.values(parsed)
+                    .filter(p => p && p.name && (p.jersey !== undefined && p.jersey !== null))
+                    .map(p => ({
+                        id: Number(p.id || p.jersey),
+                        jersey: Number(p.jersey),
+                        name: String(p.name),
+                        position: String(p.position || 'Player'),
+                        parents: String(p.parents || ''),
+                        siblings: String(p.siblings || ''),
+                        photo: String(p.photo || ''),
+                        videoUrl: String(p.videoUrl || '')
+                    }))
+                    .sort((a, b) => a.jersey - b.jersey);
+                if (derived.length > 0) return derived;
+            }
+        }
+    } catch {}
+
+    return [];
+}
+
+export const players = loadInitialRosterPlayers();
+
 export let guestPlayers = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_guest_players');
+        const saved = getTeamStorageItem('guest_players', 'rfc14_guest_players');
         return saved ? JSON.parse(saved) : [];
     } catch {
         return [];
@@ -27,7 +79,7 @@ export let guestPlayers = (() => {
 
 export let playerAttendanceMap = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_player_attendance');
+        const saved = getTeamStorageItem('player_attendance', 'rfc14_player_attendance');
         return saved ? JSON.parse(saved) : {};
     } catch {
         return {};
@@ -62,7 +114,7 @@ export function togglePlayerAttendance(jersey, matchState, onUpdate) {
     const nextStatus = currentlyAvailable ? 'absent' : 'attending';
 
     playerAttendanceMap[jNum] = nextStatus;
-    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+    setTeamStorageItem('player_attendance', playerAttendanceMap);
 
     if (matchState) {
         if (!matchState.attendance) matchState.attendance = {};
@@ -82,7 +134,7 @@ export function markAllAttendance(status, matchState, onUpdate) {
             matchState.attendance[jNum] = status;
         }
     });
-    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+    setTeamStorageItem('player_attendance', playerAttendanceMap);
     if (typeof onUpdate === 'function') onUpdate();
 }
 
@@ -119,7 +171,7 @@ export function addGuestPlayer(guestData, matchState, onUpdate) {
     };
 
     guestPlayers.push(newGuest);
-    try { localStorage.setItem('rfc14_guest_players', JSON.stringify(guestPlayers)); } catch {}
+    setTeamStorageItem('guest_players', guestPlayers);
 
     if (matchState) {
         if (!Array.isArray(matchState.guestPlayers)) matchState.guestPlayers = [];
@@ -128,7 +180,7 @@ export function addGuestPlayer(guestData, matchState, onUpdate) {
         matchState.attendance[jersey] = 'attending';
     }
     playerAttendanceMap[jersey] = 'attending';
-    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+    setTeamStorageItem('player_attendance', playerAttendanceMap);
 
     if (typeof onUpdate === 'function') onUpdate();
     return true;
@@ -137,21 +189,21 @@ export function addGuestPlayer(guestData, matchState, onUpdate) {
 export function removeGuestPlayer(jersey, matchState, onUpdate) {
     const jNum = Number(jersey);
     guestPlayers = guestPlayers.filter(p => Number(p.jersey) !== jNum);
-    try { localStorage.setItem('rfc14_guest_players', JSON.stringify(guestPlayers)); } catch {}
+    setTeamStorageItem('guest_players', guestPlayers);
 
     if (matchState && Array.isArray(matchState.guestPlayers)) {
         matchState.guestPlayers = matchState.guestPlayers.filter(p => Number(p.jersey) !== jNum);
         if (matchState.attendance) delete matchState.attendance[jNum];
     }
     delete playerAttendanceMap[jNum];
-    try { localStorage.setItem('rfc14_player_attendance', JSON.stringify(playerAttendanceMap)); } catch {}
+    setTeamStorageItem('player_attendance', playerAttendanceMap);
 
     if (typeof onUpdate === 'function') onUpdate();
 }
 
 export let playerProfilesMap = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_player_profiles');
+        const saved = getTeamStorageItem('player_profiles', 'rfc14_player_profiles');
         return saved ? JSON.parse(saved) : {};
     } catch {
         return {};
@@ -161,15 +213,32 @@ export let playerProfilesMap = (() => {
 export let activePlayerCard = null;
 
 export function applyProfileDocToRoster(docId, data) {
-    const jerseyNum = parseInt(docId, 10) || data.jersey;
+    const jerseyNum = parseInt(docId, 10) || Number(data?.jersey);
     if (!jerseyNum) return;
     playerProfilesMap[jerseyNum] = { ...(playerProfilesMap[jerseyNum] || {}), ...data, jersey: jerseyNum };
-    const rosterPlayer = players.find(p => p.jersey === jerseyNum);
+    setTeamStorageItem('player_profiles', playerProfilesMap);
+
+    const rosterPlayer = players.find(p => Number(p.jersey) === jerseyNum);
     if (rosterPlayer) {
+        if (data.name !== undefined && data.name) rosterPlayer.name = data.name;
+        if (data.position !== undefined && data.position) rosterPlayer.position = data.position;
         if (data.parents !== undefined) rosterPlayer.parents = data.parents;
         if (data.siblings !== undefined) rosterPlayer.siblings = data.siblings;
         if (data.photo !== undefined) rosterPlayer.photo = data.photo;
         if (data.videoUrl !== undefined) rosterPlayer.videoUrl = data.videoUrl;
+    } else if (data?.name) {
+        // Hydrate Firestore-defined player into active squad roster (supports teams without hardcoded seeds)
+        players.push({
+            id: Number(data.id || jerseyNum),
+            jersey: jerseyNum,
+            name: String(data.name),
+            position: String(data.position || 'Player'),
+            parents: String(data.parents || ''),
+            siblings: String(data.siblings || ''),
+            photo: String(data.photo || ''),
+            videoUrl: String(data.videoUrl || '')
+        });
+        players.sort((a, b) => Number(a.jersey) - Number(b.jersey));
     }
 }
 
@@ -386,6 +455,19 @@ export function renderRoster(matchState, isCoachMode = false) {
     if (!grid) return;
 
     const all = getAllRosterPlayers(matchState);
+    const activeConfig = getActiveTeamConfig();
+
+    if (all.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full p-8 text-center bg-zinc-900/70 border border-zinc-800 rounded-2xl space-y-2">
+                <p class="text-sm font-extrabold text-white">No players added for ${activeConfig.name} yet</p>
+                <p class="text-xs text-zinc-400">Add players via Coach Mode or sync your squad roster in Firestore (<code class="text-blue-300">teams/${CURRENT_TEAM_ID}/players</code>).</p>
+            </div>
+        `;
+        const countEl = document.getElementById('roster-player-count');
+        if (countEl) countEl.textContent = '0 Players';
+        return;
+    }
 
     grid.innerHTML = all.map(p => {
         const goals = getPlayerGoals(p.jersey, matchState);

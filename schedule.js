@@ -1,12 +1,17 @@
 import { savePersistentData } from './firebase.js';
 import { getOpponentStanding } from './standings.js';
+import {
+    CURRENT_TEAM_ID,
+    getActiveTeamConfig,
+    resolveFacilityAddress,
+    getKitRuleForEventType,
+    getTeamStorageKey,
+    getTeamStorageItem,
+    setTeamStorageItem
+} from './tenant.js';
 
-// Official CMSA 2026-2027 Season Schedule (Exact Imported Schedule)
-// Uniform Rules:
-// - ALL Games: Black Kit
-// - PDP & Team Practice: Grey/Blue Training Kit & Size 5 Ball
-// - Performance: Black Training Kit & Size 5 Ball (Performance Only)
-export const initialScheduleEvents = [
+// Official Albion 14 CMSA 2026-2027 Season Schedule Seed (only seeded when CURRENT_TEAM_ID === 'albion14')
+const ALBION14_SCHEDULE_SEED = [
             { id: 1, type: "game", title: "CMSA Match vs SWU Atletico 14", opponent: "SWU Atletico 14", isHome: true, date: "Saturday, Oct 17, 2026", kickoff: "3:30 PM - 4:45 PM", arrival: "3:00 PM (30 min prior)", location: "Shane Homes West Soccer Dome (Field 4 7v7)", mapUrl: "https://maps.google.com/?q=Shane+Homes+West+Soccer+Dome+Calgary", jerseyKit: "Black Kit" },
             { id: 2, type: "pdp", title: "Player Development Program (PDP)", opponent: "", date: "Tuesday, Oct 20, 2026", kickoff: "7:15 PM - 8:15 PM", arrival: "7:00 PM (15 min prior)", location: "Royal Oak School (Indoor Gym)", mapUrl: "https://maps.google.com/?q=Royal+Oak+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
             { id: 3, type: "practice", title: "Team Tactical Practice", opponent: "", date: "Thursday, Oct 22, 2026", kickoff: "7:30 PM - 8:30 PM", arrival: "7:15 PM (15 min prior)", location: "Captain Nichola Goddard School (Main Gym)", mapUrl: "https://maps.google.com/?q=Captain+Nichola+Goddard+School+Calgary", jerseyKit: "Grey/Blue Training Kit & Size 5 Ball" },
@@ -47,6 +52,8 @@ export const initialScheduleEvents = [
             { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit" }
 ];
 
+export const initialScheduleEvents = CURRENT_TEAM_ID === 'albion14' ? ALBION14_SCHEDULE_SEED : [];
+
 export function parseEventDate(dateStr) {
     if (!dateStr) return null;
     let cleaned = String(dateStr).replace(/^[A-Za-z]+,\s*/, '').trim();
@@ -70,7 +77,14 @@ export function isFutureOrTodayEvent(dateStr) {
 }
 
 export function normalizeScheduleEvent(ev, idx = 0) {
+    const activeConfig = getActiveTeamConfig();
+    const leagueName = activeConfig.leagueName || 'CMSA';
+    const gameArrivalMin = activeConfig.arrivalRules?.gameMinutes || 30;
+    const trainArrivalMin = activeConfig.arrivalRules?.trainingMinutes || 15;
+
     if (!ev || typeof ev !== 'object') {
+        const fallbackLoc = activeConfig.trainingDefaults?.practice?.defaultLocation || 'Calgary West Soccer Centre';
+        const fallbackAddr = resolveFacilityAddress(fallbackLoc, activeConfig);
         return {
             id: idx + 1,
             type: 'practice',
@@ -79,47 +93,34 @@ export function normalizeScheduleEvent(ev, idx = 0) {
             isHome: true,
             date: 'TBD',
             kickoff: 'TBD',
-            arrival: '15 min prior',
-            location: 'Calgary West Soccer Centre',
-            mapUrl: 'https://maps.google.com/?q=Calgary+West+Soccer+Centre',
-            jerseyKit: 'Grey/Blue Training Kit & Size 5 Ball'
+            arrival: `${trainArrivalMin} min prior`,
+            location: fallbackLoc,
+            address: fallbackAddr,
+            mapUrl: `https://maps.google.com/?q=${encodeURIComponent(fallbackAddr || fallbackLoc)}`,
+            jerseyKit: getKitRuleForEventType('practice', activeConfig)
         };
     }
-    const isGame = ev.type === 'game';
-    const isHome = ev.isHome ?? (ev.homeAway === 'Home' || !ev.opponent?.startsWith('@'));
-    
-    // Updated uniform rules:
-    // 1. ALL games: Black Kit
-    // 2. Performance (session): Black Training Kit & Size 5 Ball (Performance Only)
-    // 3. PDP & Team Practice (session): Grey/Blue Training Kit & Size 5 Ball
-    let defaultKit = 'Grey/Blue Training Kit & Size 5 Ball';
-    if (isGame) {
-        defaultKit = 'Black Kit';
-    } else if (ev.type === 'performance') {
-        defaultKit = 'Black Training Kit & Size 5 Ball';
-    } else if (ev.type === 'pdp' || ev.type === 'practice') {
-        defaultKit = 'Grey/Blue Training Kit & Size 5 Ball';
-    }
 
+    const eventType = ev.type || 'game';
+    const isGame = eventType === 'game';
+    const isHome = ev.isHome ?? (ev.homeAway === 'Home' || !ev.opponent?.startsWith('@'));
+
+    // Resolve default kit dynamically from active Club/Team configuration
+    const defaultKit = getKitRuleForEventType(eventType, activeConfig);
     let resolvedKit = String(ev.jerseyKit || ev.uniformKit || defaultKit).trim();
-    // Automatic migration of legacy stored uniform strings:
-    if (isGame && (resolvedKit.includes('Royal Blue') || resolvedKit.includes('Away Alternate'))) {
-        resolvedKit = 'Black Kit';
-    } else if (ev.type === 'pdp' && resolvedKit.includes('Black Training Kit')) {
-        resolvedKit = 'Grey/Blue Training Kit & Size 5 Ball';
+
+    // Automatic migration of legacy Albion 14 stored uniform strings
+    if (CURRENT_TEAM_ID === 'albion14') {
+        if (isGame && (resolvedKit.includes('Royal Blue') || resolvedKit.includes('Away Alternate'))) {
+            resolvedKit = getKitRuleForEventType('game', activeConfig);
+        } else if (eventType === 'pdp' && resolvedKit.includes('Black Training Kit')) {
+            resolvedKit = getKitRuleForEventType('pdp', activeConfig);
+        }
     }
 
     let resolvedAddress = String(ev.address || '').trim();
-    const locLower = String(ev.location || '').toLowerCase();
-    if (!resolvedAddress) {
-        if (locLower.includes('vivo')) resolvedAddress = '11950 Country Village Link NE, Calgary';
-        else if (locLower.includes('royal oak')) resolvedAddress = '9100 Royal Oak Way NW, Calgary';
-        else if (locLower.includes('captain nichola') || locLower.includes('nichola goddard')) resolvedAddress = '405 Panatella Blvd NW, Calgary';
-        else if (locLower.includes('shane homes') || locLower.includes('calgary west') || locLower.includes('cwsc')) resolvedAddress = '11014 Bearspaw Dam Rd NW, Calgary';
-        else if (locLower.includes('bearspaw')) resolvedAddress = '253220 Bearspaw Rd, Calgary';
-        else if (locLower.includes('shouldice')) resolvedAddress = '1515 Home Rd NW, Calgary';
-        else if (locLower.includes('macron') || locLower.includes('foothills')) resolvedAddress = '111 Aerial Place NE, Calgary';
-        else if (locLower.includes('edge school')) resolvedAddress = '33055 Township Rd 250, Calgary';
+    if (!resolvedAddress && ev.location) {
+        resolvedAddress = resolveFacilityAddress(ev.location, activeConfig);
     }
 
     const mapQuery = resolvedAddress || ev.location || 'Calgary';
@@ -127,13 +128,13 @@ export function normalizeScheduleEvent(ev, idx = 0) {
 
     return {
         id: Number(ev.id) || idx + 1,
-        type: ev.type || 'game',
-        title: String(ev.title || (isGame ? `CMSA Match ${isHome ? 'vs' : '@'} ${ev.opponent || 'Opponent'}` : 'Team Practice')).trim(),
+        type: eventType,
+        title: String(ev.title || (isGame ? `${leagueName} Match ${isHome ? 'vs' : '@'} ${ev.opponent || 'Opponent'}` : 'Team Practice')).trim(),
         opponent: String(ev.opponent || '').trim(),
         isHome: Boolean(isHome),
         date: String(ev.date || 'TBD').trim(),
         kickoff: String(ev.kickoff || ev.time || 'TBD').trim(),
-        arrival: String(ev.arrival || (isGame ? '30 min prior' : '15 min prior')).trim(),
+        arrival: String(ev.arrival || (isGame ? `${gameArrivalMin} min prior` : `${trainArrivalMin} min prior`)).trim(),
         location: String(ev.location || 'Calgary').trim(),
         address: resolvedAddress,
         mapUrl: mapUrl,
@@ -141,22 +142,35 @@ export function normalizeScheduleEvent(ev, idx = 0) {
     };
 }
 
-// Load schedule with versioned cache check to prevent stale invalid data
+// Load team-scoped schedule with versioned cache check; only seed 38-event schedule for albion14
 export let scheduleEvents = (() => {
     try {
-        const saved = localStorage.getItem('rfc14_schedule_v4') || localStorage.getItem('rfc14_schedule_v3');
+        const saved =
+            getTeamStorageItem('schedule_v4', 'rfc14_schedule_v4') ||
+            getTeamStorageItem('schedule_v3', 'rfc14_schedule_v3') ||
+            getTeamStorageItem('schedule', 'rfc14_schedule');
         if (saved) {
             const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].kickoff) {
-                const normalized = parsed.map((e, idx) => normalizeScheduleEvent(e, idx));
-                try { localStorage.setItem('rfc14_schedule_v4', JSON.stringify(normalized)); } catch {}
-                return normalized;
+            if (Array.isArray(parsed)) {
+                if (parsed.length === 0 && CURRENT_TEAM_ID !== 'albion14') {
+                    return [];
+                }
+                if (parsed.length > 0 && parsed[0].kickoff) {
+                    const normalized = parsed.map((e, idx) => normalizeScheduleEvent(e, idx));
+                    setTeamStorageItem('schedule_v4', normalized);
+                    return normalized;
+                }
             }
         }
     } catch {}
-    const initial = initialScheduleEvents.map((e, idx) => normalizeScheduleEvent(e, idx));
-    try { localStorage.setItem('rfc14_schedule_v4', JSON.stringify(initial)); } catch {}
-    return initial;
+
+    if (CURRENT_TEAM_ID === 'albion14') {
+        const initial = ALBION14_SCHEDULE_SEED.map((e, idx) => normalizeScheduleEvent(e, idx));
+        setTeamStorageItem('schedule_v4', initial);
+        return initial;
+    }
+
+    return [];
 })();
 
 export let currentScheduleFilter = 'all';
@@ -170,9 +184,8 @@ export function updateScheduleEvents(newEvents) {
 
 export function saveScheduleEvents(matchState, leagueStandings) {
     try {
-        localStorage.setItem('rfc14_schedule_v4', JSON.stringify(scheduleEvents));
-        localStorage.setItem('rfc14_schedule_v3', JSON.stringify(scheduleEvents));
-        localStorage.setItem('rfc14_schedule', JSON.stringify(scheduleEvents));
+        localStorage.setItem(getTeamStorageKey('schedule_v4'), JSON.stringify(scheduleEvents));
+        setTeamStorageItem('schedule_v4', scheduleEvents);
     } catch {}
     savePersistentData(matchState || null, leagueStandings || null, scheduleEvents);
 }
@@ -234,12 +247,15 @@ export function renderSchedule(leagueStandings, isCoachMode) {
         return;
     }
 
+    const activeConfig = getActiveTeamConfig();
+    const leagueName = activeConfig.leagueName || 'CMSA';
+
     list.innerHTML = filtered.map(ev => {
         const isGame = ev.type === 'game';
         const isPDP = ev.type === 'pdp';
         const isPerf = ev.type === 'performance';
 
-        let badgeLabel = '⚽ CMSA Match';
+        let badgeLabel = `⚽ ${leagueName} Match`;
         let badgeClass = 'bg-blue-950 text-blue-300 border-blue-500/50';
 
         if (isPDP) {
@@ -394,6 +410,8 @@ export function renderSchedule(leagueStandings, isCoachMode) {
 }
 
 export function handleEventTypeChange() {
+    const activeConfig = getActiveTeamConfig();
+    const defaults = activeConfig.trainingDefaults || {};
     const type = document.getElementById('new-event-type')?.value || 'practice';
     const opponentLabel = document.getElementById('new-event-opponent-label');
     const opponentInput = document.getElementById('new-event-opponent');
@@ -403,59 +421,71 @@ export function handleEventTypeChange() {
     const addressInput = document.getElementById('new-event-address');
     const timeInput = document.getElementById('new-event-time');
 
+    const knownDefaultLocs = [
+        defaults.pdp?.defaultLocation,
+        defaults.performance?.defaultLocation,
+        defaults.practice?.defaultLocation
+    ].filter(Boolean);
+    const knownDefaultAddrs = [
+        defaults.pdp?.defaultAddress,
+        defaults.performance?.defaultAddress,
+        defaults.practice?.defaultAddress
+    ].filter(Boolean);
+
+    const isAutoLocation = !locationInput?.value || knownDefaultLocs.includes(locationInput.value);
+    const isAutoAddress = !addressInput?.value || knownDefaultAddrs.includes(addressInput.value);
+
+    if (kitInput) {
+        kitInput.value = getKitRuleForEventType(type, activeConfig);
+    }
+
     if (type === 'game') {
+        const gameDef = defaults.game || {};
         if (opponentLabel) opponentLabel.textContent = 'Opponent Team Name *';
         if (opponentInput) {
-            opponentInput.placeholder = 'e.g. SWU Atletico 14B';
+            opponentInput.placeholder = gameDef.opponentPlaceholder || 'e.g. Opponent FC';
         }
         if (homeAwayGroup) homeAwayGroup.style.display = 'block';
-        if (kitInput) kitInput.value = 'Black Kit';
-        if (locationInput) locationInput.placeholder = 'Shane Homes West Soccer Dome (Field 2 7v7)';
-        if (addressInput) addressInput.placeholder = '11014 Bearspaw Dam Rd NW, Calgary';
-        if (timeInput && !timeInput.value) timeInput.placeholder = '1:00 PM - 2:15 PM';
+        if (locationInput) locationInput.placeholder = gameDef.locationPlaceholder || 'Home Soccer Facility';
+        if (addressInput) addressInput.placeholder = gameDef.addressPlaceholder || resolveFacilityAddress(gameDef.locationPlaceholder || '', activeConfig) || 'Facility Street Address';
+        if (timeInput && !timeInput.value) timeInput.placeholder = gameDef.timePlaceholder || '1:00 PM - 2:15 PM';
     } else if (type === 'pdp') {
+        const pdpDef = defaults.pdp || {};
+        const pdpLoc = pdpDef.defaultLocation || 'Calgary West Soccer Centre';
+        const pdpAddr = pdpDef.defaultAddress || resolveFacilityAddress(pdpLoc, activeConfig);
         if (opponentLabel) opponentLabel.textContent = 'Session Focus (Optional)';
         if (opponentInput) {
             opponentInput.placeholder = 'e.g. Technical Footwork & Passing (or leave blank)';
         }
         if (homeAwayGroup) homeAwayGroup.style.display = 'none';
-        if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
-        if (locationInput && (!locationInput.value || locationInput.value.includes('Calgary West') || locationInput.value.includes('Captain Nichola'))) {
-            locationInput.value = 'Royal Oak School (Indoor Gym)';
-        }
-        if (addressInput && (!addressInput.value || addressInput.value.includes('Bearspaw') || addressInput.value.includes('Panatella'))) {
-            addressInput.value = '9100 Royal Oak Way NW, Calgary';
-        }
-        if (timeInput && !timeInput.value) timeInput.value = '7:15 PM - 8:15 PM';
+        if (locationInput && isAutoLocation) locationInput.value = pdpLoc;
+        if (addressInput && isAutoAddress) addressInput.value = pdpAddr;
+        if (timeInput && !timeInput.value) timeInput.value = pdpDef.defaultTime || '7:15 PM - 8:15 PM';
     } else if (type === 'performance') {
+        const perfDef = defaults.performance || {};
+        const perfLoc = perfDef.defaultLocation || 'Calgary West Soccer Centre';
+        const perfAddr = perfDef.defaultAddress || resolveFacilityAddress(perfLoc, activeConfig);
         if (opponentLabel) opponentLabel.textContent = 'Session Focus (Optional)';
         if (opponentInput) {
             opponentInput.placeholder = 'e.g. Speed, Agility & Strength (or leave blank)';
         }
         if (homeAwayGroup) homeAwayGroup.style.display = 'none';
-        if (kitInput) kitInput.value = 'Black Training Kit & Size 5 Ball';
-        if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Captain Nichola'))) {
-            locationInput.value = 'Calgary West Soccer Centre (Field 2a)';
-        }
-        if (addressInput && (!addressInput.value || addressInput.value.includes('Royal Oak') || addressInput.value.includes('Panatella'))) {
-            addressInput.value = '11014 Bearspaw Dam Rd NW, Calgary';
-        }
-        if (timeInput && !timeInput.value) timeInput.value = '6:00 PM - 7:00 PM';
+        if (locationInput && isAutoLocation) locationInput.value = perfLoc;
+        if (addressInput && isAutoAddress) addressInput.value = perfAddr;
+        if (timeInput && !timeInput.value) timeInput.value = perfDef.defaultTime || '6:00 PM - 7:00 PM';
     } else {
         // practice
+        const pracDef = defaults.practice || {};
+        const pracLoc = pracDef.defaultLocation || 'Calgary West Soccer Centre';
+        const pracAddr = pracDef.defaultAddress || resolveFacilityAddress(pracLoc, activeConfig);
         if (opponentLabel) opponentLabel.textContent = 'Practice Topic / Focus (Optional)';
         if (opponentInput) {
             opponentInput.placeholder = 'e.g. Shooting, Finishing & Defensive Shape (or leave blank)';
         }
         if (homeAwayGroup) homeAwayGroup.style.display = 'none';
-        if (kitInput) kitInput.value = 'Grey/Blue Training Kit & Size 5 Ball';
-        if (locationInput && (!locationInput.value || locationInput.value.includes('Royal Oak') || locationInput.value.includes('Calgary West'))) {
-            locationInput.value = 'Captain Nichola Goddard School (Main Gym)';
-        }
-        if (addressInput && (!addressInput.value || addressInput.value.includes('Royal Oak') || addressInput.value.includes('Bearspaw'))) {
-            addressInput.value = '405 Panatella Blvd NW, Calgary';
-        }
-        if (timeInput && !timeInput.value) timeInput.value = '7:30 PM - 8:30 PM';
+        if (locationInput && isAutoLocation) locationInput.value = pracLoc;
+        if (addressInput && isAutoAddress) addressInput.value = pracAddr;
+        if (timeInput && !timeInput.value) timeInput.value = pracDef.defaultTime || '7:30 PM - 8:30 PM';
     }
 }
 
@@ -585,13 +615,19 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
         if (typeof event.stopPropagation === 'function') event.stopPropagation();
     }
 
+    const activeConfig = getActiveTeamConfig();
+    const leagueName = activeConfig.leagueName || 'CMSA';
+    const shortName = activeConfig.shortName || activeConfig.clubShortName || 'Club';
+    const gameArrivalMin = activeConfig.arrivalRules?.gameMinutes || 30;
+    const trainArrivalMin = activeConfig.arrivalRules?.trainingMinutes || 15;
+
     const editingId = document.getElementById('edit-event-id')?.value.trim();
     const type = document.getElementById('new-event-type')?.value || 'practice';
     const rawTitleOrOpponent = document.getElementById('new-event-opponent')?.value.trim() || '';
     const dateInput = document.getElementById('new-event-date')?.value.trim() || '';
     const time = document.getElementById('new-event-time')?.value.trim() || '';
-    const location = document.getElementById('new-event-location')?.value.trim() || 'Calgary West Soccer Centre';
-    const address = document.getElementById('new-event-address')?.value.trim() || '';
+    const location = document.getElementById('new-event-location')?.value.trim() || activeConfig.trainingDefaults?.practice?.defaultLocation || 'Calgary West Soccer Centre';
+    const address = document.getElementById('new-event-address')?.value.trim() || resolveFacilityAddress(location, activeConfig);
     const isHome = document.getElementById('new-event-homeaway')?.value === 'Home';
     const isGame = type === 'game';
     const isPDP = type === 'pdp';
@@ -607,9 +643,7 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
         return;
     }
 
-    const defaultKitForType = isGame 
-        ? 'Black Kit' 
-        : (isPerf ? 'Black Training Kit & Size 5 Ball' : 'Grey/Blue Training Kit & Size 5 Ball');
+    const defaultKitForType = getKitRuleForEventType(type, activeConfig);
     const uniformKit = document.getElementById('new-event-kit')?.value.trim() || defaultKitForType;
 
     let title = '';
@@ -617,11 +651,11 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
 
     if (isGame) {
         opponent = rawTitleOrOpponent || 'Opponent';
-        title = `CMSA Match ${isHome ? 'vs' : '@'} ${opponent}`;
+        title = `${leagueName} Match ${isHome ? 'vs' : '@'} ${opponent}`;
     } else if (isPDP) {
         title = rawTitleOrOpponent ? `Player Development Program (PDP) - ${rawTitleOrOpponent}` : 'Player Development Program (PDP)';
     } else if (isPerf) {
-        title = rawTitleOrOpponent ? `Rockies Performance Session - ${rawTitleOrOpponent}` : 'Rockies Performance Session';
+        title = rawTitleOrOpponent ? `${shortName} Performance Session - ${rawTitleOrOpponent}` : `${shortName} Performance Session`;
     } else {
         // practice
         title = rawTitleOrOpponent || 'Team Tactical Practice';
@@ -638,7 +672,7 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
                 isHome,
                 date: dateInput,
                 kickoff: time || 'TBD',
-                arrival: isGame ? '30 min prior' : '15 min prior',
+                arrival: isGame ? `${gameArrivalMin} min prior` : `${trainArrivalMin} min prior`,
                 location,
                 address,
                 jerseyKit: uniformKit
@@ -654,7 +688,7 @@ export function saveNewScheduleEvent(event, matchState, leagueStandings, onSaved
             isHome,
             date: dateInput,
             kickoff: time || 'TBD',
-            arrival: isGame ? '30 min prior' : '15 min prior',
+            arrival: isGame ? `${gameArrivalMin} min prior` : `${trainArrivalMin} min prior`,
             location,
             address,
             jerseyKit: uniformKit

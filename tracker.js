@@ -1,7 +1,14 @@
 import { players, getAllRosterPlayers, getAvailablePlayers, isPlayerAvailable } from './roster.js';
 import { savePersistentData, resolveFirebaseMediaUrl } from './firebase.js';
+import {
+    CURRENT_TEAM_ID,
+    getActiveTeamConfig,
+    getTeamStorageKey,
+    getTeamStorageItem,
+    setTeamStorageItem
+} from './tenant.js';
 
-export const initialPastMatches = [
+const ALBION14_PAST_MATCHES_SEED = [
     {
         id: 1792877536561,
         opponent: "CWFC B2014 Green",
@@ -189,6 +196,18 @@ export const initialPastMatches = [
     }
 ];
 
+export const initialPastMatches = CURRENT_TEAM_ID === 'albion14' ? ALBION14_PAST_MATCHES_SEED : [];
+
+function getActiveTeamLabels() {
+    const cfg = getActiveTeamConfig();
+    return {
+        teamName: cfg.name || 'Our Team',
+        shortName: cfg.shortName || cfg.clubShortName || cfg.name || 'Team',
+        leagueName: cfg.leagueName || 'CMSA',
+        defaultOpponent: cfg.defaultOpponent || 'Opponent'
+    };
+}
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -263,14 +282,21 @@ function getMatchById(matchId) {
 }
 
 export let matchState = (() => {
+    const labels = getActiveTeamLabels();
+    const isAlbion14 = CURRENT_TEAM_ID === 'albion14';
     let state = null;
     try {
-        const saved = localStorage.getItem('rfc14_match_state');
+        const saved = getTeamStorageItem('match_state', 'rfc14_match_state');
         if (saved) {
             const parsed = JSON.parse(saved);
-            // Verify not corrupt with fake mock id
-            if (parsed && Array.isArray(parsed.history) && !parsed.history.some(m => m.id === 101 || (m.motmJersey === 4 && m.opponent?.includes('CWFC')))) {
-                state = parsed;
+            if (parsed && typeof parsed === 'object') {
+                // Verify Albion 14 state is not corrupt with legacy mock id 101
+                const isCorruptLegacy = isAlbion14 &&
+                    Array.isArray(parsed.history) &&
+                    parsed.history.some(m => m.id === 101 || (m.motmJersey === 4 && m.opponent?.includes('CWFC')));
+                if (!isCorruptLegacy) {
+                    state = parsed;
+                }
             }
         }
     } catch {}
@@ -279,7 +305,7 @@ export let matchState = (() => {
         state = {
             scoreUs: 0,
             scoreThem: 0,
-            opponentName: "CWFC B2014 Green",
+            opponentName: labels.defaultOpponent,
             timerSeconds: 0,
             timerRunning: false,
             period: "1st Half",
@@ -288,15 +314,18 @@ export let matchState = (() => {
             events: [],
             shootout: { active: false, usKicks: [], themKicks: [] },
             stats: createEmptyStats(),
-            history: JSON.parse(JSON.stringify(initialPastMatches)),
+            history: isAlbion14 ? JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED)) : [],
             attendance: {},
             guestPlayers: []
         };
     }
 
-    if (!Array.isArray(state.history) || state.history.length === 0) {
-        state.history = JSON.parse(JSON.stringify(initialPastMatches));
+    if (!Array.isArray(state.history)) {
+        state.history = isAlbion14 ? JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED)) : [];
+    } else if (isAlbion14 && state.history.length === 0) {
+        state.history = JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED));
     }
+
     if (!state.attendance || typeof state.attendance !== 'object') {
         state.attendance = {};
     }
@@ -305,6 +334,9 @@ export let matchState = (() => {
     }
     ensureStatsObj(state);
     migratePlayerNames(state);
+    try {
+        localStorage.setItem(getTeamStorageKey('match_state'), JSON.stringify(state));
+    } catch {}
     return state;
 })();
 
@@ -399,21 +431,22 @@ export function updateMatchFinalBanner() {
     const headerText = document.getElementById('match-header-status-text');
     const pulseDot = document.getElementById('match-live-pulse-dot');
     const endBtnLabel = document.getElementById('btn-end-match-label');
+    const { shortName, leagueName } = getActiveTeamLabels();
 
     if (matchState.period === 'Full Time' || matchState.isFinal) {
         if (banner) banner.classList.remove('hidden');
         if (resultText) {
             const us = matchState.scoreUs;
             const them = matchState.scoreThem;
-            const outcome = us > them ? 'Rockies WIN 🎉' : (us === them ? 'DRAW 🤝' : 'Opponent WIN');
-            resultText.textContent = `FINAL SCORE: Rockies ${us} - ${them} ${matchState.opponentName} (${outcome})`;
+            const outcome = us > them ? `${shortName} WIN 🎉` : (us === them ? 'DRAW 🤝' : 'Opponent WIN');
+            resultText.textContent = `FINAL SCORE: ${shortName} ${us} - ${them} ${matchState.opponentName} (${outcome})`;
         }
         if (headerText) headerText.textContent = "MATCH COMPLETED (FINAL)";
         if (pulseDot) pulseDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-400";
         if (endBtnLabel) endBtnLabel.textContent = "Archive Match";
     } else {
         if (banner) banner.classList.add('hidden');
-        if (headerText) headerText.textContent = "CMSA LEAGUE MATCH";
+        if (headerText) headerText.textContent = `${leagueName.toUpperCase()} LEAGUE MATCH`;
         if (pulseDot) pulseDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping";
         if (endBtnLabel) endBtnLabel.textContent = "End Match";
     }
@@ -1459,9 +1492,11 @@ function renderEventDetailModalContent(isCoachMode) {
         ? `Live Match vs ${matchState.opponentName || 'Opponent'}`
         : `vs ${target.opponent || 'Opponent'} (${target.date || 'Archived'})`;
 
+    const { shortName } = getActiveTeamLabels();
+
     if (badgeEl) {
         if (eventType === 'goal') {
-            badgeEl.textContent = '⚽ Rockies Goal';
+            badgeEl.textContent = `⚽ ${shortName} Goal`;
             badgeEl.className = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-950 text-blue-300 border border-blue-500/40';
         } else if (eventType === 'opp_goal') {
             badgeEl.textContent = '🥅 Opponent Goal';
@@ -1474,7 +1509,7 @@ function renderEventDetailModalContent(isCoachMode) {
 
     if (titleEl) {
         if (isNew) {
-            titleEl.textContent = eventType === 'goal' ? 'Add Rockies Goal' : eventType === 'opp_goal' ? 'Add Opponent Goal' : 'Add Defensive Stop';
+            titleEl.textContent = eventType === 'goal' ? `Add ${shortName} Goal` : eventType === 'opp_goal' ? 'Add Opponent Goal' : 'Add Defensive Stop';
         } else {
             titleEl.textContent = isCoachMode ? 'Inspect & Edit Event' : 'Event Details';
         }
@@ -1907,6 +1942,8 @@ function renderMatchReviewContent(isCoachMode) {
 
     const boxScore = buildPlayerBoxScore(match);
 
+    const { teamName, shortName } = getActiveTeamLabels();
+
     // Penalty Shootout section if present
     const sh = match.shootout;
     const hasShootout = sh && (sh.active || (sh.usKicks && sh.usKicks.length > 0) || (sh.themKicks && sh.themKicks.length > 0));
@@ -1918,7 +1955,7 @@ function renderMatchReviewContent(isCoachMode) {
             </div>
             <div class="grid grid-cols-2 gap-3 text-[11px]">
                 <div>
-                    <span class="text-blue-300 font-bold block mb-1">Rockies</span>
+                    <span class="text-blue-300 font-bold block mb-1">${escapeHtml(shortName)}</span>
                     <div class="flex flex-wrap gap-1">${renderKickBubbles(sh.usKicks || [])}</div>
                 </div>
                 <div>
@@ -1961,7 +1998,7 @@ function renderMatchReviewContent(isCoachMode) {
         <div class="p-4 sm:p-5 rounded-2xl brand-review-hero border border-blue-500/25 space-y-3">
             <div class="grid grid-cols-7 items-center text-center gap-2">
                 <div class="col-span-3 space-y-1">
-                    <span class="text-[10px] font-black uppercase tracking-widest text-blue-300">Rockies Albion 14</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest text-blue-300">${escapeHtml(teamName)}</span>
                     <div class="text-4xl sm:text-5xl font-black text-white font-mono">${scoreUs}</div>
                 </div>
                 <div class="col-span-1 text-xs font-black text-zinc-500 uppercase">VS</div>
@@ -2018,7 +2055,7 @@ function renderMatchReviewContent(isCoachMode) {
                     ${isCoachMode ? `<p class="text-[10px] text-emerald-400 mt-0.5">Coach Mode active — adjust any stat directly below.</p>` : ''}
                 </div>
                 <div class="flex items-center space-x-3 text-[11px] font-bold">
-                    <span class="text-blue-400">Rockies</span>
+                    <span class="text-blue-400">${escapeHtml(shortName)}</span>
                     <span class="text-zinc-500">vs</span>
                     <span class="text-amber-400 truncate max-w-[110px]">${escapeHtml(opponent)}</span>
                 </div>
@@ -2116,13 +2153,15 @@ export async function copyMatchReviewSummary(matchId, btnEl) {
         motmText = match.motmName;
     }
 
+    const { teamName, shortName } = getActiveTeamLabels();
+
     const lines = [
-        `⚽ Rockies Albion 14 vs ${opponent}`,
+        `⚽ ${teamName} vs ${opponent}`,
         `📅 ${dateStr}`,
-        `🏆 Final Score: Rockies ${match.scoreUs || 0} - ${match.scoreThem || 0} ${opponent}`,
+        `🏆 Final Score: ${shortName} ${match.scoreUs || 0} - ${match.scoreThem || 0} ${opponent}`,
         `🎖️ MOTM: ${motmText}`,
         ``,
-        `📊 Match Stats (Rockies vs ${opponent}):`,
+        `📊 Match Stats (${shortName} vs ${opponent}):`,
         `• Shots on Target: ${st.sotUs} - ${st.sotThem}`,
         `• Total Shots: ${st.shotsUs} - ${st.shotsThem}`,
         `• GK Saves: ${st.savesUs} - ${st.savesThem}`,
@@ -2131,7 +2170,7 @@ export async function copyMatchReviewSummary(matchId, btnEl) {
 
     const goals = events.filter(e => e.type === 'goal');
     if (goals.length > 0) {
-        lines.push(``, `⚽ Rockies Goals:`);
+        lines.push(``, `⚽ ${shortName} Goals:`);
         goals.forEach(g => {
             const ast = g.assistName ? ` (Ast: #${g.assistJersey} ${g.assistName})` : ' (Solo)';
             const details = [g.phase, g.finish, g.tag && g.tag !== g.finish ? g.tag : ''].filter(Boolean).join(' • ');
