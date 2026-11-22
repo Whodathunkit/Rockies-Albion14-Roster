@@ -1,10 +1,40 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-const appId = typeof window !== 'undefined' && window.__app_id ? window.__app_id : 'rockies-albion-14';
+import {
+    CURRENT_TEAM_ID,
+    CURRENT_CLUB_ID,
+    getActiveTeamConfig,
+    getTeamStorageKey,
+    getTeamStorageItem,
+    setTeamStorageItem
+} from "./tenant.js";
+
 const defaultProjectId = "rockies-albion-14";
-const envConfig = typeof window !== 'undefined' && window.__firebase_config ? JSON.parse(window.__firebase_config) : null;
+
+function resolveCustomFirebaseConfig() {
+    if (typeof window !== 'undefined' && window.__firebase_config) {
+        try {
+            return typeof window.__firebase_config === 'string'
+                ? JSON.parse(window.__firebase_config)
+                : window.__firebase_config;
+        } catch {
+            // Fall through to localStorage / defaults
+        }
+    }
+    try {
+        const stored = getTeamStorageItem('custom_firebase', 'rfc14_custom_firebase');
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch {
+        // Ignore malformed localStorage config
+    }
+    return null;
+}
+
+const envConfig = resolveCustomFirebaseConfig();
 
 // Firebase configuration with API key & credentials
 export const firebaseConfig = envConfig || {
@@ -24,8 +54,60 @@ export let cancelUploadRequested = false;
 export const resolvedMediaCache = {};
 
 let listenersInitialized = false;
+let activeUnsubscribers = [];
+let authStateUnsubscribe = null;
 
+// ============================================================================
+// Multi-Tenant Path & Legacy Bridge Helpers
+// ============================================================================
+
+function getLegacyAppId(teamId = CURRENT_TEAM_ID) {
+    if (typeof window !== 'undefined' && window.__app_id) {
+        return window.__app_id;
+    }
+    const config = getActiveTeamConfig(teamId);
+    return config?.firestore?.legacyAppId || 'rockies-albion-14';
+}
+
+function isLegacyBridgeEnabled(teamId = CURRENT_TEAM_ID) {
+    if (teamId === 'albion14') return true;
+    const config = getActiveTeamConfig(teamId);
+    return Boolean(config?.firestore?.useLegacyCollectionBridge);
+}
+
+/**
+ * Returns canonical dynamic Firestore path builders scoped to the active team.
+ */
+export function getTeamFirestorePaths(teamId = CURRENT_TEAM_ID) {
+    return {
+        clubId: CURRENT_CLUB_ID,
+        teamId,
+        playersCollection: () => collection(db, 'teams', teamId, 'players'),
+        playerDoc: (jersey) => doc(db, 'teams', teamId, 'players', String(jersey)),
+        matchCenterDoc: () => doc(db, 'teams', teamId, 'matchCenter', 'activeMatch'),
+        configDoc: (docName = 'portal') => doc(db, 'teams', teamId, 'config', String(docName)),
+        mediaChunkDoc: (mediaId, index) => doc(db, 'teams', teamId, 'mediaChunks', `${mediaId}_${index}`),
+        sessionDoc: (uid) => doc(db, 'teams', teamId, 'sessions', String(uid))
+    };
+}
+
+function getLegacyFirestorePaths(teamId = CURRENT_TEAM_ID) {
+    const legacyAppId = getLegacyAppId(teamId);
+    return {
+        playersCollection: () => collection(db, 'artifacts', legacyAppId, 'public', 'data', 'playerProfiles'),
+        playerDoc: (jersey) => doc(db, 'artifacts', legacyAppId, 'public', 'data', 'playerProfiles', String(jersey)),
+        matchCenterDoc: () => doc(db, 'artifacts', legacyAppId, 'public', 'data', 'matchCenter', 'activeMatch'),
+        portalConfigDoc: () => doc(db, 'artifacts', legacyAppId, 'public', 'data', 'teamPortal', 'config'),
+        profilesBackupDoc: () => doc(db, 'artifacts', legacyAppId, 'public', 'data', 'teamPortal', 'profilesBackup'),
+        mediaChunkDoc: (mediaId, index) => doc(db, 'artifacts', legacyAppId, 'public', 'data', 'mediaChunks', `${mediaId}_${index}`),
+        sessionDoc: (uid) => doc(db, 'artifacts', legacyAppId, 'users', String(uid), 'preferences', 'session')
+    };
+}
+
+// ============================================================================
 // Sync Badge Helper
+// ============================================================================
+
 export function setSyncBadge(statusText, dotColorClass) {
     const dot = document.getElementById('connection-status-dot');
     const text = document.getElementById('connection-status-text');
@@ -36,7 +118,14 @@ export function setSyncBadge(statusText, dotColorClass) {
     if (modalDetail && statusText) modalDetail.textContent = statusText;
 }
 
-// Chunked video uploader to Firestore
+export function requestUploadCancel() {
+    cancelUploadRequested = true;
+}
+
+// ============================================================================
+// Chunked Video Upload & Resolution (Team-Scoped + Albion 14 Legacy Bridge)
+// ============================================================================
+
 export async function uploadVideoToFirestoreChunks(file, onProgress) {
     if (!db || !currentUser) {
         // Fallback for offline/local preview: return object URL
@@ -67,6 +156,7 @@ export async function uploadVideoToFirestoreChunks(file, onProgress) {
     const totalChunks = Math.ceil(rawBase64.length / chunkSize);
     const mediaId = `vid_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
+    const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
     let completedChunks = 0;
     const batchSize = 3;
 
@@ -77,9 +167,11 @@ export async function uploadVideoToFirestoreChunks(file, onProgress) {
         const batchPromises = [];
         for (let j = i; j < Math.min(i + batchSize, totalChunks); j++) {
             const chunkData = rawBase64.substring(j * chunkSize, (j + 1) * chunkSize);
-            const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${j}`);
+            const chunkDocRef = paths.mediaChunkDoc(mediaId, j);
             batchPromises.push(
                 setDoc(chunkDocRef, {
+                    clubId: CURRENT_CLUB_ID,
+                    teamId: CURRENT_TEAM_ID,
                     mediaId,
                     index: j,
                     totalChunks,
@@ -104,7 +196,6 @@ export async function uploadVideoToFirestoreChunks(file, onProgress) {
     return firestoreUri;
 }
 
-// Media Chunk Resolver
 export async function resolveFirebaseMediaUrl(url) {
     if (!url || !url.startsWith('firestore://mediaChunks/')) {
         return url || '';
@@ -120,18 +211,29 @@ export async function resolveFirebaseMediaUrl(url) {
         const params = new URLSearchParams(queryStr || '');
         const totalChunks = parseInt(params.get('chunks') || '1', 10);
 
-        const chunkPromises = [];
-        for (let i = 0; i < totalChunks; i++) {
-            const chunkDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'mediaChunks', `${mediaId}_${i}`);
-            chunkPromises.push(getDoc(chunkDocRef));
+        const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
+        const primarySnaps = await Promise.all(
+            Array.from({ length: totalChunks }, (_, i) => getDoc(paths.mediaChunkDoc(mediaId, i)))
+        );
+
+        let resolvedSnaps = primarySnaps;
+        const missingInPrimary = primarySnaps.some(snap => !snap.exists());
+
+        // Legacy fallback bridge for Albion 14 historical video uploads
+        if (missingInPrimary && isLegacyBridgeEnabled(CURRENT_TEAM_ID)) {
+            const legacyPaths = getLegacyFirestorePaths(CURRENT_TEAM_ID);
+            resolvedSnaps = await Promise.all(
+                primarySnaps.map((snap, i) =>
+                    snap.exists() ? Promise.resolve(snap) : getDoc(legacyPaths.mediaChunkDoc(mediaId, i))
+                )
+            );
         }
 
-        const snaps = await Promise.all(chunkPromises);
         const orderedChunks = new Array(totalChunks);
         let mimeType = 'video/mp4';
 
-        for (let i = 0; i < snaps.length; i++) {
-            const snap = snaps[i];
+        for (let i = 0; i < resolvedSnaps.length; i++) {
+            const snap = resolvedSnaps[i];
             if (!snap.exists()) {
                 throw new Error(`Missing video chunk ${i}`);
             }
@@ -163,20 +265,46 @@ export async function resolveFirebaseMediaUrl(url) {
     }
 }
 
-// Cookie Helper
+// ============================================================================
+// Team-Scoped Session Unlock Helpers (Cookie + localStorage + Firestore)
+// ============================================================================
+
 export function setUnlockCookie(unlocked) {
+    const scopedKey = getTeamStorageKey('unlocked');
     if (unlocked) {
-        document.cookie = "rfc14_unlocked=1; max-age=31536000; path=/; SameSite=Lax";
-        localStorage.setItem('rfc14_unlocked', '1');
+        try {
+            document.cookie = `${scopedKey}=1; max-age=31536000; path=/; SameSite=Lax`;
+        } catch {}
+        setTeamStorageItem('unlocked', '1');
     } else {
-        document.cookie = "rfc14_unlocked=; max-age=0; path=/; SameSite=Lax";
-        localStorage.removeItem('rfc14_unlocked');
+        try {
+            document.cookie = `${scopedKey}=; max-age=0; path=/; SameSite=Lax`;
+            if (isLegacyBridgeEnabled(CURRENT_TEAM_ID)) {
+                document.cookie = "rfc14_unlocked=; max-age=0; path=/; SameSite=Lax";
+            }
+        } catch {}
+        try {
+            localStorage.removeItem(scopedKey);
+            if (isLegacyBridgeEnabled(CURRENT_TEAM_ID)) {
+                localStorage.removeItem('rfc14_unlocked');
+            }
+        } catch {}
     }
 }
 
 export function hasUnlockCookie() {
-    return document.cookie.split(';').some(c => c.trim().startsWith('rfc14_unlocked=1')) ||
-           localStorage.getItem('rfc14_unlocked') === '1';
+    const scopedKey = getTeamStorageKey('unlocked');
+    try {
+        const cookies = document.cookie.split(';').map(c => c.trim());
+        if (cookies.some(c => c.startsWith(`${scopedKey}=1`))) {
+            return true;
+        }
+        if (isLegacyBridgeEnabled(CURRENT_TEAM_ID) && cookies.some(c => c.startsWith('rfc14_unlocked=1'))) {
+            return true;
+        }
+    } catch {}
+
+    return getTeamStorageItem('unlocked', 'rfc14_unlocked') === '1';
 }
 
 export async function checkCloudUserUnlock(uid) {
@@ -186,27 +314,51 @@ export async function checkCloudUserUnlock(uid) {
         return;
     }
     if (!db || !uid) return;
+
     try {
-        const sessionRef = doc(db, 'artifacts', appId, 'users', uid, 'preferences', 'session');
-        const snap = await getDoc(sessionRef);
-        if (snap.exists() && snap.data().unlocked === true) {
+        const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
+        let snap = await getDoc(paths.sessionDoc(uid));
+
+        // Legacy fallback bridge strictly for albion14
+        if ((!snap.exists() || snap.data()?.unlocked !== true) && isLegacyBridgeEnabled(CURRENT_TEAM_ID)) {
+            const legacyPaths = getLegacyFirestorePaths(CURRENT_TEAM_ID);
+            const legacySnap = await getDoc(legacyPaths.sessionDoc(uid));
+            if (legacySnap.exists() && legacySnap.data()?.unlocked === true) {
+                snap = legacySnap;
+            }
+        }
+
+        if (snap.exists() && snap.data()?.unlocked === true) {
             setUnlockCookie(true);
             const gate = document.getElementById('family-pass-gate');
             if (gate) gate.classList.add('hidden');
         }
-    } catch (e) {}
+    } catch (e) {
+        console.warn("Session unlock lookup error:", e);
+    }
 }
 
 export async function saveCloudUserUnlock(unlocked) {
     setUnlockCookie(unlocked);
     if (!db || !currentUser) return;
+
     try {
-        const sessionRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'preferences', 'session');
-        await setDoc(sessionRef, { unlocked, updatedAt: Date.now() }, { merge: true });
-    } catch (e) {}
+        const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
+        await setDoc(paths.sessionDoc(currentUser.uid), {
+            clubId: CURRENT_CLUB_ID,
+            teamId: CURRENT_TEAM_ID,
+            unlocked: Boolean(unlocked),
+            updatedAt: Date.now()
+        }, { merge: true });
+    } catch (e) {
+        console.warn("Session unlock save error:", e);
+    }
 }
 
-// Database Persistence Helpers
+// ============================================================================
+// Team-Scoped Database & LocalStorage Persistence Helpers
+// ============================================================================
+
 export async function savePersistentData(matchState, leagueStandings, scheduleEvents) {
     let cleanMatch = (matchState && typeof matchState === 'object' && !Array.isArray(matchState)) ? matchState : null;
     let cleanStandings = Array.isArray(leagueStandings) ? leagueStandings : null;
@@ -214,34 +366,33 @@ export async function savePersistentData(matchState, leagueStandings, scheduleEv
 
     if (!cleanMatch) {
         try {
-            const raw = localStorage.getItem('rfc14_match_state');
+            const raw = getTeamStorageItem('match_state', 'rfc14_match_state');
             if (raw) cleanMatch = JSON.parse(raw);
         } catch {}
     }
     if (!cleanStandings) {
         try {
-            const raw = localStorage.getItem('rfc14_standings');
+            const raw = getTeamStorageItem('standings', 'rfc14_standings');
             if (raw) cleanStandings = JSON.parse(raw);
         } catch {}
     }
     if (!cleanSchedule) {
         try {
-            const raw = localStorage.getItem('rfc14_schedule_v4') || localStorage.getItem('rfc14_schedule');
+            const raw =
+                getTeamStorageItem('schedule_v4', 'rfc14_schedule_v4') ||
+                getTeamStorageItem('schedule', 'rfc14_schedule');
             if (raw) cleanSchedule = JSON.parse(raw);
         } catch {}
     }
 
     if (cleanMatch) {
-        try { localStorage.setItem('rfc14_match_state', JSON.stringify(cleanMatch)); } catch {}
+        setTeamStorageItem('match_state', cleanMatch);
     }
     if (cleanStandings) {
-        try { localStorage.setItem('rfc14_standings', JSON.stringify(cleanStandings)); } catch {}
+        setTeamStorageItem('standings', cleanStandings);
     }
     if (cleanSchedule) {
-        try {
-            localStorage.setItem('rfc14_schedule_v4', JSON.stringify(cleanSchedule));
-            localStorage.setItem('rfc14_schedule', JSON.stringify(cleanSchedule));
-        } catch {}
+        setTeamStorageItem('schedule_v4', cleanSchedule);
     }
 
     if (!db || !currentUser) {
@@ -249,16 +400,27 @@ export async function savePersistentData(matchState, leagueStandings, scheduleEv
     }
 
     try {
+        const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
+
         if (cleanMatch) {
-            const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-            await setDoc(matchDocRef, JSON.parse(JSON.stringify(cleanMatch)), { merge: true });
+            const matchDocRef = paths.matchCenterDoc();
+            await setDoc(matchDocRef, {
+                ...JSON.parse(JSON.stringify(cleanMatch)),
+                clubId: CURRENT_CLUB_ID,
+                teamId: CURRENT_TEAM_ID,
+                updatedAt: Date.now()
+            }, { merge: true });
         }
 
-        const portalUpdates = { updatedAt: Date.now() };
+        const portalUpdates = {
+            clubId: CURRENT_CLUB_ID,
+            teamId: CURRENT_TEAM_ID,
+            updatedAt: Date.now()
+        };
         if (cleanStandings) portalUpdates.standingsJson = JSON.stringify(cleanStandings);
         if (cleanSchedule) portalUpdates.scheduleJson = JSON.stringify(cleanSchedule);
 
-        const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
+        const portalDocRef = paths.configDoc('portal');
         await setDoc(portalDocRef, portalUpdates, { merge: true });
     } catch (err) {
         console.warn("Save error:", err);
@@ -274,19 +436,26 @@ export async function savePlayerProfileToFirebase(jersey, profileUpdates, player
         ...playerProfilesMap[jersey],
         ...cleanUpdates,
         jersey,
+        clubId: CURRENT_CLUB_ID,
+        teamId: CURRENT_TEAM_ID,
         updatedAt: Date.now()
     };
 
-    localStorage.setItem('rfc14_player_profiles', JSON.stringify(playerProfilesMap));
+    setTeamStorageItem('player_profiles', playerProfilesMap);
 
     if (!db || !currentUser) return;
+
     try {
+        const paths = getTeamFirestorePaths(CURRENT_TEAM_ID);
         setSyncBadge("Saving...", "bg-sky-400 animate-pulse");
-        const playerDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'playerProfiles', String(jersey));
+
+        const playerDocRef = paths.playerDoc(jersey);
         await setDoc(playerDocRef, playerProfilesMap[jersey], { merge: true });
 
-        const profilesBackupRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'profilesBackup');
+        const profilesBackupRef = paths.configDoc('profilesBackup');
         await setDoc(profilesBackupRef, {
+            clubId: CURRENT_CLUB_ID,
+            teamId: CURRENT_TEAM_ID,
             profilesJson: JSON.stringify(playerProfilesMap),
             updatedAt: Date.now()
         }, { merge: true });
@@ -297,32 +466,226 @@ export async function savePlayerProfileToFirebase(jersey, profileUpdates, player
     }
 }
 
+// ============================================================================
+// Realtime Sync Lifecycle & Listener Teardown
+// ============================================================================
+
+export function teardownRealtimeSync() {
+    if (activeUnsubscribers.length > 0) {
+        activeUnsubscribers.forEach((unsub) => {
+            try {
+                if (typeof unsub === 'function') {
+                    unsub();
+                }
+            } catch (err) {
+                console.warn("Error detaching Firestore listener:", err);
+            }
+        });
+        activeUnsubscribers = [];
+    }
+    listenersInitialized = false;
+}
+
+function dispatchMatchData(onDataSync, data) {
+    if (!data || !onDataSync) return;
+    if (typeof onDataSync.onMatchCenterDoc === 'function') {
+        onDataSync.onMatchCenterDoc(data);
+    } else if (typeof onDataSync === 'function') {
+        onDataSync('match', data);
+    }
+}
+
+function dispatchPortalData(onDataSync, data) {
+    if (!data || !onDataSync) return;
+    if (typeof onDataSync.onTeamPortalDoc === 'function') {
+        onDataSync.onTeamPortalDoc(data);
+    } else if (typeof onDataSync === 'function') {
+        onDataSync('portal', data);
+    }
+}
+
+function dispatchProfilesData(onDataSync, profilesList, updatesMap) {
+    if (!onDataSync) return;
+    if (typeof onDataSync.onPlayerProfilesDocs === 'function') {
+        onDataSync.onPlayerProfilesDocs(profilesList);
+    } else if (typeof onDataSync === 'function') {
+        onDataSync('profiles', updatesMap);
+    }
+}
+
+/**
+ * Attaches real-time Firestore listeners scoped to the active team.
+ * For albion14, seamlessly falls back to legacy artifacts/rockies-albion-14/public/data/...
+ * reads whenever the new team-scoped document/collection is not yet populated.
+ * Returns an unsubscribe cleanup function to cleanly detach all listeners on context switch.
+ */
+export function setupRealtimeSync(onDataSync, teamId = CURRENT_TEAM_ID) {
+    if (!db || !currentUser) {
+        return () => {};
+    }
+
+    // Always detach any previous listeners cleanly before re-subscribing
+    if (listenersInitialized || activeUnsubscribers.length > 0) {
+        teardownRealtimeSync();
+    }
+
+    listenersInitialized = true;
+    const paths = getTeamFirestorePaths(teamId);
+    const useLegacyBridge = isLegacyBridgeEnabled(teamId);
+    const legacyPaths = useLegacyBridge ? getLegacyFirestorePaths(teamId) : null;
+
+    let hasPrimaryMatch = false;
+    let hasPrimaryProfiles = false;
+    let hasPrimaryPortal = false;
+    let legacyMatchLoaded = false;
+    let legacyProfilesLoaded = false;
+    let legacyPortalLoaded = false;
+
+    // 1. Match Center / Active Match Listener
+    try {
+        const unsubMatch = onSnapshot(paths.matchCenterDoc(), async (snap) => {
+            if (snap.exists()) {
+                hasPrimaryMatch = true;
+                dispatchMatchData(onDataSync, snap.data());
+                return;
+            }
+
+            if (useLegacyBridge && !hasPrimaryMatch && !legacyMatchLoaded && legacyPaths) {
+                legacyMatchLoaded = true;
+                try {
+                    const legacySnap = await getDoc(legacyPaths.matchCenterDoc());
+                    if (legacySnap.exists() && !hasPrimaryMatch) {
+                        dispatchMatchData(onDataSync, legacySnap.data());
+                    }
+                } catch (legacyErr) {
+                    console.warn("Legacy matchCenter fallback read error:", legacyErr);
+                }
+            }
+        }, (err) => {
+            console.warn("Match snapshot error:", err);
+        });
+        activeUnsubscribers.push(unsubMatch);
+    } catch (err) {
+        console.warn("Match listener setup error:", err);
+    }
+
+    // 2. Player Profiles Collection Listener
+    try {
+        const unsubProfiles = onSnapshot(paths.playersCollection(), async (snap) => {
+            if (!snap.empty) {
+                hasPrimaryProfiles = true;
+                const updates = {};
+                const profilesList = [];
+                snap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    updates[docSnap.id] = data;
+                    profilesList.push({ id: docSnap.id, ...data });
+                });
+                dispatchProfilesData(onDataSync, profilesList, updates);
+                return;
+            }
+
+            if (useLegacyBridge && !hasPrimaryProfiles && !legacyProfilesLoaded && legacyPaths) {
+                legacyProfilesLoaded = true;
+                try {
+                    const legacyColSnap = await getDocs(legacyPaths.playersCollection());
+                    if (!legacyColSnap.empty && !hasPrimaryProfiles) {
+                        const updates = {};
+                        const profilesList = [];
+                        legacyColSnap.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            updates[docSnap.id] = data;
+                            profilesList.push({ id: docSnap.id, ...data });
+                        });
+                        dispatchProfilesData(onDataSync, profilesList, updates);
+                    } else if (!hasPrimaryProfiles) {
+                        // Secondary legacy safety net: profilesBackup document
+                        const backupSnap = await getDoc(legacyPaths.profilesBackupDoc());
+                        if (backupSnap.exists() && backupSnap.data()?.profilesJson && !hasPrimaryProfiles) {
+                            const parsed = JSON.parse(backupSnap.data().profilesJson);
+                            const profilesList = Object.entries(parsed).map(([id, data]) => ({ id, ...data }));
+                            dispatchProfilesData(onDataSync, profilesList, parsed);
+                        }
+                    }
+                } catch (legacyErr) {
+                    console.warn("Legacy playerProfiles fallback read error:", legacyErr);
+                }
+            }
+        }, (err) => {
+            console.warn("Profiles snapshot error:", err);
+        });
+        activeUnsubscribers.push(unsubProfiles);
+    } catch (err) {
+        console.warn("Profiles listener setup error:", err);
+    }
+
+    // 3. Team Portal Config (Standings & Schedule) Listener
+    try {
+        const unsubPortal = onSnapshot(paths.configDoc('portal'), async (snap) => {
+            if (snap.exists()) {
+                hasPrimaryPortal = true;
+                dispatchPortalData(onDataSync, snap.data());
+                return;
+            }
+
+            if (useLegacyBridge && !hasPrimaryPortal && !legacyPortalLoaded && legacyPaths) {
+                legacyPortalLoaded = true;
+                try {
+                    const legacySnap = await getDoc(legacyPaths.portalConfigDoc());
+                    if (legacySnap.exists() && !hasPrimaryPortal) {
+                        dispatchPortalData(onDataSync, legacySnap.data());
+                    }
+                } catch (legacyErr) {
+                    console.warn("Legacy teamPortal config fallback read error:", legacyErr);
+                }
+            }
+        }, (err) => {
+            console.warn("Portal snapshot error:", err);
+        });
+        activeUnsubscribers.push(unsubPortal);
+    } catch (err) {
+        console.warn("Portal listener setup error:", err);
+    }
+
+    return teardownRealtimeSync;
+}
+
+// ============================================================================
 // Initialize Auth & Real-Time Sync
+// ============================================================================
+
 export function initFirebase(onDataSync) {
     try {
-        app = initializeApp(firebaseConfig);
+        const existingApps = getApps();
+        app = existingApps.length > 0 ? existingApps[0] : initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
+
+        if (typeof authStateUnsubscribe === 'function') {
+            try { authStateUnsubscribe(); } catch {}
+            authStateUnsubscribe = null;
+        }
 
         const executeAuth = async () => {
             try {
                 if (typeof window !== 'undefined' && window.__initial_auth_token) {
                     try {
                         await signInWithCustomToken(auth, window.__initial_auth_token);
-                    } catch (customErr) {
+                    } catch {
                         await signInAnonymously(auth);
                     }
                 } else {
                     await signInAnonymously(auth);
                 }
 
-                onAuthStateChanged(auth, (user) => {
+                authStateUnsubscribe = onAuthStateChanged(auth, (user) => {
                     currentUser = user;
                     if (user) {
                         setSyncBadge("Firebase Live", "bg-emerald-400 animate-pulse");
-                        setupRealtimeSync(onDataSync);
+                        setupRealtimeSync(onDataSync, CURRENT_TEAM_ID);
                         checkCloudUserUnlock(user.uid);
                     } else {
+                        teardownRealtimeSync();
                         setSyncBadge("Disconnected", "bg-amber-400");
                     }
                 });
@@ -337,63 +700,12 @@ export function initFirebase(onDataSync) {
         console.warn("Firebase initialization error:", e);
         setSyncBadge("Local Mode", "bg-amber-400");
     }
-}
 
-function setupRealtimeSync(onDataSync) {
-    if (!db || !currentUser || listenersInitialized) return;
-    listenersInitialized = true;
-
-    try {
-        const matchDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'matchCenter', 'activeMatch');
-        onSnapshot(matchDocRef, (snap) => {
-            if (snap.exists() && onDataSync) {
-                const data = snap.data();
-                if (typeof onDataSync.onMatchCenterDoc === 'function') {
-                    onDataSync.onMatchCenterDoc(data);
-                } else if (typeof onDataSync === 'function') {
-                    onDataSync('match', data);
-                }
-            }
-        });
-    } catch (err) {
-        console.warn("Match snapshot error:", err);
-    }
-
-    try {
-        const profilesColRef = collection(db, 'artifacts', appId, 'public', 'data', 'playerProfiles');
-        onSnapshot(profilesColRef, (snap) => {
-            const updates = {};
-            const profilesList = [];
-            snap.forEach((docSnap) => {
-                const data = docSnap.data();
-                updates[docSnap.id] = data;
-                profilesList.push({ id: docSnap.id, ...data });
-            });
-            if (onDataSync) {
-                if (typeof onDataSync.onPlayerProfilesDocs === 'function') {
-                    onDataSync.onPlayerProfilesDocs(profilesList);
-                } else if (typeof onDataSync === 'function') {
-                    onDataSync('profiles', updates);
-                }
-            }
-        });
-    } catch (err) {
-        console.warn("Profiles snapshot error:", err);
-    }
-
-    try {
-        const portalDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'teamPortal', 'config');
-        onSnapshot(portalDocRef, (snap) => {
-            if (snap.exists() && onDataSync) {
-                const data = snap.data();
-                if (typeof onDataSync.onTeamPortalDoc === 'function') {
-                    onDataSync.onTeamPortalDoc(data);
-                } else if (typeof onDataSync === 'function') {
-                    onDataSync('portal', data);
-                }
-            }
-        });
-    } catch (err) {
-        console.warn("Portal snapshot error:", err);
-    }
+    return () => {
+        teardownRealtimeSync();
+        if (typeof authStateUnsubscribe === 'function') {
+            try { authStateUnsubscribe(); } catch {}
+            authStateUnsubscribe = null;
+        }
+    };
 }
