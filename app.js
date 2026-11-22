@@ -1,6 +1,12 @@
 import {
+    CURRENT_TEAM_ID,
+    DEFAULT_TEAM_ID,
     applyTeamThemeVariables,
-    getActiveTeamConfig
+    getActiveTeamConfig,
+    getTeamStorageKey,
+    setTeamStorageItem,
+    getAvailableTeams,
+    switchActiveTeam
 } from './tenant.js';
 
 // Hydrate root club/team brand CSS custom properties before any component renders
@@ -8,6 +14,9 @@ applyTeamThemeVariables(getActiveTeamConfig());
 
 import { 
     initFirebase, 
+    teardownRealtimeSync,
+    saveCloudUserUnlock,
+    hasUnlockCookie,
     firebaseConfig, 
     setSyncBadge, 
     resolveFirebaseMediaUrl, 
@@ -148,53 +157,97 @@ function deleteCookie(name) {
     } catch {}
 }
 
+const PASS_UNLOCKED_KEY = getTeamStorageKey('pass_unlocked');
+const COACH_MODE_KEY = getTeamStorageKey('coach_mode');
+const LEGACY_PASS_UNLOCKED_KEY = 'rfc14_pass_unlocked';
+const LEGACY_COACH_MODE_KEY = 'rfc14_coach_mode';
+
+function isLegacyAuthFallbackAllowed() {
+    return CURRENT_TEAM_ID === DEFAULT_TEAM_ID;
+}
+
 export function isPasscodeUnlocked() {
     try {
-        if (localStorage.getItem('rfc14_pass_unlocked') === 'true') return true;
+        if (localStorage.getItem(PASS_UNLOCKED_KEY) === 'true') return true;
     } catch {}
     try {
-        if (sessionStorage.getItem('rfc14_pass_unlocked') === 'true') return true;
+        if (sessionStorage.getItem(PASS_UNLOCKED_KEY) === 'true') return true;
     } catch {}
     try {
-        if (getCookie('rfc14_pass_unlocked') === 'true') return true;
+        if (getCookie(PASS_UNLOCKED_KEY) === 'true') return true;
     } catch {}
+    if (hasUnlockCookie()) return true;
+
+    // One-way legacy migration strictly for default albion14 squad
+    if (isLegacyAuthFallbackAllowed()) {
+        let legacyUnlocked = false;
+        try { if (localStorage.getItem(LEGACY_PASS_UNLOCKED_KEY) === 'true') legacyUnlocked = true; } catch {}
+        try { if (!legacyUnlocked && sessionStorage.getItem(LEGACY_PASS_UNLOCKED_KEY) === 'true') legacyUnlocked = true; } catch {}
+        try { if (!legacyUnlocked && getCookie(LEGACY_PASS_UNLOCKED_KEY) === 'true') legacyUnlocked = true; } catch {}
+        if (legacyUnlocked) {
+            setPasscodeUnlocked(true);
+            return true;
+        }
+    }
     return false;
 }
 
 export function setPasscodeUnlocked(unlocked) {
     if (unlocked) {
-        try { localStorage.setItem('rfc14_pass_unlocked', 'true'); } catch {}
-        try { sessionStorage.setItem('rfc14_pass_unlocked', 'true'); } catch {}
-        setCookie('rfc14_pass_unlocked', 'true', 30);
+        try { localStorage.setItem(PASS_UNLOCKED_KEY, 'true'); } catch {}
+        try { sessionStorage.setItem(PASS_UNLOCKED_KEY, 'true'); } catch {}
+        setCookie(PASS_UNLOCKED_KEY, 'true', 30);
     } else {
-        try { localStorage.removeItem('rfc14_pass_unlocked'); } catch {}
-        try { sessionStorage.removeItem('rfc14_pass_unlocked'); } catch {}
-        deleteCookie('rfc14_pass_unlocked');
+        try { localStorage.removeItem(PASS_UNLOCKED_KEY); } catch {}
+        try { sessionStorage.removeItem(PASS_UNLOCKED_KEY); } catch {}
+        deleteCookie(PASS_UNLOCKED_KEY);
+        if (isLegacyAuthFallbackAllowed()) {
+            try { localStorage.removeItem(LEGACY_PASS_UNLOCKED_KEY); } catch {}
+            try { sessionStorage.removeItem(LEGACY_PASS_UNLOCKED_KEY); } catch {}
+            deleteCookie(LEGACY_PASS_UNLOCKED_KEY);
+        }
     }
 }
 
 export function getSavedCoachMode() {
     try {
-        if (localStorage.getItem('rfc14_coach_mode') === 'true') return true;
+        if (localStorage.getItem(COACH_MODE_KEY) === 'true') return true;
     } catch {}
     try {
-        if (sessionStorage.getItem('rfc14_coach_mode') === 'true') return true;
+        if (sessionStorage.getItem(COACH_MODE_KEY) === 'true') return true;
     } catch {}
     try {
-        if (getCookie('rfc14_coach_mode') === 'true') return true;
+        if (getCookie(COACH_MODE_KEY) === 'true') return true;
     } catch {}
+
+    // One-way legacy migration strictly for default albion14 squad
+    if (isLegacyAuthFallbackAllowed()) {
+        let legacyCoach = false;
+        try { if (localStorage.getItem(LEGACY_COACH_MODE_KEY) === 'true') legacyCoach = true; } catch {}
+        try { if (!legacyCoach && sessionStorage.getItem(LEGACY_COACH_MODE_KEY) === 'true') legacyCoach = true; } catch {}
+        try { if (!legacyCoach && getCookie(LEGACY_COACH_MODE_KEY) === 'true') legacyCoach = true; } catch {}
+        if (legacyCoach) {
+            setSavedCoachMode(true);
+            return true;
+        }
+    }
     return false;
 }
 
 export function setSavedCoachMode(active) {
     if (active) {
-        try { localStorage.setItem('rfc14_coach_mode', 'true'); } catch {}
-        try { sessionStorage.setItem('rfc14_coach_mode', 'true'); } catch {}
-        setCookie('rfc14_coach_mode', 'true', 7);
+        try { localStorage.setItem(COACH_MODE_KEY, 'true'); } catch {}
+        try { sessionStorage.setItem(COACH_MODE_KEY, 'true'); } catch {}
+        setCookie(COACH_MODE_KEY, 'true', 7);
     } else {
-        try { localStorage.removeItem('rfc14_coach_mode'); } catch {}
-        try { sessionStorage.removeItem('rfc14_coach_mode'); } catch {}
-        deleteCookie('rfc14_coach_mode');
+        try { localStorage.removeItem(COACH_MODE_KEY); } catch {}
+        try { sessionStorage.removeItem(COACH_MODE_KEY); } catch {}
+        deleteCookie(COACH_MODE_KEY);
+        if (isLegacyAuthFallbackAllowed()) {
+            try { localStorage.removeItem(LEGACY_COACH_MODE_KEY); } catch {}
+            try { sessionStorage.removeItem(LEGACY_COACH_MODE_KEY); } catch {}
+            deleteCookie(LEGACY_COACH_MODE_KEY);
+        }
     }
 }
 
@@ -253,7 +306,7 @@ export function switchTab(tabName) {
     }
 }
 
-// Passcode Gate Logic
+// Passcode Gate Logic (Scoped to active team configuration)
 export function handleFamilyPassSubmit(event) {
     if (event) {
         if (typeof event.preventDefault === 'function') event.preventDefault();
@@ -264,14 +317,20 @@ export function handleFamilyPassSubmit(event) {
     const gate = document.getElementById('family-pass-gate');
 
     const entered = (input?.value || '').trim().toLowerCase();
-    // Valid passcodes: albion14, 1414, rockies14 (and friendly variations)
-    const validCodes = ['albion14', '1414', 'rockies14'];
+    const config = getActiveTeamConfig();
+    const configuredCodes = Array.isArray(config.auth?.familyPasscodes) && config.auth.familyPasscodes.length > 0
+        ? config.auth.familyPasscodes
+        : [CURRENT_TEAM_ID];
+    const validCodes = configuredCodes
+        .map(code => String(code || '').trim().toLowerCase())
+        .filter(Boolean);
 
-    if (validCodes.includes(entered)) {
+    if (entered && validCodes.includes(entered)) {
         setPasscodeUnlocked(true);
+        saveCloudUserUnlock(true);
         if (gate) {
             gate.classList.add('hidden');
-            gate.style.display = 'none';
+            gate.style.display = '';
         }
         if (errorEl) errorEl.classList.add('hidden');
     } else {
@@ -286,6 +345,7 @@ export function handleFamilyPassSubmit(event) {
 
 export function relockSite() {
     setPasscodeUnlocked(false);
+    saveCloudUserUnlock(false);
     setSavedCoachMode(false);
     isCoachMode = false;
     const gate = document.getElementById('family-pass-gate');
@@ -294,7 +354,7 @@ export function relockSite() {
     if (errorEl) errorEl.classList.add('hidden');
     if (gate) {
         gate.classList.remove('hidden');
-        gate.style.display = 'flex';
+        gate.style.display = '';
     }
     if (input) {
         input.value = '';
@@ -404,8 +464,9 @@ export function submitCoachPin(event) {
     const input = document.getElementById('coach-pin-input');
     const err = document.getElementById('coach-pin-error');
     const pin = (input?.value || '').trim();
+    const expectedPin = String(getActiveTeamConfig().auth?.coachPin || '1414').trim();
 
-    if (pin === '1414') {
+    if (pin && pin === expectedPin) {
         isCoachMode = true;
         setSavedCoachMode(true);
         closeCoachPinModal();
@@ -446,7 +507,8 @@ export function applyCustomFirebaseConfig(event) {
     if (jsonStr) {
         try {
             const parsed = JSON.parse(jsonStr);
-            localStorage.setItem('rfc14_custom_firebase', JSON.stringify(parsed));
+            setTeamStorageItem('custom_firebase', parsed);
+            teardownRealtimeSync();
             window.location.reload();
         } catch {
             alert("Invalid JSON format for Firebase configuration.");
@@ -859,6 +921,324 @@ window.closeCloudConfigModal = closeCloudConfigModal;
 window.applyCustomFirebaseConfig = applyCustomFirebaseConfig;
 window.updateAllViews = updateAllViews;
 
+// ============================================================================
+// Dynamic App Shell Hydration & Team Switcher
+// ============================================================================
+
+const WHATSAPP_ICON_SVG = `<svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.68C7.02 10.88 7.89 12.04 8.01 12.2C8.13 12.37 9.72 14.82 12.16 15.88C14.19 16.76 14.6 16.58 15.05 16.54C15.49 16.5 16.49 15.95 16.7 15.36C16.9 14.77 16.9 14.26 16.84 14.16C16.78 14.05 16.62 13.99 16.38 13.87C16.14 13.75 14.95 13.16 14.73 13.08C14.51 13 14.35 12.96 14.19 13.2C14.02 13.45 13.56 14.05 13.41 14.21C13.27 14.37 13.13 14.39 12.89 14.27C12.65 14.15 11.87 13.9 10.95 13.08C10.23 12.44 9.75 11.65 9.61 11.41C9.47 11.17 9.59 11.04 9.71 10.92C9.82 10.81 9.96 10.63 10.08 10.49C10.2 10.35 10.24 10.25 10.32 10.09C10.4 9.93 10.36 9.79 10.3 9.68C10.24 9.56 9.77 8.39 9.57 7.91C9.37 7.43 9.17 7.5 9.02 7.49C8.88 7.49 8.71 7.33 8.53 7.33Z"/></svg>`;
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function setTextById(id, text) {
+    const el = document.getElementById(id);
+    if (el && text !== undefined && text !== null) {
+        el.textContent = text;
+    }
+}
+
+function hydrateCrestImage(id, config) {
+    const img = document.getElementById(id);
+    if (!img) return;
+    const crestUrl = config.branding?.crestUrl || '';
+    const fallbackUrl = config.branding?.crestFallbackUrl || 'https://placehold.co/80x80/003C71/ffffff?text=FC';
+    img.alt = `${config.name} Crest`;
+    img.onerror = () => {
+        img.onerror = null;
+        img.src = fallbackUrl;
+    };
+    img.src = crestUrl || fallbackUrl;
+}
+
+export function renderOfficialsCards(config = getActiveTeamConfig()) {
+    const grid = document.getElementById('officials-cards-grid');
+    if (!grid) return;
+
+    const officials = Array.isArray(config.officials) ? config.officials : [];
+    const whatsappUrl = (config.links?.whatsappUrl || '').trim();
+
+    if (officials.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full bg-zinc-950/60 border border-zinc-800/80 rounded-xl p-4 text-center text-xs text-zinc-400">
+                Team coaching and management contacts will appear here once configured.
+            </div>
+        `;
+        return;
+    }
+
+    grid.innerHTML = officials.map((official) => {
+        const isAmber = official.badgeVariant === 'amber';
+        const badgeClass = isAmber
+            ? 'bg-amber-950/80 border border-amber-500/50 text-amber-300'
+            : 'bg-blue-900/60 border border-blue-500/40 text-blue-300';
+        const email = (official.email || '').trim();
+        const showWhatsapp = Boolean(official.showWhatsapp && whatsappUrl);
+        const hasActions = showWhatsapp || Boolean(email);
+
+        return `
+            <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3.5 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h4 class="text-sm sm:text-base font-extrabold text-white truncate">${escapeHtml(official.name)}</h4>
+                        ${official.role ? `<span class="${badgeClass} text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider whitespace-nowrap">${escapeHtml(official.role)}</span>` : ''}
+                    </div>
+                    ${official.subtitle ? `<p class="text-xs text-zinc-400 mt-0.5">${escapeHtml(official.subtitle)}</p>` : ''}
+                </div>
+                ${hasActions ? `
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                        ${showWhatsapp ? `
+                            <a href="${escapeHtml(whatsappUrl)}" target="_blank" rel="noopener noreferrer" title="Join ${escapeHtml(config.name)} WhatsApp Chat" class="w-8 h-8 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-[#25D366] flex items-center justify-center transition shadow-sm">
+                                ${WHATSAPP_ICON_SVG}
+                            </a>
+                        ` : ''}
+                        ${email ? `
+                            <a href="mailto:${escapeHtml(email)}" title="Email ${escapeHtml(official.name)}" class="w-8 h-8 rounded-lg bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-200 flex items-center justify-center transition shadow-sm">
+                                <span class="text-xs">✉️</span>
+                            </a>
+                        ` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function hydrateSocialLinks(config) {
+    const whatsappUrl = (config.links?.whatsappUrl || '').trim();
+    const instagramUrl = (config.links?.instagramUrl || '').trim();
+    const instagramHandle = (config.links?.instagramHandle || '').trim() || 'Instagram';
+
+    // Banner Instagram pill
+    const bannerIgLink = document.getElementById('banner-instagram-link');
+    const bannerIgHandle = document.getElementById('banner-instagram-handle');
+    if (bannerIgLink) {
+        if (instagramUrl) {
+            bannerIgLink.href = instagramUrl;
+            bannerIgLink.title = `Follow ${instagramHandle} on Instagram`;
+            if (bannerIgHandle) bannerIgHandle.textContent = instagramHandle;
+            bannerIgLink.classList.remove('hidden');
+        } else {
+            bannerIgLink.classList.add('hidden');
+        }
+    }
+
+    // Footer social links
+    const footerWa = document.getElementById('footer-whatsapp-link');
+    if (footerWa) {
+        if (whatsappUrl) {
+            footerWa.href = whatsappUrl;
+            footerWa.title = `Open ${config.name} WhatsApp Group Chat`;
+            footerWa.classList.remove('hidden');
+        } else {
+            footerWa.classList.add('hidden');
+        }
+    }
+
+    const footerIg = document.getElementById('footer-instagram-link');
+    if (footerIg) {
+        if (instagramUrl) {
+            footerIg.href = instagramUrl;
+            footerIg.title = `Follow ${config.name} on Instagram`;
+            footerIg.classList.remove('hidden');
+        } else {
+            footerIg.classList.add('hidden');
+        }
+    }
+
+    // Floating social buttons & wrapper aside
+    const floatingAside = document.getElementById('floating-social-aside');
+    const floatingIg = document.getElementById('floating-instagram-btn');
+    const floatingWa = document.getElementById('floating-whatsapp-btn');
+
+    if (floatingIg) {
+        if (instagramUrl) {
+            floatingIg.href = instagramUrl;
+            floatingIg.title = `Follow ${config.name} on Instagram`;
+            floatingIg.classList.remove('hidden');
+        } else {
+            floatingIg.classList.add('hidden');
+        }
+    }
+
+    if (floatingWa) {
+        if (whatsappUrl) {
+            floatingWa.href = whatsappUrl;
+            floatingWa.title = `Open ${config.name} WhatsApp Group Chat`;
+            floatingWa.classList.remove('hidden');
+        } else {
+            floatingWa.classList.add('hidden');
+        }
+    }
+
+    if (floatingAside) {
+        floatingAside.classList.toggle('hidden', !instagramUrl && !whatsappUrl);
+    }
+}
+
+export function hydrateAppShell(config = getActiveTeamConfig()) {
+    // Document title & OpenGraph metadata
+    const pageTitle = `${config.name} | Team Portal & Match Center`;
+    const pageDesc = `${config.fullName} (${config.division}) team portal, live match tracker, schedule, standings, and leaderboard.`;
+    document.title = pageTitle;
+
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', pageDesc);
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', pageTitle);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', pageDesc);
+
+    // Crests across gate, header, scoreboard, and footer
+    ['gate-crest-img', 'header-crest-img', 'scoreboard-crest-img', 'footer-crest-img'].forEach((id) => {
+        hydrateCrestImage(id, config);
+    });
+
+    // Passcode Gate & Header copy
+    setTextById('gate-team-name', config.name);
+    setTextById('gate-team-subtitle', `${config.division} • ${config.season}`);
+    setTextById('header-team-name', config.name);
+    setTextById('header-division-text', config.division);
+
+    // Roster Officials & Squad Photo Banner
+    setTextById('officials-club-name', config.clubName);
+    renderOfficialsCards(config);
+
+    setTextById('banner-season-text', config.season);
+    setTextById('banner-squad-title', config.squadTitle);
+    setTextById('banner-division-badge', config.division);
+
+    const bannerWrapper = document.getElementById('squad-banner-photo-wrapper');
+    const bannerImg = document.getElementById('squad-banner-img');
+    const bannerUrl = (config.branding?.bannerPhotoUrl || '').trim();
+    if (bannerWrapper && bannerImg) {
+        if (bannerUrl) {
+            bannerImg.alt = `${config.squadTitle} ${config.season}`;
+            bannerImg.onerror = () => {
+                bannerImg.onerror = null;
+                bannerImg.src = config.branding?.bannerFallbackUrl || '';
+            };
+            bannerImg.src = bannerUrl;
+            bannerWrapper.classList.remove('hidden');
+        } else {
+            bannerWrapper.classList.add('hidden');
+        }
+    }
+
+    // Live Tracker & Modals labels
+    const leagueLabel = (config.leagueName || 'LEAGUE').toUpperCase();
+    setTextById('match-header-status-text', `${leagueLabel} LEAGUE MATCH`);
+    setTextById('scoreboard-team-name', config.name);
+    setTextById('btn-log-goal-label', `Log ${config.shortName} Goal`);
+    setTextById('shootout-team-name', config.name);
+    setTextById('stats-team-short-name', config.shortName);
+    setTextById('goal-modal-title', `Log ${config.shortName} Goal`);
+    setTextById('edit-match-our-goals-label', `${config.shortName} Goals`);
+    setTextById('edit-match-our-short-name', config.shortName);
+    setTextById('ev-detail-type-badge', `⚽ ${config.shortName} Goal`);
+
+    // Schedule Arrival Rules & Uniform Guide
+    const arrivalEl = document.getElementById('schedule-arrival-summary');
+    if (arrivalEl && config.arrivalRules) {
+        const gameMins = escapeHtml(config.arrivalRules.gameMinutes ?? 30);
+        const trainMins = escapeHtml(config.arrivalRules.trainingMinutes ?? 15);
+        const ballSize = escapeHtml(config.arrivalRules.ballSize || 'Size 5');
+        arrivalEl.innerHTML = `Arrive <strong class="text-amber-400">${gameMins} mins early for matches</strong> and <strong class="text-blue-400">${trainMins} mins early for practice/PDP</strong>. Bring your <strong class="text-emerald-400">${ballSize} ball</strong>.`;
+    }
+
+    const uniformGuideEl = document.getElementById('schedule-uniform-guide-list');
+    if (uniformGuideEl) {
+        const summaryItems = Array.isArray(config.kitRules?.bannerSummary) ? config.kitRules.bannerSummary : [];
+        uniformGuideEl.innerHTML = summaryItems.map((item) => `
+            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
+                <strong class="text-zinc-200">${escapeHtml(item.label)}:</strong> <span class="${escapeHtml(item.accentClass || 'text-blue-300')} font-bold">${escapeHtml(item.value)}</span>
+            </span>
+        `).join('');
+    }
+
+    setTextById('new-event-type-game-opt', `⚽ ${config.leagueName || 'League'} Match`);
+    const defaultKitInput = document.getElementById('new-event-kit');
+    if (defaultKitInput && config.kitRules?.practice) {
+        defaultKitInput.value = config.kitRules.practice;
+    }
+
+    // Standings headings
+    setTextById('standings-division-heading', `${config.division} Standings`);
+    setTextById('edit-standings-modal-title', `Edit ${config.leagueName || 'League'} Standings Table`);
+
+    // Footer team identity & officials summary
+    setTextById('footer-team-fullname', config.fullName);
+    setTextById('footer-division-season', `${config.division} • ${config.season}`);
+    setTextById('footer-portal-copy', `Protected Team Portal for ${config.name} Players, Coaches & Families.`);
+
+    const footerOfficialsEl = document.getElementById('footer-officials-summary');
+    if (footerOfficialsEl) {
+        const officials = Array.isArray(config.officials) ? config.officials : [];
+        const summaryParts = officials
+            .filter(o => o && o.name)
+            .map(o => {
+                const roleLabel = (o.role || 'Staff')
+                    .toLowerCase()
+                    .replace(/\b\w/g, (ch) => ch.toUpperCase());
+                return `${roleLabel}: ${o.name}`;
+            });
+        footerOfficialsEl.textContent = summaryParts.join(' • ');
+        footerOfficialsEl.classList.toggle('hidden', summaryParts.length === 0);
+    }
+
+    // Social & Integration buttons (WhatsApp & Instagram)
+    hydrateSocialLinks(config);
+}
+
+export function renderTeamSwitcher() {
+    const teams = getAvailableTeams();
+    const activeConfig = getActiveTeamConfig();
+    const hasCurrent = teams.some(t => t.teamId === CURRENT_TEAM_ID);
+    const optionsList = hasCurrent
+        ? teams
+        : [...teams, { teamId: CURRENT_TEAM_ID, name: activeConfig.name, division: activeConfig.division }];
+
+    const selectors = [
+        document.getElementById('team-switcher-select'),
+        document.getElementById('gate-team-switcher-select')
+    ];
+
+    selectors.forEach((selectEl) => {
+        if (!selectEl) return;
+        selectEl.innerHTML = optionsList.map((team) => {
+            const label = team.name || team.teamId;
+            const selected = team.teamId === CURRENT_TEAM_ID ? ' selected' : '';
+            return `<option value="${escapeHtml(team.teamId)}"${selected}>${escapeHtml(label)}</option>`;
+        }).join('');
+        selectEl.value = CURRENT_TEAM_ID;
+    });
+}
+
+export function handleTeamSwitch(newTeamId) {
+    const cleanTarget = String(newTeamId || '').trim().toLowerCase();
+    if (!cleanTarget || cleanTarget === CURRENT_TEAM_ID) return;
+
+    // 1. Cleanly detach all active Firestore listeners and pause timers before navigating
+    teardownRealtimeSync();
+    try { pauseTimer(); } catch {}
+
+    // 2. Clear transient sessionStorage state for the outgoing squad so reload starts clean
+    try {
+        sessionStorage.removeItem(PASS_UNLOCKED_KEY);
+        sessionStorage.removeItem(COACH_MODE_KEY);
+    } catch {}
+
+    // 3. Persist new team selection & reload cleanly into ?c=...&t=newTeamId
+    switchActiveTeam(cleanTarget);
+}
+
+window.handleTeamSwitch = handleTeamSwitch;
+
 function setupDomEventListeners() {
     // Programmatic event listener bindings to guarantee form handling
     const passForm = document.getElementById('family-pass-form');
@@ -911,34 +1291,42 @@ function setupDomEventListeners() {
             toggleCoachMode();
         });
     }
+
+    // Ensure Firestore realtime listeners are cleanly detached on page unload / navigation
+    window.addEventListener('beforeunload', () => {
+        teardownRealtimeSync();
+    });
 }
 
 export function syncGateVisibility() {
     const unlocked = isPasscodeUnlocked();
     const gate = document.getElementById('family-pass-gate');
     if (gate) {
+        gate.style.display = '';
         if (unlocked) {
             gate.classList.add('hidden');
-            gate.style.display = 'none';
         } else {
             gate.classList.remove('hidden');
-            gate.style.display = 'flex';
         }
     }
 }
 
 // Initialize on DOM Ready
 function onAppInit() {
-    // Ensure root CSS custom properties reflect the active tenant palette
-    applyTeamThemeVariables(getActiveTeamConfig());
+    const activeConfig = getActiveTeamConfig();
 
-    // Check if passcode is already unlocked via localStorage, cookie, or sessionStorage
+    // 1. Hydrate root CSS variables, dynamic shell copy, officials, links, and Team Switcher
+    applyTeamThemeVariables(activeConfig);
+    hydrateAppShell(activeConfig);
+    renderTeamSwitcher();
+
+    // 2. Check if passcode is already unlocked for this specific squad
     syncGateVisibility();
 
-    // Setup direct event listeners
+    // 3. Setup direct event listeners & unload teardown
     setupDomEventListeners();
 
-    // Initialize Firebase Realtime Sync
+    // 4. Initialize Firebase Realtime Sync for active team
     initFirebase({
         onMatchCenterDoc: (data) => {
             if (data) {
@@ -975,7 +1363,7 @@ function onAppInit() {
         }
     });
 
-    // Initial render of all views
+    // 5. Initial render of all views
     updateAllViews();
 }
 

@@ -25,15 +25,16 @@
             <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
             <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-tr from-[var(--brand-primary)] to-blue-600 flex items-center justify-center p-3 shadow-lg border border-blue-400/30">
-                <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC14'" />
+                <img id="gate-crest-img" src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Team Crest" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC'" />
             </div>
 
             <span class="inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-950/80 border border-blue-500/40 text-blue-300 mb-2">
                 🔒 Family & Player Portal
             </span>
 
-            <h2 class="text-2xl font-black text-white tracking-tight">Rockies Albion 14</h2>
-            <p class="text-xs text-gray-400 mt-1 mb-6">Enter team passcode to view the season schedule, roster, and live tracker.</p>
+            <h2 id="gate-team-name" class="text-2xl font-black text-white tracking-tight">Rockies Albion 14</h2>
+            <p id="gate-team-subtitle" class="text-[11px] font-semibold text-blue-400 mt-0.5">CMSA Boys U13 Tier 2</p>
+            <p class="text-xs text-gray-400 mt-1.5 mb-6">Enter team passcode to view the season schedule, roster, and live tracker.</p>
 
             <form id="family-pass-form" onsubmit="handleFamilyPassSubmit(event)" class="space-y-4">
                 <div>
@@ -44,29 +45,46 @@
                     Unlock Team Site &rarr;
                 </button>
             </form>
+
+            <div id="gate-team-switcher-wrapper" class="mt-5 pt-4 border-t border-zinc-800/80 flex items-center justify-center space-x-2">
+                <label for="gate-team-switcher-select" class="text-[11px] font-semibold text-zinc-400">Squad:</label>
+                <div class="relative inline-flex items-center">
+                    <select id="gate-team-switcher-select" onchange="window.handleTeamSwitch(this.value)" title="Switch Active Team Squad" class="appearance-none bg-zinc-950 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-bold rounded-xl pl-3 pr-7 py-1.5 cursor-pointer focus:outline-none focus:border-blue-500 transition">
+                        <!-- Populated dynamically by app.js -->
+                    </select>
+                    <span class="pointer-events-none absolute right-2.5 text-[10px] text-zinc-400">▾</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Navigation Header -->
     <header class="relative bg-zinc-950 border-b border-zinc-800/80 sticky top-0 z-40 backdrop-blur-md bg-opacity-90">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-[var(--brand-primary)] flex items-center justify-center p-1.5 shadow border border-blue-400/30">
-                    <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-[var(--brand-primary)] flex items-center justify-center p-1.5 shadow border border-blue-400/30 shrink-0">
+                    <img id="header-crest-img" src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Team Crest" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
                 </div>
-                <div>
-                    <h1 class="text-base sm:text-lg font-black text-white leading-tight tracking-tight">Rockies Albion 14</h1>
+                <div class="min-w-0">
+                    <h1 id="header-team-name" class="text-base sm:text-lg font-black text-white leading-tight tracking-tight truncate">Rockies Albion 14</h1>
                     <p class="text-[10px] sm:text-xs font-semibold text-blue-400 flex items-center space-x-1">
-                        <span>CMSA Boys U13 Tier 2</span>
+                        <span id="header-division-text" class="truncate">CMSA Boys U13 Tier 2</span>
                         <span>•</span>
-                        <span id="connection-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span id="connection-status-text" class="text-zinc-400">Firebase Live</span>
+                        <span id="connection-status-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                        <span id="connection-status-text" class="text-zinc-400 whitespace-nowrap">Firebase Live</span>
                     </p>
                 </div>
             </div>
 
-            <!-- Mode Toggle & Relock -->
-            <div class="flex items-center space-x-2">
+            <!-- Team Switcher, Cloud & Mode Toggle -->
+            <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
+                <div id="team-switcher-wrapper" class="relative inline-flex items-center">
+                    <label for="team-switcher-select" class="sr-only">Switch Active Team</label>
+                    <select id="team-switcher-select" onchange="window.handleTeamSwitch(this.value)" title="Switch Active Team Squad" class="appearance-none bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-blue-500/60 text-zinc-100 text-[11px] font-bold rounded-full pl-3 pr-7 py-1.5 cursor-pointer focus:outline-none focus:border-blue-500 transition shadow-sm max-w-[155px] sm:max-w-[190px] truncate">
+                        <!-- Populated dynamically by app.js -->
+                    </select>
+                    <span class="pointer-events-none absolute right-2.5 text-[10px] text-zinc-400">▾</span>
+                </div>
                 <button id="btn-cloud-config" onclick="openCloudConfigModal()" class="inline-flex items-center space-x-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 px-2.5 py-1.5 rounded-full text-[11px] font-semibold text-zinc-300">
                     <span>☁️ Cloud</span>
                 </button>
@@ -103,45 +121,18 @@
         <section id="view-roster" class="space-y-6">
 
             <!-- Team Officials & Contacts Card -->
-            <div class="bg-zinc-900/90 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
+            <div id="officials-section-card" class="bg-zinc-900/90 border border-zinc-800/80 rounded-2xl p-4 sm:p-5 shadow-xl relative overflow-hidden">
                 <div class="flex items-center justify-between mb-3 border-b border-zinc-800/80 pb-2.5">
                     <div class="flex items-center space-x-2">
                         <span class="text-base">📋</span>
                         <h3 class="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-white">TEAM OFFICIALS & CONTACTS</h3>
                     </div>
-                    <span class="text-xs font-semibold text-zinc-400">
+                    <span id="officials-club-name" class="text-xs font-semibold text-zinc-400">
                         Calgary Rockies FC
                     </span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <!-- Kevin Diaz Lizama -->
-                    <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3.5 flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h4 class="text-sm sm:text-base font-extrabold text-white">Kevin Diaz Lizama</h4>
-                                <span class="bg-blue-900/60 border border-blue-500/40 text-blue-300 text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">HEAD COACH</span>
-                            </div>
-                            <p class="text-xs text-zinc-400 mt-0.5">Tactics, Lineups & Training</p>
-                        </div>
-                    </div>
-                    <!-- Tyler Martens -->
-                    <div class="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3.5 flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h4 class="text-sm sm:text-base font-extrabold text-white">Tyler Martens</h4>
-                                <span class="bg-amber-950/80 border border-amber-500/50 text-amber-300 text-[10px] font-black uppercase px-2 py-0.5 rounded-md tracking-wider">TEAM MANAGER</span>
-                            </div>
-                            <p class="text-xs text-zinc-400 mt-0.5">Scheduling, Roster & Operations</p>
-                        </div>
-                        <div class="flex items-center space-x-1.5">
-                            <a href="https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In" target="_blank" rel="noopener noreferrer" title="Join Rockies Albion 14 WhatsApp Chat" class="w-8 h-8 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 text-[#25D366] flex items-center justify-center transition shadow-sm">
-                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.68C7.02 10.88 7.89 12.04 8.01 12.2C8.13 12.37 9.72 14.82 12.16 15.88C14.19 16.76 14.6 16.58 15.05 16.54C15.49 16.5 16.49 15.95 16.7 15.36C16.9 14.77 16.9 14.26 16.84 14.16C16.78 14.05 16.62 13.99 16.38 13.87C16.14 13.75 14.95 13.16 14.73 13.08C14.51 13 14.35 12.96 14.19 13.2C14.02 13.45 13.56 14.05 13.41 14.21C13.27 14.37 13.13 14.39 12.89 14.27C12.65 14.15 11.87 13.9 10.95 13.08C10.23 12.44 9.75 11.65 9.61 11.41C9.47 11.17 9.59 11.04 9.71 10.92C9.82 10.81 9.96 10.63 10.08 10.49C10.2 10.35 10.24 10.25 10.32 10.09C10.4 9.93 10.36 9.79 10.3 9.68C10.24 9.56 9.77 8.39 9.57 7.91C9.37 7.43 9.17 7.5 9.02 7.49C8.88 7.49 8.71 7.33 8.53 7.33Z"/></svg>
-                            </a>
-                            <a href="mailto:tyler.martens@gmail.com" title="Email Tyler Martens" class="w-8 h-8 rounded-lg bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-200 flex items-center justify-center transition shadow-sm">
-                                <span class="text-xs">✉️</span>
-                            </a>
-                        </div>
-                    </div>
+                <div id="officials-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Dynamic Officials Cards rendered from tenant config by app.js -->
                 </div>
             </div>
 
@@ -149,25 +140,25 @@
             <div class="rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-950">
                 <div class="p-3.5 sm:p-4 brand-banner-header border-b border-zinc-800/80 flex flex-wrap items-center justify-between gap-2">
                     <div>
-                        <span class="text-xs font-bold text-amber-400 uppercase tracking-widest block">2026-2027 Indoor Season</span>
-                        <h3 class="text-lg sm:text-xl font-black text-white tracking-tight">Calgary Rockies FC Albion 14 Squad</h3>
+                        <span id="banner-season-text" class="text-xs font-bold text-amber-400 uppercase tracking-widest block">2026-2027 Indoor Season</span>
+                        <h3 id="banner-squad-title" class="text-lg sm:text-xl font-black text-white tracking-tight">Calgary Rockies FC Albion 14 Squad</h3>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <a href="https://www.instagram.com/calgaryrockiesalbion14?knvt=MWJ5ejk0aWs3MWZy" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 text-xs font-bold text-pink-200 bg-gradient-to-r from-fuchsia-900/70 via-pink-900/70 to-amber-900/60 hover:from-fuchsia-800/80 hover:via-pink-800/80 hover:to-amber-800/70 border border-pink-500/40 px-3 py-1 rounded-full transition shadow-sm active:scale-95" title="Follow @calgaryrockiesalbion14 on Instagram">
+                        <a id="banner-instagram-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center space-x-1.5 text-xs font-bold text-pink-200 bg-gradient-to-r from-fuchsia-900/70 via-pink-900/70 to-amber-900/60 hover:from-fuchsia-800/80 hover:via-pink-800/80 hover:to-amber-800/70 border border-pink-500/40 px-3 py-1 rounded-full transition shadow-sm active:scale-95" title="Follow Team on Instagram">
                             <svg class="w-3.5 h-3.5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z"/></svg>
-                            <span>@calgaryrockiesalbion14</span>
+                            <span id="banner-instagram-handle">Instagram</span>
                         </a>
-                        <span class="text-xs font-bold text-blue-300 bg-blue-950/80 border border-blue-500/40 px-3 py-1 rounded-full">
+                        <span id="banner-division-badge" class="text-xs font-bold text-blue-300 bg-blue-950/80 border border-blue-500/40 px-3 py-1 rounded-full">
                             CMSA Boys U13 Tier 2
                         </span>
                     </div>
                 </div>
-                <div class="w-full bg-zinc-950 flex items-center justify-center p-1 sm:p-2">
+                <div id="squad-banner-photo-wrapper" class="w-full bg-zinc-950 flex items-center justify-center p-1 sm:p-2">
                     <img 
+                        id="squad-banner-img"
                         src="./videos/albion-14-team-pic.jpeg" 
-                        alt="Rockies Albion 14 Squad 2026-2027" 
-                        class="w-full h-auto max-h-[640px] object-contain rounded-xl filter brightness-100 contrast-105" 
-                        onerror="this.onerror=null; this.src='https://placehold.co/1200x616/003C71/ffffff?text=Calgary+Rockies+FC+Albion+14+Squad';">
+                        alt="Team Squad Photo" 
+                        class="w-full h-auto max-h-[640px] object-contain rounded-xl filter brightness-100 contrast-105">
                 </div>
             </div>
 
@@ -242,12 +233,12 @@
 
                 <!-- Scoreboard Grid -->
                 <div class="grid grid-cols-7 items-center text-center gap-2 py-4">
-                    <!-- Rockies Side -->
+                    <!-- Home Squad Side -->
                     <div class="col-span-3 flex flex-col items-center">
                         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-[var(--brand-primary)] flex items-center justify-center p-2 shadow-lg border border-blue-400/30 mb-2">
-                            <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Rockies Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC14'" />
+                            <img id="scoreboard-crest-img" src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Team Crest" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/80x80/003C71/ffffff?text=RFC'" />
                         </div>
-                        <h3 class="text-sm sm:text-base font-black text-white">Rockies Albion 14</h3>
+                        <h3 id="scoreboard-team-name" class="text-sm sm:text-base font-black text-white">Rockies Albion 14</h3>
                         <span class="text-[10px] font-bold text-blue-300 uppercase tracking-widest">Home</span>
                         <div class="mt-2 text-4xl sm:text-6xl font-black text-white font-mono tracking-tight" id="score-us">0</div>
                     </div>
@@ -311,7 +302,7 @@
             <div id="tracker-coach-actions" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <button type="button" onclick="openGoalModal()" class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-700 to-[var(--brand-primary)] hover:from-blue-600 hover:to-blue-700 text-white font-extrabold flex items-center justify-center space-x-2 shadow-lg transition active:scale-98">
                     <span>⚽</span>
-                    <span>Log Rockies Goal</span>
+                    <span id="btn-log-goal-label">Log Rockies Goal</span>
                 </button>
                 <button type="button" onclick="openOpponentGoalModal()" class="p-3.5 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-extrabold flex items-center justify-center space-x-2 shadow-lg transition active:scale-98">
                     <span>🥅</span>
@@ -337,7 +328,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-xl space-y-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-extrabold text-blue-400">Rockies Albion 14</span>
+                            <span id="shootout-team-name" class="text-xs font-extrabold text-blue-400">Rockies Albion 14</span>
                             <div id="pk-coach-buttons-us" class="space-x-1">
                                 <button onclick="recordShootoutKick('us', true)" class="px-2 py-0.5 rounded bg-emerald-600 text-[10px] font-bold text-white">✓ Goal</button>
                                 <button onclick="recordShootoutKick('us', false)" class="px-2 py-0.5 rounded bg-rose-600 text-[10px] font-bold text-white">✗ Miss</button>
@@ -365,7 +356,7 @@
                         <span>📊 Match Statistics Comparison</span>
                     </h3>
                     <div class="flex items-center space-x-4 text-xs font-bold">
-                        <span class="text-blue-400">Rockies</span>
+                        <span id="stats-team-short-name" class="text-blue-400">Rockies</span>
                         <span class="text-zinc-500">vs</span>
                         <span class="text-amber-400">Opponent</span>
                     </div>
@@ -521,7 +512,7 @@
             <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div>
                     <h2 class="text-xl font-black text-white tracking-tight">Team Fixtures & Training</h2>
-                    <p class="text-xs text-zinc-400 mt-0.5">
+                    <p id="schedule-arrival-summary" class="text-xs text-zinc-400 mt-0.5">
                         Arrive <strong class="text-amber-400">30 mins early for matches</strong> and <strong class="text-blue-400">15 mins early for practice/PDP</strong>. Bring your <strong class="text-emerald-400">Size 5 ball</strong>.
                     </p>
 
@@ -531,16 +522,8 @@
                             <span class="text-base">👕</span>
                             <span class="font-extrabold text-white text-[11px] uppercase tracking-wider">Uniform Guide:</span>
                         </div>
-                        <div class="flex flex-wrap items-center gap-2.5 text-[11px]">
-                            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
-                                <strong class="text-zinc-200">ALL Matches:</strong> <span class="text-amber-400 font-bold">Black Kit</span>
-                            </span>
-                            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
-                                <strong class="text-zinc-200">PDP & Team Practice:</strong> <span class="text-blue-300 font-bold">Grey/Blue Training Kit</span>
-                            </span>
-                            <span class="bg-zinc-900 px-2.5 py-1 rounded-lg border border-zinc-700/80">
-                                <strong class="text-zinc-200">Performance:</strong> <span class="text-zinc-300 font-bold">Black Training Kit Only</span>
-                            </span>
+                        <div id="schedule-uniform-guide-list" class="flex flex-wrap items-center gap-2.5 text-[11px]">
+                            <!-- Dynamically hydrated from tenant kitRules by app.js -->
                         </div>
                     </div>
                 </div>
@@ -578,7 +561,7 @@
         <section id="view-standings" class="space-y-6 hidden">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-lg font-black text-white">CMSA Boys U13 Tier 2 Standings</h3>
+                    <h3 id="standings-division-heading" class="text-lg font-black text-white">CMSA Boys U13 Tier 2 Standings</h3>
                     <p class="text-xs text-zinc-400">Official league points table, goal differences, and form.</p>
                 </div>
                 <button id="btn-open-edit-standings" onclick="openEditStandingsModal()" class="hidden items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition shadow">
@@ -684,20 +667,20 @@
         <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div class="flex items-center space-x-3 text-center sm:text-left">
                 <div class="w-10 h-10 rounded-xl bg-[var(--brand-primary)] flex items-center justify-center p-1.5 border border-blue-400/30 shadow">
-                    <img src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="RFC Logo" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
+                    <img id="footer-crest-img" src="https://rockiessoccer.ca/wp-content/uploads/2023/02/Calgary-Rockies-FC-Royal-Blue-Medium.png" alt="Team Crest" class="h-full w-auto object-contain brightness-125" onerror="this.src='https://placehold.co/40x40/003C71/ffffff?text=RFC'" />
                 </div>
                 <div>
-                    <p class="font-black text-white text-sm tracking-tight">Calgary Rockies FC Albion 14</p>
-                    <p class="text-[11px] text-zinc-400 font-medium">CMSA Boys U13 Tier 2 • 2026-2027 Indoor Season</p>
+                    <p id="footer-team-fullname" class="font-black text-white text-sm tracking-tight">Calgary Rockies FC Albion 14</p>
+                    <p id="footer-division-season" class="text-[11px] text-zinc-400 font-medium">CMSA Boys U13 Tier 2 • 2026-2027 Indoor Season</p>
                 </div>
             </div>
 
             <div class="flex flex-wrap items-center justify-center gap-2.5">
-                <a href="https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-[#25D366] border border-emerald-500/40 text-xs font-bold transition shadow-sm active:scale-95" title="Open Team WhatsApp Group Chat">
+                <a id="footer-whatsapp-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-[#25D366] border border-emerald-500/40 text-xs font-bold transition shadow-sm active:scale-95" title="Open Team WhatsApp Group Chat">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.68C7.02 10.88 7.89 12.04 8.01 12.2C8.13 12.37 9.72 14.82 12.16 15.88C14.19 16.76 14.6 16.58 15.05 16.54C15.49 16.5 16.49 15.95 16.7 15.36C16.9 14.77 16.9 14.26 16.84 14.16C16.78 14.05 16.62 13.99 16.38 13.87C16.14 13.75 14.95 13.16 14.73 13.08C14.51 13 14.35 12.96 14.19 13.2C14.02 13.45 13.56 14.05 13.41 14.21C13.27 14.37 13.13 14.39 12.89 14.27C12.65 14.15 11.87 13.9 10.95 13.08C10.23 12.44 9.75 11.65 9.61 11.41C9.47 11.17 9.59 11.04 9.71 10.92C9.82 10.81 9.96 10.63 10.08 10.49C10.2 10.35 10.24 10.25 10.32 10.09C10.4 9.93 10.36 9.79 10.3 9.68C10.24 9.56 9.77 8.39 9.57 7.91C9.37 7.43 9.17 7.5 9.02 7.49C8.88 7.49 8.71 7.33 8.53 7.33Z"/></svg>
                     <span>WhatsApp</span>
                 </a>
-                <a href="https://www.instagram.com/calgaryrockiesalbion14?knvt=MWJ5ejk0aWs3MWZy" target="_blank" rel="noopener noreferrer" class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-pink-950/80 hover:bg-pink-900 text-pink-300 border border-pink-500/40 text-xs font-bold transition shadow-sm active:scale-95" title="Open Team Instagram Page">
+                <a id="footer-instagram-link" href="#" target="_blank" rel="noopener noreferrer" class="hidden inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-pink-950/80 hover:bg-pink-900 text-pink-300 border border-pink-500/40 text-xs font-bold transition shadow-sm active:scale-95" title="Open Team Instagram Page">
                     <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z"/></svg>
                     <span>Instagram</span>
                 </a>
@@ -714,8 +697,8 @@
             </div>
         </div>
         <div class="max-w-6xl mx-auto px-4 mt-4 pt-3.5 border-t border-zinc-900/80 text-[11px] text-zinc-400 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <p>Protected Team Portal for Rockies Albion 14 Players, Coaches & Families.</p>
-            <p class="text-zinc-400">Head Coach: Kevin Diaz Lizama • Manager: Tyler Martens</p>
+            <p id="footer-portal-copy">Protected Team Portal for Players, Coaches & Families.</p>
+            <p id="footer-officials-summary" class="text-zinc-400"></p>
         </div>
     </footer>
 
@@ -958,7 +941,7 @@
     <div id="goal-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="max-w-sm w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4">
             <h3 class="text-base font-black text-white flex items-center space-x-2">
-                <span>⚽</span> <span>Log Rockies Goal</span>
+                <span>⚽</span> <span id="goal-modal-title">Log Rockies Goal</span>
             </h3>
             <form onsubmit="confirmRockiesGoal(event)" class="space-y-3">
                 <div>
@@ -1110,7 +1093,7 @@
                             <option value="practice">🏃 Team Practice</option>
                             <option value="pdp">🎯 PDP Clinic</option>
                             <option value="performance">⚡ Performance</option>
-                            <option value="game">⚽ CMSA Match</option>
+                            <option id="new-event-type-game-opt" value="game">⚽ CMSA Match</option>
                         </select>
                     </div>
                     <div id="new-event-homeaway-group" style="display: none;">
@@ -1173,7 +1156,7 @@
     <div id="edit-standings-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
         <div class="max-w-2xl w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <h3 class="text-base font-extrabold text-white">Edit CMSA Standings Table</h3>
+                <h3 id="edit-standings-modal-title" class="text-base font-extrabold text-white">Edit CMSA Standings Table</h3>
                 <div class="flex items-center space-x-2">
                     <button type="button" onclick="addStandingsTeam()" class="px-2.5 py-1 rounded-lg bg-blue-900/60 hover:bg-blue-800 text-xs font-bold text-blue-200">+ Add Team</button>
                 </div>
@@ -1276,7 +1259,7 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-[11px] font-bold text-blue-400 mb-1">Rockies Goals</label>
+                        <label id="edit-match-our-goals-label" class="block text-[11px] font-bold text-blue-400 mb-1">Rockies Goals</label>
                         <input type="number" min="0" id="edit-match-score-us" class="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-blue-500">
                     </div>
                     <div>
@@ -1296,7 +1279,7 @@
                     <div class="flex items-center justify-between border-b border-zinc-800/80 pb-2">
                         <span class="text-[11px] font-black uppercase tracking-wider text-zinc-200">📊 Match Statistics</span>
                         <div class="flex items-center space-x-3 text-[10px] font-bold">
-                            <span class="text-blue-400">Rockies</span>
+                            <span id="edit-match-our-short-name" class="text-blue-400">Rockies</span>
                             <span class="text-zinc-500">vs</span>
                             <span class="text-amber-400">Opponent</span>
                         </div>
@@ -1517,24 +1500,24 @@
     </div>
 
     <!-- Persistent Floating Team Social Buttons (Active Across All Pages & Tabs) -->
-    <aside aria-label="Team Social Links" class="fixed bottom-5 right-5 z-40 flex items-center space-x-2">
-        <a href="https://www.instagram.com/calgaryrockiesalbion14?knvt=MWJ5ejk0aWs3MWZy"
+    <aside id="floating-social-aside" aria-label="Team Social Links" class="hidden fixed bottom-5 right-5 z-40 flex items-center space-x-2">
+        <a href="#"
            target="_blank"
            rel="noopener noreferrer"
            id="floating-instagram-btn"
-           class="inline-flex items-center space-x-2 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 active:scale-95 text-white font-extrabold text-xs px-3 sm:px-4 py-2.5 rounded-full shadow-2xl shadow-pink-950/70 border border-white/25 transition-all transform hover:-translate-y-0.5 backdrop-blur-md"
-           title="Follow Rockies Albion 14 on Instagram">
+           class="hidden inline-flex items-center space-x-2 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] hover:brightness-110 active:scale-95 text-white font-extrabold text-xs px-3 sm:px-4 py-2.5 rounded-full shadow-2xl shadow-pink-950/70 border border-white/25 transition-all transform hover:-translate-y-0.5 backdrop-blur-md"
+           title="Follow Team on Instagram">
             <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3Z"/>
             </svg>
             <span class="tracking-wide hidden sm:inline">Instagram</span>
         </a>
-        <a href="https://chat.whatsapp.com/C25kmFXbEfQGhgOFiqK7In" 
+        <a href="#" 
            target="_blank" 
            rel="noopener noreferrer" 
            id="floating-whatsapp-btn"
-           class="inline-flex items-center space-x-2 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white font-extrabold text-xs px-4 py-2.5 rounded-full shadow-2xl shadow-emerald-950/80 border border-white/25 transition-all transform hover:-translate-y-0.5 group backdrop-blur-md"
-           title="Open Rockies Albion 14 WhatsApp Group Chat">
+           class="hidden inline-flex items-center space-x-2 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-white font-extrabold text-xs px-4 py-2.5 rounded-full shadow-2xl shadow-emerald-950/80 border border-white/25 transition-all transform hover:-translate-y-0.5 group backdrop-blur-md"
+           title="Open Team WhatsApp Group Chat">
             <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
                 <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91C2.13 13.66 2.59 15.36 3.45 16.86L2.05 22L7.3 20.62C8.75 21.41 10.38 21.83 12.04 21.83C17.5 21.83 21.95 17.38 21.95 11.92C21.95 9.27 20.92 6.78 19.05 4.91C17.18 3.03 14.69 2 12.04 2M12.05 3.67C14.25 3.67 16.31 4.53 17.87 6.09C19.42 7.65 20.28 9.72 20.28 11.92C20.28 16.46 16.58 20.15 12.04 20.15C10.56 20.15 9.11 19.76 7.85 19L7.55 18.83L4.43 19.65L5.26 16.61L5.06 16.29C4.24 14.99 3.8 13.47 3.8 11.91C3.81 7.37 7.5 3.67 12.05 3.67M8.53 7.33C8.37 7.33 8.1 7.39 7.87 7.64C7.65 7.89 7.02 8.48 7.02 9.68C7.02 10.88 7.89 12.04 8.01 12.2C8.13 12.37 9.72 14.82 12.16 15.88C14.19 16.76 14.6 16.58 15.05 16.54C15.49 16.5 16.49 15.95 16.7 15.36C16.9 14.77 16.9 14.26 16.84 14.16C16.78 14.05 16.62 13.99 16.38 13.87C16.14 13.75 14.95 13.16 14.73 13.08C14.51 13 14.35 12.96 14.19 13.2C14.02 13.45 13.56 14.05 13.41 14.21C13.27 14.37 13.13 14.39 12.89 14.27C12.65 14.15 11.87 13.9 10.95 13.08C10.23 12.44 9.75 11.65 9.61 11.41C9.47 11.17 9.59 11.04 9.71 10.92C9.82 10.81 9.96 10.63 10.08 10.49C10.2 10.35 10.24 10.25 10.32 10.09C10.4 9.93 10.36 9.79 10.3 9.68C10.24 9.56 9.77 8.39 9.57 7.91C9.37 7.43 9.17 7.5 9.02 7.49C8.88 7.49 8.71 7.33 8.53 7.33Z"/>
             </svg>
