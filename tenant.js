@@ -123,6 +123,42 @@ export const CLUB_DEFAULTS = {
             name: 'Genesis Centre',
             aliases: ['genesis'],
             address: '7555 Falconridge Blvd NE, Calgary'
+        },
+        {
+            id: 'eric-harvie-school',
+            name: 'Eric Harvie School (Indoor Gym)',
+            aliases: ['eric harvie', 'eric harvie school'],
+            address: '357 Tuscany Dr NW, Calgary'
+        },
+        {
+            id: 'st-jerome-elementary',
+            name: 'St. Jerome Elementary School Main Gym',
+            aliases: ['st. jerome', 'st jerome', 'jerome elementary'],
+            address: '11616 11A St SW, Calgary'
+        },
+        {
+            id: 'coventry-hills-school',
+            name: 'Coventry Hills School (Indoor Gym)',
+            aliases: ['coventry hills', 'coventry hills school'],
+            address: '12050 Coventry Hills Way NE, Calgary'
+        },
+        {
+            id: 'hidden-valley-school',
+            name: 'Hidden Valley School (Indoor Gym)',
+            aliases: ['hidden valley', 'hidden valley school'],
+            address: '10959 Hidden Valley Dr NW, Calgary'
+        },
+        {
+            id: 'ecole-du-nouveau-monde',
+            name: 'École du Nouveau-Monde (Indoor Gym)',
+            aliases: ['nouveau-monde', 'nouveau monde', 'ecole du nouveau-monde', 'école du nouveau-monde'],
+            address: '220 Tuscany Ravine Rd NW, Calgary'
+        },
+        {
+            id: 'blessed-marie-school',
+            name: 'Blessed Marie School',
+            aliases: ['blessed marie', 'blessed marie school'],
+            address: '800 Nolan Hill Blvd NW, Calgary'
         }
     ]
 };

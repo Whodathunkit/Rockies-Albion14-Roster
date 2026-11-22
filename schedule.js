@@ -52,11 +52,85 @@ const ALBION14_SCHEDULE_SEED = [
             { id: 38, type: "game", title: "CMSA Match @ Chinooks FC Premiers 2014", opponent: "Chinooks FC Premiers 2014", isHome: false, date: "Saturday, Feb 27, 2027", kickoff: "11:45 AM - 1:00 PM", arrival: "11:15 AM (30 min prior)", location: "Foothills Macron Centre (Field B)", mapUrl: "https://maps.google.com/?q=Foothills+Macron+Centre+Calgary", jerseyKit: "Black Kit" }
 ];
 
-export const initialScheduleEvents = CURRENT_TEAM_ID === 'albion14' ? ALBION14_SCHEDULE_SEED : [];
+// Helper to construct Alliance 11 seed entries with dynamic venue addresses and team kit rules
+function buildAlliance11SeedEvents() {
+    const allianceConfig = getActiveTeamConfig('alliance11');
+    const leagueName = allianceConfig.leagueName || 'CMSA';
+
+    const rawEvents = [
+        { date: "Monday, Nov 23, 2026", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "Eric Harvie School (Indoor Gym)" },
+        { date: "Wednesday, Nov 25, 2026", time: "8:30 PM - 9:30 PM", arrival: "8:15 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "St. Jerome Elementary School Main Gym" },
+        { date: "Monday, Nov 30, 2026", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "Eric Harvie School (Indoor Gym)" },
+        { date: "Friday, Dec 4, 2026", time: "9:00 PM - 10:30 PM", arrival: "8:30 PM (30 min prior)", type: "game", opponent: "Rangers W Athletics 10/11", isHome: true, location: "Shouldice Athletic Park #01/NW Field" },
+        { date: "Monday, Dec 7, 2026", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "Eric Harvie School (Indoor Gym)" },
+        { date: "Wednesday, Dec 9, 2026", time: "8:30 PM - 9:30 PM", arrival: "8:15 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "St. Jerome Elementary School Main Gym" },
+        { date: "Friday, Dec 11, 2026", time: "6:00 PM - 7:30 PM", arrival: "5:30 PM (30 min prior)", type: "game", opponent: "Blizzard United 10/11", isHome: false, location: "MaxWell Soccer Centre MSC Dome NE 7v7" },
+        { date: "Monday, Dec 14, 2026", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "Eric Harvie School (Indoor Gym)" },
+        { date: "Wednesday, Dec 16, 2026", time: "8:30 PM - 9:30 PM", arrival: "8:15 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "St. Jerome Elementary School Main Gym" },
+        { date: "Friday, Dec 18, 2026", time: "7:15 PM - 8:45 PM", arrival: "6:45 PM (30 min prior)", type: "game", opponent: "WHU West Hills Reign 10", isHome: true, location: "MaxWell Soccer Centre MSC Dome SW 7v7" },
+        { date: "Monday, Jan 4, 2027", time: "7:30 PM - 8:45 PM", arrival: "7:15 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "Coventry Hills School (Indoor Gym)" },
+        { date: "Wednesday, Jan 6, 2027", time: "8:15 PM - 9:30 PM", arrival: "8:00 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Hidden Valley School (Indoor Gym)" },
+        { date: "Friday, Jan 8, 2027", time: "7:15 PM - 8:45 PM", arrival: "6:45 PM (30 min prior)", type: "game", opponent: "MUSC Courage 11", isHome: false, location: "MaxWell Soccer Centre MSC Dome SE 7v7" },
+        { date: "Monday, Jan 11, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Jan 13, 2027", time: "7:45 PM - 9:00 PM", arrival: "7:30 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Blessed Marie School" },
+        { date: "Friday, Jan 15, 2027", time: "8:45 PM - 10:15 PM", arrival: "8:15 PM (30 min prior)", type: "game", opponent: "Airdrie F.C. Flash 11/12", isHome: true, location: "Shouldice Athletic Park #04/NE Field" },
+        { date: "Monday, Jan 18, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Jan 20, 2027", time: "7:45 PM - 9:00 PM", arrival: "7:30 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Blessed Marie School" },
+        { date: "Friday, Jan 22, 2027", time: "6:00 PM - 7:30 PM", arrival: "5:30 PM (30 min prior)", type: "game", opponent: "Rangers W Athletics 10/11", isHome: false, location: "MaxWell Soccer Centre MSC Dome SW 7v7" },
+        { date: "Monday, Jan 25, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Jan 27, 2027", time: "7:45 PM - 9:00 PM", arrival: "7:30 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Blessed Marie School" },
+        { date: "Friday, Jan 29, 2027", time: "6:00 PM - 7:30 PM", arrival: "5:30 PM (30 min prior)", type: "game", opponent: "Blizzard United 10/11 Girls", isHome: true, location: "MaxWell Soccer Centre MSC Dome SW 7v7" },
+        { date: "Monday, Feb 1, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Feb 3, 2027", time: "8:15 PM - 9:30 PM", arrival: "8:00 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Hidden Valley School (Indoor Gym)" },
+        { date: "Friday, Feb 5, 2027", time: "7:45 PM - 9:15 PM", arrival: "7:15 PM (30 min prior)", type: "game", opponent: "WHU West Hills Reign 10", isHome: false, location: "Shouldice Athletic Park #01/NW Field" },
+        { date: "Monday, Feb 8, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Feb 10, 2027", time: "8:15 PM - 9:30 PM", arrival: "8:00 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Hidden Valley School (Indoor Gym)" },
+        { date: "Wednesday, Feb 17, 2027", time: "8:15 PM - 9:30 PM", arrival: "8:00 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Hidden Valley School (Indoor Gym)" },
+        { date: "Friday, Feb 19, 2027", time: "6:00 PM - 7:30 PM", arrival: "5:30 PM (30 min prior)", type: "game", opponent: "MUSC Courage 11", isHome: false, location: "MaxWell Soccer Centre MSC Dome NW 7v7" },
+        { date: "Monday, Feb 22, 2027", time: "8:15 PM - 9:15 PM", arrival: "8:00 PM (15 min prior)", type: "pdp", title: "Player Development Program (PDP)", opponent: "", isHome: true, location: "École du Nouveau-Monde (Indoor Gym)" },
+        { date: "Wednesday, Feb 24, 2027", time: "8:15 PM - 9:30 PM", arrival: "8:00 PM (15 min prior)", type: "practice", title: "Team Tactical Practice", opponent: "", isHome: true, location: "Hidden Valley School (Indoor Gym)" },
+        { date: "Friday, Feb 26, 2027", time: "7:45 PM - 9:15 PM", arrival: "7:15 PM (30 min prior)", type: "game", opponent: "Airdrie F.C. Flash 11/12", isHome: true, location: "Shouldice Athletic Park #01/NW Field" }
+    ];
+
+    return rawEvents.map((ev, idx) => {
+        const address = resolveFacilityAddress(ev.location, allianceConfig);
+        const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(address || ev.location)}`;
+        return {
+            id: idx + 1,
+            type: ev.type,
+            title: ev.title || `${leagueName} Match ${ev.isHome ? 'vs' : '@'} ${ev.opponent}`,
+            opponent: ev.opponent || "",
+            isHome: Boolean(ev.isHome),
+            date: ev.date,
+            time: ev.time,
+            kickoff: ev.time,
+            arrival: ev.arrival,
+            location: ev.location,
+            address,
+            mapUrl,
+            jerseyKit: getKitRuleForEventType(ev.type, allianceConfig)
+        };
+    });
+}
+
+// Official Alliance 11 CMSA 2026-2027 Indoor Season Schedule Seed (only seeded when CURRENT_TEAM_ID === 'alliance11')
+export const ALLIANCE11_SCHEDULE_SEED = buildAlliance11SeedEvents();
+
+const TEAM_SCHEDULE_SEEDS = {
+    albion14: ALBION14_SCHEDULE_SEED,
+    alliance11: ALLIANCE11_SCHEDULE_SEED
+};
+
+export const initialScheduleEvents = TEAM_SCHEDULE_SEEDS[CURRENT_TEAM_ID] || [];
 
 export function parseEventDate(dateStr) {
     if (!dateStr) return null;
-    let cleaned = String(dateStr).replace(/^[A-Za-z]+,\s*/, '').trim();
+    const raw = String(dateStr).trim();
+    const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (isoMatch) {
+        return new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+    }
+    let cleaned = raw.replace(/^[A-Za-z]+,\s*/, '').trim();
     if (!/\b(202[0-9]|203[0-9])\b/.test(cleaned)) {
         const monthMatch = cleaned.match(/^[A-Za-z]+/);
         const monthName = monthMatch ? monthMatch[0].toLowerCase() : '';
@@ -92,6 +166,7 @@ export function normalizeScheduleEvent(ev, idx = 0) {
             opponent: '',
             isHome: true,
             date: 'TBD',
+            time: 'TBD',
             kickoff: 'TBD',
             arrival: `${trainArrivalMin} min prior`,
             location: fallbackLoc,
@@ -125,6 +200,7 @@ export function normalizeScheduleEvent(ev, idx = 0) {
 
     const mapQuery = resolvedAddress || ev.location || 'Calgary';
     const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(mapQuery)}`;
+    const resolvedTime = String(ev.kickoff || ev.time || 'TBD').trim();
 
     return {
         id: Number(ev.id) || idx + 1,
@@ -133,7 +209,8 @@ export function normalizeScheduleEvent(ev, idx = 0) {
         opponent: String(ev.opponent || '').trim(),
         isHome: Boolean(isHome),
         date: String(ev.date || 'TBD').trim(),
-        kickoff: String(ev.kickoff || ev.time || 'TBD').trim(),
+        time: resolvedTime,
+        kickoff: resolvedTime,
         arrival: String(ev.arrival || (isGame ? `${gameArrivalMin} min prior` : `${trainArrivalMin} min prior`)).trim(),
         location: String(ev.location || 'Calgary').trim(),
         address: resolvedAddress,
@@ -142,8 +219,9 @@ export function normalizeScheduleEvent(ev, idx = 0) {
     };
 }
 
-// Load team-scoped schedule with versioned cache check; only seed 38-event schedule for albion14
+// Load team-scoped schedule with versioned cache check; seed known teams when cache is empty
 export let scheduleEvents = (() => {
+    const teamSeed = TEAM_SCHEDULE_SEEDS[CURRENT_TEAM_ID] || null;
     try {
         const saved =
             getTeamStorageItem('schedule_v4', 'rfc14_schedule_v4') ||
@@ -152,10 +230,10 @@ export let scheduleEvents = (() => {
         if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed)) {
-                if (parsed.length === 0 && CURRENT_TEAM_ID !== 'albion14') {
+                if (parsed.length === 0 && !teamSeed) {
                     return [];
                 }
-                if (parsed.length > 0 && parsed[0].kickoff) {
+                if (parsed.length > 0 && (parsed[0].kickoff || parsed[0].time)) {
                     const normalized = parsed.map((e, idx) => normalizeScheduleEvent(e, idx));
                     setTeamStorageItem('schedule_v4', normalized);
                     return normalized;
@@ -164,8 +242,8 @@ export let scheduleEvents = (() => {
         }
     } catch {}
 
-    if (CURRENT_TEAM_ID === 'albion14') {
-        const initial = ALBION14_SCHEDULE_SEED.map((e, idx) => normalizeScheduleEvent(e, idx));
+    if (teamSeed && teamSeed.length > 0) {
+        const initial = teamSeed.map((e, idx) => normalizeScheduleEvent(e, idx));
         setTeamStorageItem('schedule_v4', initial);
         return initial;
     }

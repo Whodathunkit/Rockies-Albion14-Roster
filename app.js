@@ -1388,7 +1388,7 @@ function onAppInit() {
             if (data?.scheduleJson) {
                 try {
                     const parsed = JSON.parse(data.scheduleJson);
-                    if (Array.isArray(parsed)) {
+                    if (Array.isArray(parsed) && parsed.length > 0) {
                         updateScheduleEvents(parsed);
                         renderSchedule(leagueStandings, isCoachMode);
                     }
