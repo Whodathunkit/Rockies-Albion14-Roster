@@ -556,10 +556,15 @@ export function setupRealtimeSync(onDataSync, teamId = CURRENT_TEAM_ID) {
                     const legacySnap = await getDoc(legacyPaths.matchCenterDoc());
                     if (legacySnap.exists() && !hasPrimaryMatch) {
                         dispatchMatchData(onDataSync, legacySnap.data());
+                        return;
                     }
                 } catch (legacyErr) {
                     console.warn("Legacy matchCenter fallback read error:", legacyErr);
                 }
+            }
+
+            if (!hasPrimaryMatch && typeof onDataSync?.onMatchCenterEmpty === 'function') {
+                onDataSync.onMatchCenterEmpty();
             }
         }, (err) => {
             console.warn("Match snapshot error:", err);

@@ -196,7 +196,241 @@ const ALBION14_PAST_MATCHES_SEED = [
     }
 ];
 
-export const initialPastMatches = CURRENT_TEAM_ID === 'albion14' ? ALBION14_PAST_MATCHES_SEED : [];
+// Official Alliance 11 CMSA 2026-2027 Indoor Season Completed Fixtures (newest first)
+export const ALLIANCE11_PAST_MATCHES_SEED = [
+    {
+        id: 5177,
+        gameNumber: 5177,
+        opponent: "Airdrie F.C. Flash 11/12",
+        isHome: false,
+        date: "Nov 20, 2026",
+        scoreUs: 2,
+        scoreThem: 1,
+        motmJersey: null,
+        motmName: "Unassigned",
+        events: [
+            {
+                id: 517701,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 6,
+                scorerName: "Matlea Elsner",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5177",
+                video: ""
+            },
+            {
+                id: 517702,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 6,
+                scorerName: "Matlea Elsner",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5177",
+                video: ""
+            },
+            {
+                id: 517703,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "Airdrie F.C. Flash 11/12",
+                note: "CMSA Game #5177"
+            }
+        ],
+        stats: {
+            shotsUs: 2,
+            shotsThem: 1,
+            sotUs: 2,
+            sotThem: 1,
+            savesUs: 0,
+            savesThem: 0,
+            cornersUs: 0,
+            cornersThem: 0
+        }
+    },
+    {
+        id: 5175,
+        gameNumber: 5175,
+        opponent: "MUSC Courage 11",
+        isHome: true,
+        date: "Nov 13, 2026",
+        scoreUs: 3,
+        scoreThem: 2,
+        motmJersey: null,
+        motmName: "Unassigned",
+        events: [
+            {
+                id: 517501,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 15,
+                scorerName: "Olivia Martens",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5175",
+                video: ""
+            },
+            {
+                id: 517502,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 4,
+                scorerName: "Brooklyn Scherpenisse",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5175",
+                video: ""
+            },
+            {
+                id: 517503,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 14,
+                scorerName: "Sienna Shirley",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5175",
+                video: ""
+            },
+            {
+                id: 517504,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "MUSC Courage 11",
+                note: "CMSA Game #5175"
+            },
+            {
+                id: 517505,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "MUSC Courage 11",
+                note: "CMSA Game #5175"
+            }
+        ],
+        stats: {
+            shotsUs: 3,
+            shotsThem: 2,
+            sotUs: 3,
+            sotThem: 2,
+            savesUs: 0,
+            savesThem: 0,
+            cornersUs: 0,
+            cornersThem: 0
+        }
+    },
+    {
+        id: 5170,
+        gameNumber: 5170,
+        opponent: "West Hills Reign 10",
+        isHome: false,
+        date: "Nov 6, 2026",
+        scoreUs: 1,
+        scoreThem: 0,
+        motmJersey: null,
+        motmName: "Unassigned",
+        events: [
+            {
+                id: 517001,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 15,
+                scorerName: "Olivia Martens",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5170",
+                video: ""
+            }
+        ],
+        stats: {
+            shotsUs: 1,
+            shotsThem: 0,
+            sotUs: 1,
+            sotThem: 0,
+            savesUs: 0,
+            savesThem: 0,
+            cornersUs: 0,
+            cornersThem: 0
+        }
+    },
+    {
+        id: 5167,
+        gameNumber: 5167,
+        opponent: "Blizzard United 10/11 Girls",
+        isHome: true,
+        date: "Oct 23, 2026",
+        scoreUs: 1,
+        scoreThem: 3,
+        motmJersey: null,
+        motmName: "Unassigned",
+        events: [
+            {
+                id: 516701,
+                time: "FT",
+                type: "goal",
+                scorerJersey: 19,
+                scorerName: "Madalyn Walls",
+                assistJersey: null,
+                assistName: null,
+                finish: "Goal ⚽",
+                phase: "Open Play ⚡",
+                tag: "CMSA Game #5167",
+                video: ""
+            },
+            {
+                id: 516702,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "Blizzard United 10/11 Girls",
+                note: "CMSA Game #5167"
+            },
+            {
+                id: 516703,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "Blizzard United 10/11 Girls",
+                note: "CMSA Game #5167"
+            },
+            {
+                id: 516704,
+                time: "FT",
+                type: "opp_goal",
+                oppName: "Blizzard United 10/11 Girls",
+                note: "CMSA Game #5167"
+            }
+        ],
+        stats: {
+            shotsUs: 1,
+            shotsThem: 3,
+            sotUs: 1,
+            sotThem: 3,
+            savesUs: 0,
+            savesThem: 0,
+            cornersUs: 0,
+            cornersThem: 0
+        }
+    }
+];
+
+const TEAM_PAST_MATCHES_SEEDS = {
+    albion14: ALBION14_PAST_MATCHES_SEED,
+    alliance11: ALLIANCE11_PAST_MATCHES_SEED
+};
+
+export const initialPastMatches = TEAM_PAST_MATCHES_SEEDS[CURRENT_TEAM_ID] || [];
 
 function getActiveTeamLabels() {
     const cfg = getActiveTeamConfig();
@@ -281,9 +515,13 @@ function getMatchById(matchId) {
     return matchState.history.find(m => m.id === matchId) || null;
 }
 
+let needsInitialHistoryCloudSync = false;
+let hasSyncedSeededHistoryToFirestore = false;
+
 export let matchState = (() => {
     const labels = getActiveTeamLabels();
     const isAlbion14 = CURRENT_TEAM_ID === 'albion14';
+    const isAlliance11 = CURRENT_TEAM_ID === 'alliance11';
     let state = null;
     try {
         const saved = getTeamStorageItem('match_state', 'rfc14_match_state');
@@ -320,10 +558,15 @@ export let matchState = (() => {
         };
     }
 
-    if (!Array.isArray(state.history)) {
-        state.history = isAlbion14 ? JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED)) : [];
-    } else if (isAlbion14 && state.history.length === 0) {
-        state.history = JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED));
+    if (!Array.isArray(state.history) || state.history.length === 0) {
+        if (isAlbion14) {
+            state.history = JSON.parse(JSON.stringify(ALBION14_PAST_MATCHES_SEED));
+        } else if (isAlliance11) {
+            state.history = [...ALLIANCE11_PAST_MATCHES_SEED.map(m => JSON.parse(JSON.stringify(m)))];
+            needsInitialHistoryCloudSync = true;
+        } else {
+            state.history = [];
+        }
     }
 
     if (!state.attendance || typeof state.attendance !== 'object') {
@@ -340,6 +583,31 @@ export let matchState = (() => {
     return state;
 })();
 
+export function saveMatchStateToFirestore(leagueStandings = null, scheduleEvents = null) {
+    try {
+        localStorage.setItem(getTeamStorageKey('match_state'), JSON.stringify(matchState));
+        setTeamStorageItem('match_state', matchState);
+    } catch {}
+    return savePersistentData(matchState, leagueStandings, scheduleEvents);
+}
+
+// Immediately trigger persistence if Alliance 11 history was seeded during initialization
+if (needsInitialHistoryCloudSync) {
+    saveMatchStateToFirestore();
+}
+
+export function syncInitialMatchHistoryIfNeeded() {
+    if (CURRENT_TEAM_ID !== 'alliance11' || hasSyncedSeededHistoryToFirestore) {
+        return;
+    }
+    if (!Array.isArray(matchState.history) || matchState.history.length === 0) {
+        matchState.history = [...ALLIANCE11_PAST_MATCHES_SEED.map(m => JSON.parse(JSON.stringify(m)))];
+    }
+    hasSyncedSeededHistoryToFirestore = true;
+    needsInitialHistoryCloudSync = false;
+    saveMatchStateToFirestore();
+}
+
 let timerInterval = null;
 let currentEditingEventId = null;
 let currentEditMatchId = null;
@@ -349,6 +617,17 @@ let activeEventDetailCtx = null; // { matchId: null|number, eventId: number|null
 export function updateMatchState(newState) {
     matchState = migratePlayerNames({ ...matchState, ...newState });
     ensureStatsObj(matchState);
+    if (
+        CURRENT_TEAM_ID === 'alliance11' &&
+        (!Array.isArray(matchState.history) || matchState.history.length === 0)
+    ) {
+        matchState.history = [...ALLIANCE11_PAST_MATCHES_SEED.map(m => JSON.parse(JSON.stringify(m)))];
+        if (!hasSyncedSeededHistoryToFirestore) {
+            hasSyncedSeededHistoryToFirestore = true;
+            needsInitialHistoryCloudSync = false;
+            saveMatchStateToFirestore();
+        }
+    }
 }
 
 export function formatTimer(sec) {
@@ -858,10 +1137,11 @@ export function renderPastMatches(isCoachMode) {
             <div class="flex items-start justify-between gap-2">
                 <div class="min-w-0">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-extrabold text-white text-sm group-hover:text-blue-200 transition">vs ${escapeHtml(m.opponent)}</span>
+                        <span class="font-extrabold text-white text-sm group-hover:text-blue-200 transition">${m.isHome === false ? '@' : 'vs'} ${escapeHtml(m.opponent)}</span>
                         <span class="${isWin ? 'bg-emerald-950 text-emerald-300 border-emerald-500/40' : (isDraw ? 'bg-amber-950 text-amber-300 border-amber-500/40' : 'bg-rose-950 text-rose-300 border-rose-500/40')} border text-[10px] px-1.5 py-0.2 rounded font-bold uppercase">
                             ${isWin ? 'WIN' : (isDraw ? 'DRAW' : 'LOSS')}
                         </span>
+                        ${m.gameNumber ? `<span class="text-[10px] font-mono text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.2 rounded">Game #${escapeHtml(m.gameNumber)}</span>` : ''}
                     </div>
                     <p class="text-[11px] text-zinc-400 mt-0.5">${escapeHtml(m.date)} • ${m.motmName && m.motmName !== 'Unassigned' ? `🎖️ MOTM: <span class="text-amber-300 font-semibold">${escapeHtml(m.motmName)}</span>` : 'No MOTM recorded'}</p>
                 </div>

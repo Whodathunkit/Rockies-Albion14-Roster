@@ -59,6 +59,7 @@ import {
 import { 
     matchState, 
     updateMatchState, 
+    syncInitialMatchHistoryIfNeeded,
     renderMatchTracker, 
     renderPastMatches, 
     renderStatsComparison, 
@@ -1374,6 +1375,9 @@ function onAppInit() {
                 updateMatchState(data);
                 updateAllViews();
             }
+        },
+        onMatchCenterEmpty: () => {
+            syncInitialMatchHistoryIfNeeded();
         },
         onTeamPortalDoc: (data) => {
             if (data?.standingsJson) {
